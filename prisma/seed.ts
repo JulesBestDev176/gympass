@@ -28,7 +28,16 @@ async function main() {
   const adminHash = await bcrypt.hash('Admin1234!', 10);
   const admin = await prisma.user.upsert({
     where: { email: 'mamadou.diop@gymdakarplateau.sn' },
-    update: {},
+    update: {
+      gymId: gym.id,
+      nom: 'Diop',
+      prenom: 'Mamadou',
+      telephone: '+221 77 000 00 01',
+      passwordHash: adminHash,
+      role: UserRole.ADMIN,
+      actif: true,
+      mustChangePassword: false,
+    },
     create: {
       gymId: gym.id,
       nom: 'Diop',
@@ -47,7 +56,16 @@ async function main() {
   const gerantHash = await bcrypt.hash('Gerant1234!', 10);
   const gerant1 = await prisma.user.upsert({
     where: { email: 'aissatou.fall@gymdakarplateau.sn' },
-    update: {},
+    update: {
+      gymId: gym.id,
+      nom: 'Fall',
+      prenom: 'Aïssatou',
+      telephone: '+221 77 000 00 02',
+      passwordHash: gerantHash,
+      role: UserRole.GERANT,
+      actif: true,
+      mustChangePassword: true,
+    },
     create: {
       gymId: gym.id,
       nom: 'Fall',
@@ -62,7 +80,16 @@ async function main() {
   });
   const gerant2 = await prisma.user.upsert({
     where: { email: 'ibrahima.mbaye@gymdakarplateau.sn' },
-    update: {},
+    update: {
+      gymId: gym.id,
+      nom: 'Mbaye',
+      prenom: 'Ibrahima',
+      telephone: '+221 77 000 00 03',
+      passwordHash: gerantHash,
+      role: UserRole.GERANT,
+      actif: true,
+      mustChangePassword: true,
+    },
     create: {
       gymId: gym.id,
       nom: 'Mbaye',
