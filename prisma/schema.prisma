@@ -1,0 +1,238 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────── ENUMS ────────────────────────────────────────────
+
+enum UserRole {
+  ADMIN
+  GERANT
+}
+
+enum SubscriptionStatus {
+  ACTIF
+  EXPIRE_DEMAIN
+  EXPIRE
+  SEANCE_DISPONIBLE
+  SEANCE_CONSOMMEE
+  CARTE_DESACTIVEE
+}
+
+enum PaymentType {
+  ABONNEMENT
+  SEANCE_UNIQUE
+  RECHARGE_CARTE
+}
+
+enum PaymentMode {
+  ESPECES
+  ORANGE_MONEY
+  WAVE
+  CHEQUE
+  VIREMENT
+  AUTRE
+}
+
+enum NotifType {
+  EXPIRE_DEMAIN
+  EXPIRATION
+  PAIEMENT
+  INSCRIPTION
+  SYSTEME
+}
+
+// ─────────────────────────── GYM ──────────────────────────────────────────────
+
+model Gym {
+  id    String @id @default(cuid())
+  nom   String
+  ville String @default("Dakar")
+  pays  String @default("SN")
+  slug  String @unique // ex: "gymdakarplateau"
+
+  // Tarification
+  fraisInscription  Int @default(5000)
+  prixMensualite    Int @default(25000)
+  dureeMensualite   Int @default(30)   // jours
+  prixSeance        Int @default(2500)
+
+  // Paramètres scanner
+  antiDoubleScanSec Int @default(5)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users         User[]
+  members       Member[]
+  notifications Notification[]
+  payments      Payment[]
+
+  @@map("gyms")
+}
+
+// ─────────────────────────── USER (Employé) ───────────────────────────────────
+
+model User {
+  id                 String    @id @default(cuid())
+  gymId              String
+  nom                String
+  prenom             String
+  email              String    @unique
+  telephone          String?
+  passwordHash       String
+  role               UserRole  @default(GERANT)
+  actif              Boolean   @default(true)
+  mustChangePassword Boolean   @default(false)
+  photoUrl           String?
+  fcmToken           String?
+  otpCode            String?
+  otpExpiresAt       DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  gym      Gym       @relation(fields: [gymId], references: [id], onDelete: Cascade)
+  payments Payment[]
+  entries  Entry[]
+
+  @@index([gymId])
+  @@map("users")
+}
+
+// ─────────────────────────── MEMBER (Adhérent) ────────────────────────────────
+
+model Member {
+  id             String   @id @default(cuid())
+  gymId          String
+  numeroCarte    String   @unique  // ex: "GP-2024-001"
+  qrCode         String   @unique  // "GYMPASS-SN-{id}" — généré à la création
+  nom            String
+  prenom         String
+  telephone      String
+  photoUrl       String?
+  carteActive    Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  gym            Gym      @relation(fields: [gymId], references: [id], onDelete: Cascade)
+  subscriptions  Subscription[]
+  sessionCards   SessionCard[]
+  payments       Payment[]
+  entries        Entry[]
+
+  @@index([gymId])
+  @@index([numeroCarte])
+  @@index([qrCode])
+  @@map("members")
+}
+
+// ─────────────────────────── SUBSCRIPTION ─────────────────────────────────────
+
+model Subscription {
+  id             String             @id @default(cuid())
+  memberId       String
+  formule        String             // "Mensuel"
+  dateDebut      DateTime           @default(now())
+  dateExpiration DateTime
+  statut         SubscriptionStatus @default(ACTIF)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  member         Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@index([memberId])
+  @@index([dateExpiration])
+  @@map("subscriptions")
+}
+
+// ─────────────────────────── SESSION CARD (Carte séances) ─────────────────────
+
+model SessionCard {
+  id               String   @id @default(cuid())
+  memberId         String
+  qrCode           String   @unique  // "GYMPASS-CARTE-{id}"
+  seancesRestantes Int      @default(0)
+  seancesTotal     Int      @default(0)
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  member           Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  recharges        Payment[]
+
+  @@index([memberId])
+  @@map("session_cards")
+}
+
+// ─────────────────────────── PAYMENT ──────────────────────────────────────────
+
+model Payment {
+  id            String      @id @default(cuid())
+  gymId         String
+  memberId      String
+  userId        String      // gérant qui a enregistré
+  sessionCardId String?     // non null si RECHARGE_CARTE
+  type          PaymentType
+  formule       String      // "Mensuel", "Séance unique", "Recharge carte"
+  montantFcfa   Int
+  mode          PaymentMode @default(ESPECES)
+  reference     String?     // ref Orange Money, Wave, etc.
+  note          String?
+  createdAt     DateTime    @default(now())
+
+  gym           Gym         @relation(fields: [gymId], references: [id])
+  member        Member      @relation(fields: [memberId], references: [id])
+  user          User        @relation(fields: [userId], references: [id])
+  sessionCard   SessionCard? @relation(fields: [sessionCardId], references: [id])
+
+  @@index([gymId])
+  @@index([memberId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("payments")
+}
+
+// ─────────────────────────── ENTRY (Entrée / Scan) ────────────────────────────
+
+model Entry {
+  id                String             @id @default(cuid())
+  memberId          String
+  userId            String             // gérant qui a validé
+  formule           String
+  statut            SubscriptionStatus
+  exceptionnel      Boolean            @default(false)
+  motifExceptionnel String?
+  createdAt         DateTime           @default(now())
+
+  member            Member   @relation(fields: [memberId], references: [id])
+  user              User     @relation(fields: [userId], references: [id])
+
+  @@index([memberId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("entries")
+}
+
+// ─────────────────────────── NOTIFICATION ─────────────────────────────────────
+
+model Notification {
+  id        String    @id @default(cuid())
+  gymId     String
+  userId    String?   // null = broadcast tous les users du gym
+  titre     String
+  message   String
+  type      NotifType
+  lue       Boolean   @default(false)
+  createdAt DateTime  @default(now())
+
+  gym       Gym       @relation(fields: [gymId], references: [id], onDelete: Cascade)
+
+  @@index([gymId])
+  @@index([userId])
+  @@index([lue])
+  @@map("notifications")
+}
