@@ -19,24 +19,22 @@ ENV npm_config_audit=false \
 
 FROM base AS deps
 
-ENV NODE_ENV=development
-
 COPY package*.json ./
 COPY prisma ./prisma/
-RUN npm ci --prefer-offline --no-audit --no-fund --max-sockets=1
+# Force NODE_ENV=development so devDependencies (nestjs/cli, typescript) are installed
+RUN NODE_ENV=development npm ci --prefer-offline --no-audit --no-fund --max-sockets=1
 
 FROM deps AS builder
-
-ENV NODE_ENV=development
 
 COPY . .
 
 RUN npx prisma generate
-RUN npm run build
+# Force development mode for nest build
+RUN NODE_ENV=development npm run build
 
 FROM deps AS production-deps
 
-RUN npm prune --omit=dev
+RUN NODE_ENV=production npm prune --omit=dev
 
 FROM base AS runtime
 
