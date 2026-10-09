@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-FROM node:20-bookworm-slim AS base
+FROM node:20-bookworm-slim
 
 WORKDIR /app
 
@@ -11,53 +11,32 @@ RUN --mount=type=cache,id=gympass-apt-lists,target=/var/lib/apt/lists,sharing=lo
         ca-certificates curl openssl \
     && rm -rf /var/lib/apt/lists/*
 
-ENV npm_config_audit=false \
-    npm_config_fund=false \
-    npm_config_fetch_retries=5 \
-    npm_config_fetch_retry_mintimeout=20000 \
-    npm_config_fetch_retry_maxtimeout=120000
-
-FROM base AS deps
-
+# Install ALL deps including devDependencies (needed for nest build / tsc)
 COPY package*.json ./
 COPY prisma ./prisma/
-# Force NODE_ENV=development so devDependencies (nestjs/cli, typescript) are installed
-RUN NODE_ENV=development npm ci --prefer-offline --no-audit --no-fund --max-sockets=1
+RUN npm ci --include=dev
 
-FROM deps AS builder
-
+# Copy source and build
 COPY . .
-
 RUN npx prisma generate
-# Force development mode for nest build
-RUN NODE_ENV=development npm run build
+RUN npm run build
 
-FROM deps AS production-deps
+# Verify the build actually produced output
+RUN test -f dist/main.js || (echo "ERROR: dist/main.js not found — build failed" && exit 1)
 
-RUN NODE_ENV=production npm prune --omit=dev
+# Remove devDependencies from the final image
+RUN npm prune --omit=dev
 
-FROM base AS runtime
-
-ENV NODE_ENV=production \
-    NODE_OPTIONS=--max-old-space-size=512 \
-    PORT=3000
-
-COPY package*.json ./
-COPY prisma ./prisma/
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-COPY --from=production-deps /app/node_modules ./node_modules
-COPY --from=deps /app/node_modules/prisma ./node_modules/prisma
-COPY --from=deps /app/node_modules/@prisma/engines ./node_modules/@prisma/engines
-COPY --from=deps /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
-
 RUN sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh \
     && chmod +x /usr/local/bin/docker-entrypoint.sh \
     && chown -R node:node /app
 
 USER node
+
+ENV NODE_ENV=production \
+    NODE_OPTIONS=--max-old-space-size=512 \
+    PORT=3000
 
 EXPOSE 3000
 
