@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "GymPass SN — API NestJS + Prisma + PostgreSQL",
   "scripts": {
-    "build": "nest build",
+    "build": "nest build && tsc prisma/seed.ts --outDir dist/prisma --module commonjs --target ES2021 --esModuleInterop --skipLibCheck --moduleResolution node",
     "start": "node dist/main",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
