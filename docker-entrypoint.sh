@@ -66,7 +66,7 @@ if [ "${SKIP_PRISMA_MIGRATIONS}" != "true" ]; then
   else
     echo "No migrations found. Pushing schema with prisma db push..."
     while [ "$attempt" -le "$max_attempts" ]; do
-      if ./node_modules/.bin/prisma db push --schema "$PRISMA_SCHEMA_PATH" --skip-generate --accept-data-loss 2>&1; then
+      if ./node_modules/.bin/prisma db push --schema "$PRISMA_SCHEMA_PATH" --skip-generate 2>&1; then
         echo "Schema pushed successfully."
         break
       fi
