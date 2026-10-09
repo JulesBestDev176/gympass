@@ -61,14 +61,9 @@ else
   echo "Skipping Prisma migrations because SKIP_PRISMA_MIGRATIONS=true"
 fi
 
-if [ "${PRISMA_SEED_ON_DEPLOY}" = "true" ]; then
-  if [ -f "/app/dist/prisma/seed.js" ]; then
-    echo "Running Prisma seed..."
-    node /app/dist/prisma/seed.js
-  else
-    echo "PRISMA_SEED_ON_DEPLOY=true but no runtime seed artifact was found"
-    exit 1
-  fi
+if [ "${SKIP_PRISMA_SEED}" != "true" ] && [ -f "/app/dist/prisma/seed.js" ]; then
+  echo "Running Prisma seed..."
+  node /app/dist/prisma/seed.js
 fi
 
 echo "Starting application..."
