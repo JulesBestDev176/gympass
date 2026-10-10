@@ -27,6 +27,7 @@ enum PaymentType {
   ABONNEMENT
   SEANCE_UNIQUE
   RECHARGE_CARTE
+  INSCRIPTION
 }
 
 enum PaymentMode {

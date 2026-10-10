@@ -1,0 +1,2 @@
+-- AlterEnum: add INSCRIPTION to PaymentType
+ALTER TYPE "PaymentType" ADD VALUE IF NOT EXISTS 'INSCRIPTION';

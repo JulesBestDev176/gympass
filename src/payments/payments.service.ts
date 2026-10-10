@@ -134,6 +134,13 @@ export class PaymentsService {
         break;
       }
 
+      // ── Frais d'inscription ─────────────────────────────────────────────────
+      case PaymentType.INSCRIPTION: {
+        formule = 'Inscription';
+        montantFcfa = dto.montantOverride ?? gym.fraisInscription;
+        break;
+      }
+
       default:
         throw new BadRequestException('Type de paiement invalide');
     }
