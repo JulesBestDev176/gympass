@@ -135,6 +135,15 @@ async function main() {
   }
   console.log(`  ✓ ${members.length} adhérents créés`);
 
+  // ── Guard : données volatiles déjà insérées ? ─────────────────────────────────
+  const alreadySeeded = await prisma.sessionCard.findUnique({
+    where: { qrCode: 'GYMPASS-CARTE-SC001' },
+  });
+  if (alreadySeeded) {
+    console.log('  ℹ️  Données déjà présentes, seed ignoré pour subscriptions/cartes/paiements/notifs.');
+    return;
+  }
+
   // ── Subscriptions ─────────────────────────────────────────────────────────────
   const now = new Date();
   const subData = [
@@ -161,19 +170,23 @@ async function main() {
   console.log('  ✓ Abonnements créés');
 
   // ── Session Cards ─────────────────────────────────────────────────────────────
-  const card1 = await prisma.sessionCard.create({
-    data: {
-      memberId: members[3].id, // Moussa Diallo
-      qrCode: `GYMPASS-CARTE-SC001`,
+  const card1 = await prisma.sessionCard.upsert({
+    where: { qrCode: 'GYMPASS-CARTE-SC001' },
+    update: {},
+    create: {
+      memberId: members[3].id,
+      qrCode: 'GYMPASS-CARTE-SC001',
       seancesRestantes: 3,
       seancesTotal: 5,
       active: true,
     },
   });
-  const card2 = await prisma.sessionCard.create({
-    data: {
-      memberId: members[7].id, // Cheikh Faye
-      qrCode: `GYMPASS-CARTE-SC002`,
+  const card2 = await prisma.sessionCard.upsert({
+    where: { qrCode: 'GYMPASS-CARTE-SC002' },
+    update: {},
+    create: {
+      memberId: members[7].id,
+      qrCode: 'GYMPASS-CARTE-SC002',
       seancesRestantes: 0,
       seancesTotal: 4,
       active: true,
