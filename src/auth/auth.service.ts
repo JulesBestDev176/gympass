@@ -4,6 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { WhatsappService } from '../whatsapp/whatsapp.service';
 import { LoginDto } from './dto/login.dto';
@@ -18,8 +19,52 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
+    private readonly config: ConfigService,
     private readonly whatsapp: WhatsappService,
   ) {}
+
+  private publicUser(user: any) {
+    return {
+      id: user.id,
+      nom: user.nom,
+      prenom: user.prenom,
+      email: user.email,
+      telephone: user.telephone,
+      role: user.role,
+      actif: user.actif,
+      mustChangePassword: user.mustChangePassword,
+      photoUrl: user.photoUrl,
+      gymId: user.gymId,
+      gym: {
+        id: user.gym.id,
+        nom: user.gym.nom,
+        slug: user.gym.slug,
+      },
+    };
+  }
+
+  private async issueTokens(user: any) {
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+      gymId: user.gymId,
+    };
+    const accessToken = await this.jwt.signAsync(
+      { ...payload, tokenType: 'access' },
+      { expiresIn: this.config.get('JWT_EXPIRES_IN', '15m') },
+    );
+    const refreshToken = await this.jwt.signAsync(
+      { ...payload, tokenType: 'refresh' },
+      { expiresIn: this.config.get('JWT_REFRESH_EXPIRES_IN', '30d') },
+    );
+    const refreshTokenHash = await bcrypt.hash(refreshToken, 10);
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { refreshTokenHash },
+    });
+    return { accessToken, refreshToken };
+  }
 
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
@@ -33,32 +78,68 @@ export class AuthService {
     const valid = await bcrypt.compare(dto.password, user.passwordHash);
     if (!valid) throw new UnauthorizedException('Email ou mot de passe incorrect');
 
-    const payload = {
-      sub: user.id,
-      email: user.email,
-      role: user.role,
-      gymId: user.gymId,
-    };
-    const token = this.jwt.sign(payload);
+    const tokens = await this.issueTokens(user);
 
     return {
-      accessToken: token,
+      ...tokens,
       mustChangePassword: user.mustChangePassword,
-      user: {
-        id: user.id,
-        nom: user.nom,
-        prenom: user.prenom,
-        email: user.email,
-        telephone: user.telephone,
-        role: user.role,
-        photoUrl: user.photoUrl,
-        gym: {
-          id: user.gym.id,
-          nom: user.gym.nom,
-          slug: user.gym.slug,
-        },
-      },
+      user: this.publicUser(user),
     };
+  }
+
+  async refresh(refreshToken: string) {
+    if (!refreshToken) throw new UnauthorizedException('Refresh token manquant');
+
+    let payload: any;
+    try {
+      payload = await this.jwt.verifyAsync(refreshToken, {
+        secret: this.config.get('JWT_SECRET'),
+      });
+    } catch {
+      throw new UnauthorizedException('Session expirée');
+    }
+
+    if (payload.tokenType !== 'refresh') {
+      throw new UnauthorizedException('Token invalide');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: payload.sub },
+      include: { gym: true },
+    });
+    if (!user || !user.actif || !user.refreshTokenHash) {
+      throw new UnauthorizedException('Session expirée');
+    }
+
+    const valid = await bcrypt.compare(refreshToken, user.refreshTokenHash);
+    if (!valid) throw new UnauthorizedException('Session expirée');
+
+    const tokens = await this.issueTokens(user);
+    return {
+      ...tokens,
+      mustChangePassword: user.mustChangePassword,
+      user: this.publicUser(user),
+    };
+  }
+
+  async me(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { gym: true },
+    });
+    if (!user || !user.actif) throw new UnauthorizedException('Compte inactif ou introuvable');
+    return {
+      mustChangePassword: user.mustChangePassword,
+      user: this.publicUser(user),
+    };
+  }
+
+  async logout(userId: string) {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { refreshTokenHash: null },
+    });
+    return { message: 'Déconnexion réussie' };
   }
 
   async changePassword(userId: string, oldPassword: string, newPassword: string) {

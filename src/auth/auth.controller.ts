@@ -24,6 +24,10 @@ class ResetPasswordDto {
   @IsString() @MinLength(6) newPassword: string;
 }
 
+class RefreshTokenDto {
+  @IsString() @IsNotEmpty() refreshToken: string;
+}
+
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -31,6 +35,23 @@ export class AuthController {
   @Post('login')
   login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
+  }
+
+  @Post('refresh')
+  refresh(@Body() dto: RefreshTokenDto) {
+    return this.authService.refresh(dto.refreshToken);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  logout(@CurrentUser() user: any) {
+    return this.authService.logout(user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('me')
+  me(@CurrentUser() user: any) {
+    return this.authService.me(user.id);
   }
 
   @UseGuards(JwtAuthGuard)

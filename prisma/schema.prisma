@@ -85,6 +85,7 @@ model User {
   email              String    @unique
   telephone          String?
   passwordHash       String
+  refreshTokenHash   String?
   role               UserRole  @default(GERANT)
   actif              Boolean   @default(true)
   mustChangePassword Boolean   @default(false)
