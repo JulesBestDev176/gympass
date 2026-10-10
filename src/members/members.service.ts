@@ -20,7 +20,7 @@ export class MembersService {
 
     // Trouver la subscription active la plus récente
     const subscriptions: any[] = member.subscriptions ?? [];
-    if (!subscriptions.length) return SubscriptionStatus.EXPIRE;
+    if (!subscriptions.length) return SubscriptionStatus.SANS_ABONNEMENT;
 
     // Trier par dateExpiration desc
     const sorted = [...subscriptions].sort(

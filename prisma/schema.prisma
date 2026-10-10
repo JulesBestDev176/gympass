@@ -21,6 +21,7 @@ enum SubscriptionStatus {
   SEANCE_DISPONIBLE
   SEANCE_CONSOMMEE
   CARTE_DESACTIVEE
+  SANS_ABONNEMENT
 }
 
 enum PaymentType {
