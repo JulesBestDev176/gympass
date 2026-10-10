@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMemberDto, UpdateMemberDto } from './dto/member.dto';
 import { SubscriptionStatus } from '@prisma/client';
@@ -92,16 +92,6 @@ export class MembersService {
   }
 
   async create(gymId: string, dto: CreateMemberDto) {
-    // Unicité du téléphone dans le gym
-    const existing = await this.prisma.member.findFirst({
-      where: { gymId, telephone: dto.telephone },
-    });
-    if (existing) {
-      throw new ConflictException(
-        `Un adhérent avec le numéro ${dto.telephone} existe déjà dans ce gym.`,
-      );
-    }
-
     const numeroCarte = await this.generateNumeroCarte(gymId);
     return this.prisma.member.create({
       data: {
