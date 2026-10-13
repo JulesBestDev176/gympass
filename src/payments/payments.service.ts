@@ -87,13 +87,14 @@ export class PaymentsService {
           },
         });
 
-        // Notification in-app + push broadcast
-        await this.notifications.createAndPush(
+        // Notification in-app + push broadcast — non-bloquant : une erreur de
+        // notification ne doit jamais faire échouer l'enregistrement du paiement.
+        this.notifications.createAndPush(
           gymId,
           'Paiement enregistré',
           `${member.prenom} ${member.nom} — ${montantFcfa.toLocaleString('fr-FR')} FCFA (${formule})`,
           NotifType.PAIEMENT,
-        );
+        ).catch(() => { /* silently ignored */ });
         break;
       }
 
