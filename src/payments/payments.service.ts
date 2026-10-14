@@ -105,6 +105,19 @@ export class PaymentsService {
         break;
       }
 
+      // ── Frais d'inscription ─────────────────────────────────────────────────
+      case PaymentType.INSCRIPTION: {
+        formule = 'Inscription';
+        montantFcfa = dto.montantOverride ?? gym.fraisInscription;
+        this.notifications.createAndPush(
+          gymId,
+          'Nouvelle inscription',
+          `${member.prenom} ${member.nom} — ${montantFcfa.toLocaleString('fr-FR')} FCFA`,
+          NotifType.INSCRIPTION,
+        ).catch(() => { /* silently ignored */ });
+        break;
+      }
+
       // ── Recharge carte séances ──────────────────────────────────────────────
       case PaymentType.RECHARGE_CARTE: {
         if (!dto.sessionCardId || !dto.nbSeances)

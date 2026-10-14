@@ -12,6 +12,8 @@ export class DashboardService {
     const tomorrow = new Date(now);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
     const [
       totalMembers,
       activeMembers,
@@ -21,6 +23,7 @@ export class DashboardService {
       abonnementsExpirantDemain,
       gerantsActifs,
       derniersPaiements,
+      entreesAujourdhui,
     ] = await Promise.all([
       this.prisma.member.count({ where: { gymId } }),
       this.prisma.subscription.count({
@@ -51,6 +54,9 @@ export class DashboardService {
         orderBy: { createdAt: 'desc' },
         take: 5,
       }),
+      this.prisma.entry.count({
+        where: { member: { gymId }, createdAt: { gte: startOfDay } },
+      }),
     ]);
 
     return {
@@ -62,6 +68,7 @@ export class DashboardService {
       abonnementsExpirantDemain,
       gerantsActifs,
       derniersPaiements,
+      entreesAujourdhui,
     };
   }
 

@@ -120,6 +120,23 @@ export class MembersService {
     });
   }
 
+  async replaceCard(gymId: string, id: string, motif?: string) {
+    const member = await this.prisma.member.findFirst({ where: { id, gymId } });
+    if (!member) throw new NotFoundException('Adhérent introuvable');
+
+    const newNumeroCarte = await this.generateNumeroCarte(gymId);
+    const newQrCode = `GYMPASS-SN-${newNumeroCarte}`;
+
+    return this.prisma.member.update({
+      where: { id },
+      data: {
+        numeroCarte: newNumeroCarte,
+        qrCode: newQrCode,
+        carteActive: true,
+      },
+    });
+  }
+
   // Adhérents dont l'abonnement expire dans les prochains N jours
   async findExpiringSoon(gymId: string, days = 7) {
     const now = new Date();

@@ -38,4 +38,9 @@ export class MembersController {
   toggleCarte(@CurrentUser() user: any, @Param('id') id: string) {
     return this.membersService.toggleCarte(user.gymId, id);
   }
+
+  @Post(':id/carte/replace')
+  replaceCard(@CurrentUser() user: any, @Param('id') id: string, @Body('motif') motif?: string) {
+    return this.membersService.replaceCard(user.gymId, id, motif);
+  }
 }
