@@ -1,11 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { SchedulerService } from '../scheduler/scheduler.service';
 import { CreateMemberDto, UpdateMemberDto } from './dto/member.dto';
 import { SubscriptionStatus } from '@prisma/client';
 
 @Injectable()
 export class MembersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly scheduler: SchedulerService,
+  ) {}
 
   // ── Génération numéro de carte ──────────────────────────────────────────────
   private async generateNumeroCarte(gymId: string): Promise<string> {
@@ -93,7 +97,7 @@ export class MembersService {
 
   async create(gymId: string, dto: CreateMemberDto) {
     const numeroCarte = await this.generateNumeroCarte(gymId);
-    return this.prisma.member.create({
+    const member = await this.prisma.member.create({
       data: {
         gymId,
         numeroCarte,
@@ -104,6 +108,11 @@ export class MembersService {
         photoUrl: dto.photoUrl,
       },
     });
+    // Message de bienvenue WhatsApp — non bloquant
+    if (member.telephone) {
+      this.scheduler.sendWelcome(member.telephone, member.prenom, member.nom, numeroCarte).catch(() => {});
+    }
+    return member;
   }
 
   async update(gymId: string, id: string, dto: UpdateMemberDto) {

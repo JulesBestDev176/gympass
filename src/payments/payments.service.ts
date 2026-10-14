@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { SchedulerService } from '../scheduler/scheduler.service';
 import { CreatePaymentDto } from './dto/payment.dto';
 import { PaymentType, SubscriptionStatus, NotifType, UserRole } from '@prisma/client';
 
@@ -9,6 +10,7 @@ export class PaymentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    private readonly scheduler: SchedulerService,
   ) {}
 
   async findAll(gymId: string, userId: string, role: UserRole, memberId?: string) {
@@ -95,6 +97,13 @@ export class PaymentsService {
           `${member.prenom} ${member.nom} — ${montantFcfa.toLocaleString('fr-FR')} FCFA (${formule})`,
           NotifType.PAIEMENT,
         ).catch(() => { /* silently ignored */ });
+
+        // WhatsApp confirmation — non-bloquant
+        if (member.telephone) {
+          this.scheduler.sendPaymentConfirmation(
+            member.telephone, member.prenom, member.nom, montantFcfa, formule, dateExpiration,
+          ).catch(() => {});
+        }
         break;
       }
 
@@ -102,6 +111,13 @@ export class PaymentsService {
       case PaymentType.SEANCE_UNIQUE: {
         formule = 'Séance unique';
         montantFcfa = gym.prixSeance;
+
+        // WhatsApp confirmation — non-bloquant
+        if (member.telephone) {
+          this.scheduler.sendPaymentConfirmation(
+            member.telephone, member.prenom, member.nom, gym.prixSeance, formule,
+          ).catch(() => {});
+        }
         break;
       }
 
@@ -145,6 +161,13 @@ export class PaymentsService {
         });
 
         extraData = { sessionCardId: card.id };
+
+        // WhatsApp confirmation — non-bloquant
+        if (member.telephone) {
+          this.scheduler.sendPaymentConfirmation(
+            member.telephone, member.prenom, member.nom, montantFcfa, formule,
+          ).catch(() => {});
+        }
         break;
       }
 

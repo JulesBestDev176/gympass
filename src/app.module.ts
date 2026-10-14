@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
@@ -15,6 +16,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { UploadModule } from './upload/upload.module';
 import { WhatsappModule } from './whatsapp/whatsapp.module';
 import { FirebaseModule } from './firebase/firebase.module';
+import { SchedulerModule } from './scheduler/scheduler.module';
 import { HealthController } from './health.controller';
 
 @Module({
@@ -35,6 +37,8 @@ import { HealthController } from './health.controller';
     UploadModule,
     WhatsappModule,
     FirebaseModule,
+    ScheduleModule.forRoot(),
+    SchedulerModule,
   ],
   controllers: [HealthController],
 })
