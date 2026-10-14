@@ -54,7 +54,12 @@ export class UploadService {
     originalName: string,
     mimetype: string,
   ): Promise<{ url: string }> {
-    await this.ensureBucket();
+    try {
+      await this.ensureBucket();
+    } catch (err: any) {
+      this.logger.error(`MinIO inaccessible (${err.message}) — vérifiez que le service est démarré sur ${this.config.get('MINIO_ENDPOINT', 'localhost')}:${this.config.get('MINIO_PORT', '9000')}`);
+      throw new InternalServerErrorException('Stockage de fichiers indisponible. Vérifiez que MinIO est démarré.');
+    }
 
     const ext = path.extname(originalName) || '.jpg';
     const objectName = `photos/${uuid()}${ext}`;
