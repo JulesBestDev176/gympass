@@ -6,6 +6,43 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱  Seeding GymPass SN...');
 
+  // ── Super Admin GymDash ───────────────────────────────────────────────────────
+  const superAdminEmail    = process.env.GYMDASH_ADMIN_EMAIL    ?? 'admin@gympass.sn';
+  const superAdminPassword = process.env.GYMDASH_ADMIN_PASSWORD ?? 'GymDash2024!';
+
+  const platformGym = await prisma.gym.upsert({
+    where: { slug: 'gympass-platform' },
+    update: {},
+    create: {
+      nom: 'GymPass Platform',
+      ville: 'Dakar',
+      pays: 'SN',
+      slug: 'gympass-platform',
+      fraisInscription: 0,
+      prixMensualite: 0,
+      dureeMensualite: 0,
+      prixSeance: 0,
+      antiDoubleScanSec: 0,
+    },
+  });
+
+  const superAdminHash = await bcrypt.hash(superAdminPassword, 10);
+  await prisma.user.upsert({
+    where: { email: superAdminEmail },
+    update: { passwordHash: superAdminHash, actif: true, mustChangePassword: false },
+    create: {
+      gymId: platformGym.id,
+      nom: 'Admin',
+      prenom: 'GymDash',
+      email: superAdminEmail,
+      passwordHash: superAdminHash,
+      role: UserRole.ADMIN,
+      actif: true,
+      mustChangePassword: false,
+    },
+  });
+  console.log(`  ✓ Super Admin GymDash : ${superAdminEmail}`);
+
   // ── Gym ──────────────────────────────────────────────────────────────────────
   const gym = await prisma.gym.upsert({
     where: { slug: 'gymdakarplateau' },

@@ -21,8 +21,15 @@ COPY . .
 RUN npx prisma generate
 RUN npm run build
 
+# Compile prisma/seed.ts separately (tsconfig only covers src/)
+RUN npx tsc --rootDir . --outDir dist --module commonjs --target ES2021 \
+    --experimentalDecorators true --emitDecoratorMetadata true \
+    --esModuleInterop true --skipLibCheck true \
+    prisma/seed.ts
+
 # Verify the build actually produced output
 RUN test -f dist/main.js || (echo "ERROR: dist/main.js not found — build failed" && exit 1)
+RUN test -f dist/prisma/seed.js || (echo "WARNING: dist/prisma/seed.js not found — seed will be skipped")
 
 # Remove devDependencies from the final image
 RUN npm prune --omit=dev
