@@ -18,6 +18,7 @@ import { WhatsappModule } from './whatsapp/whatsapp.module';
 import { FirebaseModule } from './firebase/firebase.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
 import { HealthController } from './health.controller';
+import { GymbroModule } from './gymbro/gymbro.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { HealthController } from './health.controller';
     FirebaseModule,
     ScheduleModule.forRoot(),
     SchedulerModule,
+    GymbroModule,
   ],
   controllers: [HealthController],
 })

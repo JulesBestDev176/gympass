@@ -220,6 +220,436 @@ model Entry {
   @@map("entries")
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// ██████████████████████████  G Y M B R O  ████████████████████████████████████
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ─────────────────────────── GYMBRO ENUMS ─────────────────────────────────────
+
+enum GymbroObjectif {
+  PRISE_DE_MASSE
+  FORCE
+  REMISE_EN_FORME
+  AUTRE
+}
+
+enum GymbroNiveau {
+  DEBUTANT
+  QUELQUES_MOIS
+  PLUS_D_UN_AN
+  INTERMEDIAIRE
+}
+
+enum GymbroTypeEquipement {
+  SALLE_COMPLETE
+  SALLE_BASIQUE
+}
+
+enum GymbroPreferenceEquipement {
+  MACHINES
+  HALTERES_BARRES
+  MIXTE
+}
+
+enum GymbroSubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  PENDING
+}
+
+enum GymbroMatchingStatus {
+  PENDING
+  MATCHED
+  NO_MATCH
+}
+
+enum GymbroSessionStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  SKIPPED
+  POSTPONED
+}
+
+enum GymbroSetStatus {
+  PENDING
+  COMPLETED
+  SKIPPED
+}
+
+enum GymbroPhotoAngle {
+  FACE
+  PROFIL
+  DOS
+}
+
+// ─────────────────────────── GYMBRO USER ──────────────────────────────────────
+
+model GymbroUser {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  passwordHash      String
+  refreshTokenHash  String?
+  prenom            String
+  nom               String
+  telephone         String?
+  actif             Boolean   @default(true)
+  fcmToken          String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  profile           GymbroUserProfile?
+  userPrograms      GymbroUserProgram[]
+  subscriptions     GymbroSubscription[]
+  weightLogs        GymbroWeightLog[]
+  photos            GymbroPhoto[]
+  bilans            GymbroBilan[]
+  notifications     GymbroNotification[]
+
+  @@map("gymbro_users")
+}
+
+// ─────────────────────────── GYMBRO USER PROFILE ─────────────────────────────
+
+model GymbroUserProfile {
+  id                      String    @id @default(cuid())
+  userId                  String    @unique
+  user                    GymbroUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Étape 1 — Objectif
+  objectifPrincipal       GymbroObjectif?
+  objectifSecondaire      GymbroObjectif?
+  descriptionPhysique     String?
+
+  // Étape 2 — Profil physique
+  age                     Int?
+  tailleCm                Int?
+  poidsKg                 Float?
+  dateDernierePesee       DateTime?
+  poidsSouhaiteKg         Float?
+
+  // Étape 3 — Disponibilités (saisie libre 2–6 jours)
+  seancesParSemaine       Int?
+  dureeMaxSeanceMin       Int?      // 60, 75, 90
+  joursPreferesJson       String?   // JSON ["lun","mar","ven"]
+  changementPrevu         Boolean   @default(false)
+  dateChangement          DateTime?
+  seancesApresChangement  Int?
+
+  // Étape 4 — Niveau & matériel (salle uniquement)
+  niveauExperience        GymbroNiveau?
+  typeEquipement          GymbroTypeEquipement?
+  preferenceEquipement    GymbroPreferenceEquipement?
+
+  // Étape 5 — Performances (facultatif)
+  performancesJson        String?
+  allerEchec              Boolean?
+
+  // Étape 6 — Santé
+  douleurs                String?
+  blessures               String?
+  heuresSommeil           Float?
+  niveauFatigue           Int?
+  restrictionMedicale     Boolean   @default(false)
+
+  // Matching
+  matchingStatus          GymbroMatchingStatus @default(PENDING)
+  matchingProgramId       String?
+
+  // Métadonnées
+  questionnaireComplet    Boolean   @default(false)
+  etapeActuelle           Int       @default(1)
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  @@map("gymbro_user_profiles")
+}
+
+// ─────────────────────────── GYMBRO EXERCISE ──────────────────────────────────
+
+model GymbroExercise {
+  id                     String   @id @default(cuid())
+  nomFr                  String
+  descriptionFr          String?
+  instructionsFrJson     String?  // JSON ["étape 1", "étape 2"]
+  groupeMusculaire       String
+  musclesPrimairesJson   String   // JSON ["pectoraux"]
+  musclesSecondairesJson String?
+  equipementRequis       String
+  difficulte             String?  // "débutant" | "intermédiaire" | "avancé"
+  photoExerciceUrl       String?  // MinIO — photo de l'exercice (propriétaire GymBro)
+  photoMuscleUrl         String?  // MinIO — highlight musculaire (pec.png, biceps.png…)
+  actif                  Boolean  @default(true)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  sessionExercises       GymbroSessionExercise[]
+
+  @@map("gymbro_exercises")
+}
+
+// ─────────────────────────── GYMBRO PROGRAM ───────────────────────────────────
+
+model GymbroProgram {
+  id                  String               @id @default(cuid())
+  nom                 String
+  description         String?
+  objectif            GymbroObjectif
+  niveauMin           GymbroNiveau
+  niveauMax           GymbroNiveau
+  seancesParSemaine   Int                  // nombre de jours/semaine
+  typeEquipement      GymbroTypeEquipement @default(SALLE_COMPLETE)
+  dureeSeanceMin      Int                  // durée moyenne d'une séance (minutes)
+  nbSemaines          Int                  @default(12)
+  actif               Boolean              @default(true)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  phases              GymbroProgramPhase[]
+  userPrograms        GymbroUserProgram[]
+
+  @@map("gymbro_programs")
+}
+
+model GymbroProgramPhase {
+  id          String        @id @default(cuid())
+  programId   String
+  program     GymbroProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+  numero      Int           // 1, 2, 3
+  nom         String
+  description String?
+  createdAt   DateTime      @default(now())
+
+  weeks       GymbroProgramWeek[]
+
+  @@index([programId])
+  @@map("gymbro_program_phases")
+}
+
+model GymbroProgramWeek {
+  id          String             @id @default(cuid())
+  phaseId     String
+  phase       GymbroProgramPhase @relation(fields: [phaseId], references: [id], onDelete: Cascade)
+  numero      Int                // 1–12
+  estDecharge Boolean            @default(false)
+  createdAt   DateTime           @default(now())
+
+  sessions    GymbroProgramSession[]
+
+  @@index([phaseId])
+  @@map("gymbro_program_weeks")
+}
+
+model GymbroProgramSession {
+  id          String            @id @default(cuid())
+  weekId      String
+  week        GymbroProgramWeek @relation(fields: [weekId], references: [id], onDelete: Cascade)
+  numero      Int               // 1, 2, 3… (ordre dans la semaine)
+  nom         String            // "Séance A — Push"
+  description String?
+  createdAt   DateTime          @default(now())
+
+  exercises   GymbroSessionExercise[]
+  userSessions GymbroUserSession[]
+
+  @@index([weekId])
+  @@map("gymbro_program_sessions")
+}
+
+model GymbroSessionExercise {
+  id                  String               @id @default(cuid())
+  sessionId           String
+  session             GymbroProgramSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  exerciseId          String
+  exercise            GymbroExercise       @relation(fields: [exerciseId], references: [id])
+  ordre               Int
+  nbSeries            Int
+  repsMin             Int
+  repsMax             Int
+  tempsReposSec       Int                  @default(90)
+  chargeDepart        Float?
+  notes               String?
+  createdAt           DateTime             @default(now())
+
+  sets                GymbroUserSet[]
+
+  @@index([sessionId])
+  @@index([exerciseId])
+  @@map("gymbro_session_exercises")
+}
+
+// ─────────────────────────── GYMBRO USER PROGRAM ─────────────────────────────
+
+model GymbroUserProgram {
+  id            String        @id @default(cuid())
+  userId        String
+  user          GymbroUser    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  programId     String
+  program       GymbroProgram @relation(fields: [programId], references: [id])
+  dateDebut     DateTime      @default(now())
+  dateFin       DateTime?
+  version       Int           @default(1)
+  actif         Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  sessions      GymbroUserSession[]
+  adjustments   GymbroProgramAdjustment[]
+
+  @@index([userId])
+  @@map("gymbro_user_programs")
+}
+
+// ─────────────────────────── GYMBRO USER SESSION ──────────────────────────────
+
+model GymbroUserSession {
+  id               String               @id @default(cuid())
+  userProgramId    String
+  userProgram      GymbroUserProgram    @relation(fields: [userProgramId], references: [id], onDelete: Cascade)
+  programSessionId String
+  programSession   GymbroProgramSession @relation(fields: [programSessionId], references: [id])
+  statut           GymbroSessionStatus  @default(PLANNED)
+  datePrevue       DateTime?
+  dateDebut        DateTime?
+  dateFin          DateTime?
+  notes            String?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  sets             GymbroUserSet[]
+
+  @@index([userProgramId])
+  @@map("gymbro_user_sessions")
+}
+
+// ─────────────────────────── GYMBRO USER SET ──────────────────────────────────
+
+model GymbroUserSet {
+  id                  String                @id @default(cuid())
+  userSessionId       String
+  userSession         GymbroUserSession     @relation(fields: [userSessionId], references: [id], onDelete: Cascade)
+  sessionExerciseId   String
+  sessionExercise     GymbroSessionExercise @relation(fields: [sessionExerciseId], references: [id])
+  numeroSerie         Int
+  chargeProposee      Float?
+  chargeAcceptee      Float?
+  chargeRealisee      Float?
+  repsRealisees       Int?
+  statut              GymbroSetStatus       @default(PENDING)
+  difficulte          Int?                  // 1–5 (RPE subjectif)
+  douleur             Boolean               @default(false)
+  notes               String?
+  createdAt           DateTime              @default(now())
+
+  @@index([userSessionId])
+  @@index([sessionExerciseId])
+  @@map("gymbro_user_sets")
+}
+
+// ─────────────────────────── GYMBRO SUBSCRIPTION ─────────────────────────────
+
+model GymbroSubscription {
+  id              String                    @id @default(cuid())
+  userId          String
+  user            GymbroUser                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  statut          GymbroSubscriptionStatus  @default(ACTIVE)
+  dateDebut       DateTime                  @default(now())
+  dateExpiration  DateTime
+  readOnlyUntil   DateTime?                 // 30j après expiration
+  montantFcfa     Int
+  createdById     String?                   // ID admin gympass qui a créé
+  note            String?
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+
+  @@index([userId])
+  @@index([dateExpiration])
+  @@map("gymbro_subscriptions")
+}
+
+// ─────────────────────────── GYMBRO WEIGHT LOG ────────────────────────────────
+
+model GymbroWeightLog {
+  id        String     @id @default(cuid())
+  userId    String
+  user      GymbroUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  poidsKg   Float
+  date      DateTime   @default(now())
+  note      String?
+
+  @@index([userId])
+  @@map("gymbro_weight_logs")
+}
+
+// ─────────────────────────── GYMBRO PHOTO ────────────────────────────────────
+
+model GymbroPhoto {
+  id        String          @id @default(cuid())
+  userId    String
+  user      GymbroUser      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  url       String
+  angle     GymbroPhotoAngle @default(FACE)
+  date      DateTime        @default(now())
+
+  @@index([userId])
+  @@map("gymbro_photos")
+}
+
+// ─────────────────────────── GYMBRO BILAN ─────────────────────────────────────
+
+model GymbroBilan {
+  id              String     @id @default(cuid())
+  userId          String
+  user            GymbroUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  semaine         Int        // numéro de semaine du programme
+  seancesTotal    Int
+  seancesReussies Int
+  volumeTotal     Float?     // kg total soulevé
+  poidsDebut      Float?
+  poidsFin        Float?
+  notes           String?
+  createdAt       DateTime   @default(now())
+
+  @@index([userId])
+  @@map("gymbro_bilans")
+}
+
+// ─────────────────────────── GYMBRO PROGRAM ADJUSTMENT ───────────────────────
+
+model GymbroProgramAdjustment {
+  id            String            @id @default(cuid())
+  userProgramId String
+  userProgram   GymbroUserProgram @relation(fields: [userProgramId], references: [id], onDelete: Cascade)
+  type          String            // "CHARGE" | "SEANCE_DEPLACEE" | "JOURS_MODIFIES"
+  description   String
+  version       Int
+  createdAt     DateTime          @default(now())
+
+  @@index([userProgramId])
+  @@map("gymbro_program_adjustments")
+}
+
+// ─────────────────────────── GYMBRO NOTIFICATION ─────────────────────────────
+
+model GymbroNotification {
+  id        String     @id @default(cuid())
+  userId    String
+  user      GymbroUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  titre     String
+  message   String
+  type      String     // "ABONNEMENT" | "SEANCE" | "PROGRESSION" | "BILAN"
+  lue       Boolean    @default(false)
+  createdAt DateTime   @default(now())
+
+  @@index([userId])
+  @@map("gymbro_notifications")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ████████████████████  FIN GYMBRO  ███████████████████████████████████████████
+// ═══════════════════════════════════════════════════════════════════════════════
+
 // ─────────────────────────── NOTIFICATION ─────────────────────────────────────
 
 model Notification {
