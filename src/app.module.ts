@@ -19,10 +19,12 @@ import { FirebaseModule } from './firebase/firebase.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
 import { HealthController } from './health.controller';
 import { GymbroModule } from './gymbro/gymbro.module';
+import { MonitoringModule } from './monitoring/monitoring.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    MonitoringModule,
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
     PrismaModule,
     AuthModule,

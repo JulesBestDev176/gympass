@@ -4,9 +4,13 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import { MonitoringService } from './monitoring/monitoring.service';
+import { requestTelemetry } from './monitoring/request-metrics';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.use(requestTelemetry(app.get(MonitoringService).metrics));
+  app.enableShutdownHooks();
 
   // ── CORS ──────────────────────────────────────────────────────────────────
   app.enableCors({
