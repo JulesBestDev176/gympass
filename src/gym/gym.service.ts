@@ -101,4 +101,15 @@ export class GymService {
     });
     return users.map(({ passwordHash, refreshTokenHash, ...u }) => u);
   }
+
+  async setGymbroUserRole(id: string, role: 'USER' | 'COACH') {
+    const user = await this.prisma.gymbroUser.findUnique({ where: { id } });
+    if (!user) throw new NotFoundException('Utilisateur GymBro introuvable');
+    const updated = await this.prisma.gymbroUser.update({
+      where: { id },
+      data: { role: role as any },
+    });
+    const { passwordHash, refreshTokenHash, ...safe } = updated;
+    return safe;
+  }
 }

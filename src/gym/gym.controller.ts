@@ -67,6 +67,12 @@ export class GymController {
     return this.usersService.toggleById(userId);
   }
 
+  @UseGuards(GymDashGuard)
+  @Patch('gymbro-user/:userId/role')
+  setGymbroRole(@Param('userId') userId: string, @Body('role') role: 'USER' | 'COACH') {
+    return this.gymService.setGymbroUserRole(userId, role);
+  }
+
   // ── JWT authentifié ──────────────────────────────────────────────────────────
   @UseGuards(JwtAuthGuard)
   @Get()
