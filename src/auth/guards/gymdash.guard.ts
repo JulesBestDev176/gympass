@@ -1,17 +1,22 @@
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { Injectable, ExecutionContext, UnauthorizedException, ForbiddenException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { AuthGuard } from '@nestjs/passport';
+import { timingSafeEqual } from 'crypto';
+import { isBillingAdministrator } from '../../platform-billing/control-access';
 
 @Injectable()
-export class GymDashGuard implements CanActivate {
-  constructor(private readonly config: ConfigService) {}
+export class GymDashGuard extends AuthGuard('jwt') {
+  constructor(private readonly config: ConfigService) { super(); }
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest();
     const secret = req.headers['x-gymdash-secret'];
     const expected = this.config.get<string>('GYMDASH_SECRET');
-    if (!expected || secret !== expected) {
+    if (!expected || typeof secret !== 'string' || Buffer.byteLength(secret) !== Buffer.byteLength(expected) || !timingSafeEqual(Buffer.from(secret), Buffer.from(expected))) {
       throw new UnauthorizedException('Accès GymDash refusé');
     }
+    if (!await super.canActivate(context)) return false;
+    if (!isBillingAdministrator(req.user, this.config.get<string>('GYMDASH_BILLING_ADMIN_EMAILS'))) throw new ForbiddenException('Accès administrateur GymDash requis');
     return true;
   }
 }

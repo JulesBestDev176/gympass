@@ -1,3 +1,5 @@
+import { PlatformBillingModule } from './platform-billing/platform-billing.module';
+import { BillingAccessModule } from './platform-billing/access.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -28,6 +30,8 @@ import { MonitoringModule } from './monitoring/monitoring.module';
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
     PrismaModule,
     AuthModule,
+    PlatformBillingModule,
+    BillingAccessModule,
     GymModule,
     UsersModule,
     MembersModule,

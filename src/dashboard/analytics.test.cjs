@@ -101,7 +101,7 @@ const { buildRange, assembleAnalytics, analyticsQueries } = require('./analytics
     const { AnalyticsService } = require('./analytics.service.ts');
     const { PrismaService } = require('../prisma/prisma.service.ts');
     const { JwtStrategy } = require('../auth/strategies/jwt.strategy.ts');
-    const config = new ConfigService({ JWT_SECRET: 'analytics-test-signing-secret', GYMDASH_SECRET: 'analytics-test-gymdash' });
+    const config = new ConfigService({ JWT_SECRET: 'analytics-test-signing-secret', GYMDASH_SECRET: 'analytics-test-gymdash', GYMDASH_BILLING_ADMIN_EMAILS: 'admin@example.test' });
     const payload = assembleAnalytics(buildRange('30d', now), emptyRows());
     let calls = 0;
     class TestModule {}
@@ -109,7 +109,7 @@ const { buildRange, assembleAnalytics, analyticsQueries } = require('./analytics
       JwtStrategy,
       { provide: ConfigService, useValue: config },
       { provide: PrismaService, useValue: { user: { findUnique: async ({ where }) =>
-        where.id === 'missing' ? null : { id: where.id, actif: where.id !== 'inactive', role: where.id === 'admin' ? 'ADMIN' : 'GERANT' } } } },
+        where.id === 'missing' ? null : { id: where.id, email: 'admin@example.test', actif: where.id !== 'inactive', role: where.id === 'admin' ? 'ADMIN' : 'GERANT' } } } },
       { provide: DashboardService, useValue: { getGlobalStats: () => ({ preserved: true }) } },
       { provide: AnalyticsService, useValue: { getGlobalAnalytics: period => { calls++; buildRange(period, now); return payload; } } },
     ] })(TestModule);
@@ -140,7 +140,8 @@ const { buildRange, assembleAnalytics, analyticsQueries } = require('./analytics
     assert.deepEqual(allowed.body, payload);
     assert.equal((await request(endpoint + '?period=bad', token('admin'), 'analytics-test-gymdash')).status, 400);
     assert.equal((await request(endpoint + '?period=30d&period=90d', token('admin'), 'analytics-test-gymdash')).status, 400);
-    const oldGlobal = await request('/api/v1/dashboard/global', token('gerant'), 'analytics-test-gymdash');
+    assert.equal((await request('/api/v1/dashboard/global', token('gerant'), 'analytics-test-gymdash')).status, 403);
+    const oldGlobal = await request('/api/v1/dashboard/global', token('admin'), 'analytics-test-gymdash');
     assert.equal(oldGlobal.status, 200);
     assert.deepEqual(oldGlobal.body, { preserved: true });
   });

@@ -77,6 +77,8 @@ model Gym {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  billingAccount GymBillingAccount?
+  platformInvoices PlatformInvoice[]
   users         User[]
   members       Member[]
   notifications Notification[]
@@ -684,4 +686,99 @@ model Notification {
   @@index([userId])
   @@index([lue])
   @@map("notifications")
+}
+
+enum PlatformInvoiceStatus {
+  UNPAID
+  PARTIALLY_PAID
+  PAID
+  CANCELLED
+}
+
+model PlatformBillingSettings {
+  id               String @id @default("global")
+  monthlyPriceFcfa Int?
+  graceDays        Int    @default(7)
+  issuerName       String @default("")
+  issuerAddress    String @default("")
+  issuerEmail      String @default("")
+  issuerPhone      String @default("")
+  issuerTaxId      String @default("")
+  invoiceFooter    String @default("")
+
+  @@map("platform_billing_settings")
+}
+
+model GymBillingAccount {
+  gymId            String    @id
+  gym              Gym       @relation(fields: [gymId], references: [id], onDelete: Restrict)
+  enabled          Boolean   @default(true)
+  activatedAt      DateTime  @default(now())
+  paidUntil        DateTime?
+  anchorDay        Int?
+  monthlyPriceFcfa Int?
+  billingName      String    @default("")
+  billingAddress   String    @default("")
+  billingEmail     String    @default("")
+  billingPhone     String    @default("")
+  billingTaxId     String    @default("")
+
+  @@map("gym_billing_accounts")
+}
+
+model PlatformInvoice {
+  id                 String                   @id @default(cuid())
+  number             String                   @unique
+  gymId              String
+  gym                Gym                      @relation(fields: [gymId], references: [id], onDelete: Restrict)
+  gymName            String
+  months             Int
+  unitPriceFcfa      Int
+  totalFcfa          Int
+  paidFcfa           Int                      @default(0)
+  status             PlatformInvoiceStatus    @default(UNPAID)
+  issuedAt           DateTime                 @default(now())
+  coveredFrom        DateTime?
+  coveredUntil       DateTime?
+  issuer             Json
+  customer           Json
+  footer             String
+  cancellationReason String?
+  createdById        String
+  payments           PlatformBillingPayment[]
+  commands           PlatformBillingCommand[]
+
+  @@index([gymId, issuedAt])
+  @@index([status, issuedAt])
+  @@map("platform_invoices")
+}
+
+model PlatformBillingPayment {
+  id           String          @id @default(cuid())
+  invoiceId    String
+  invoice      PlatformInvoice @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
+  amountFcfa   Int
+  mode         PaymentMode
+  reference    String?
+  paidAt       DateTime        @default(now())
+  recordedById String
+
+  @@index([invoiceId])
+  @@map("platform_billing_payments")
+}
+
+model PlatformBillingCommand {
+  key         String          @id @db.Uuid
+  fingerprint String
+  invoiceId   String
+  invoice     PlatformInvoice @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
+
+  @@map("platform_billing_commands")
+}
+
+model PlatformInvoiceCounter {
+  year  Int @id
+  value Int
+
+  @@map("platform_invoice_counters")
 }

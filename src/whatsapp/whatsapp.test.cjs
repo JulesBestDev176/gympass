@@ -113,8 +113,8 @@ test('automatic send creation requires a valid active ADMIN JWT as well as the G
   let creates = 0;
   class TestModule {}
   Module({ controllers: [GymController], providers: [JwtStrategy,
-    { provide: ConfigService, useValue: new ConfigService({JWT_SECRET: 'test-only-signing-key', GYMDASH_SECRET: 'test-only-dashboard'}) },
-    { provide: PrismaService, useValue: {user: {findUnique: async ({where}) => ({id: where.id, actif: where.id !== 'inactive', role: where.id === 'admin' ? 'ADMIN' : 'GERANT'})}} },
+    { provide: ConfigService, useValue: new ConfigService({JWT_SECRET: 'test-only-signing-key', GYMDASH_SECRET: 'test-only-dashboard', GYMDASH_BILLING_ADMIN_EMAILS: 'admin@example.test'}) },
+    { provide: PrismaService, useValue: {user: {findUnique: async ({where}) => ({id: where.id, email: 'admin@example.test', actif: where.id !== 'inactive', role: where.id === 'admin' ? 'ADMIN' : 'GERANT'})}} },
     { provide: GymService, useValue: {createGymbroUser: async () => {creates++;return { id: 'fixture', whatsapp: {status: 'accepted'} };}} },
     { provide: MembersService, useValue: {} }, { provide: UsersService, useValue: {} },
   ] })(TestModule);
