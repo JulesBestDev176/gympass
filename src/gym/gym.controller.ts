@@ -61,7 +61,8 @@ export class GymController {
     return this.gymService.findAllUsers();
   }
 
-  @UseGuards(GymDashGuard)
+  @UseGuards(JwtAuthGuard, GymDashGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Post('gymbro-user')
   createGymbroUser(@Body() dto: AdminCreateGymbroUserDto) {
     return this.gymService.createGymbroUser(dto);

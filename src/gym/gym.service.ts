@@ -3,6 +3,7 @@ import { IsString, IsInt, IsOptional, Min, IsNotEmpty } from 'class-validator';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateGymDto, UpdatePricingDto, UpdateStatutDto } from './dto/update-gym.dto';
+import { WhatsappService } from '../whatsapp/whatsapp.service';
 
 export class AdminCreateGymbroUserDto {
   @IsString() @IsNotEmpty() prenom: string;
@@ -25,7 +26,7 @@ export class CreateGymDto {
 
 @Injectable()
 export class GymService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly whatsapp: WhatsappService) {}
 
   async findAll() {
     const now = new Date();
@@ -177,7 +178,8 @@ export class GymService {
       },
     });
     const { passwordHash: _, refreshTokenHash: __, ...safe } = user;
-    return safe;
+    const whatsapp = await this.whatsapp.sendGymbroCredentials(phone, dto.password, user.prenom);
+    return { ...safe, whatsapp };
   }
 
   async findGymbroUser(id: string) {

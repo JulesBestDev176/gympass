@@ -2,47 +2,63 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 
+export interface WhatsappDelivery {
+  status: 'accepted' | 'failed' | 'unconfigured' | 'disconnected' | 'invalid_phone';
+  messageId?: string;
+}
+
 @Injectable()
 export class WhatsappService {
   private readonly logger = new Logger(WhatsappService.name);
   private readonly apiKey: string;
-  private readonly senderId: string;
-  private readonly baseUrl = 'https://api.relay.io/v1';
+  private readonly sessionId: string;
+  private readonly baseUrl: string;
 
   constructor(private readonly config: ConfigService) {
     this.apiKey = this.config.get<string>('RELAYIO_API_KEY') ?? '';
-    this.senderId = this.config.get<string>('RELAYIO_SENDER_ID') ?? 'GymPass SN';
+    this.sessionId = this.config.get<string>('RELAYIO_SESSION_ID')?.trim() ?? '';
+    this.baseUrl = (this.config.get<string>('RELAYIO_BASE_URL') || 'https://relayio.minifootapp.com/v1').replace(/\/+$/, '');
   }
 
   private formatPhone(telephone: string): string {
-    // Normaliser le numéro : supprimer espaces, garder le +
-    return telephone.replace(/\s+/g, '');
+    let phone = telephone.trim().replace(/[\s().-]/g, '');
+    if (phone.startsWith('+')) phone = phone.slice(1);
+    else if (phone.startsWith('00')) phone = phone.slice(2);
+    else if (/^\d{9}$/.test(phone)) phone = `221${phone}`;
+    return phone;
   }
 
-  private async send(to: string, message: string): Promise<void> {
+  private async send(to: string, message: string): Promise<WhatsappDelivery> {
     if (!this.apiKey) {
-      this.logger.warn(`[WhatsApp Mock] → ${to}: ${message}`);
-      return;
+      this.logger.warn('Envoi WhatsApp indisponible : connexion Relayio non configurée.');
+      return { status: 'unconfigured' };
     }
+    const phone = this.formatPhone(to);
+    if (!/^[1-9]\d{6,14}$/.test(phone)) return { status: 'invalid_phone' };
+    if (!message.trim() || message.length > 4096) return { status: 'failed' };
     try {
-      await axios.post(
-        `${this.baseUrl}/messages`,
-        {
-          to: this.formatPhone(to),
-          from: this.senderId,
-          body: message,
-          channel: 'whatsapp',
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${this.apiKey}`,
-            'Content-Type': 'application/json',
-          },
-        },
-      );
-    } catch (err: any) {
-      this.logger.error(`Erreur envoi WhatsApp vers ${to}: ${err.message}`);
+      const options = { headers: { 'x-api-key': this.apiKey, 'Content-Type': 'application/json' }, timeout: 6000, maxRedirects: 0 };
+      const { data: sessions } = await axios.get(`${this.baseUrl}/sessions`, options);
+      if (!Array.isArray(sessions)) return { status: 'failed' };
+      const session = this.sessionId ? sessions.find(s => s.id === this.sessionId || s._id === this.sessionId) : sessions.length === 1 ? sessions[0] : undefined;
+      if (!session || typeof session.id !== 'string' || !session.id) return { status: 'failed' };
+      if (String(session.status).toUpperCase() !== 'READY') return { status: 'disconnected' };
+      const { data } = await axios.post(`${this.baseUrl}/sessions/${encodeURIComponent(session.id)}/messages/text`, { chatId: `${phone}@c.us`, body: message }, options);
+      if (!data || typeof data !== 'object' || ['failed', 'error', 'undelivered'].includes(String(data.status).toLowerCase())) return { status: 'failed' };
+      const messageId = typeof data.id === 'string' ? data.id : typeof data._id === 'string' ? data._id : undefined;
+      if (!messageId) return { status: 'failed' };
+      return { status: 'accepted', messageId };
+    } catch {
+      // Axios errors include request headers and message contents; never log them.
+      this.logger.warn('Envoi WhatsApp non confirmé par Relayio.');
+      return { status: 'failed' };
     }
+  }
+
+  async sendGymbroCredentials(telephone: string, password: string, prenom: string): Promise<WhatsappDelivery> {
+    return this.send(telephone,
+      `Bonjour ${prenom} ! 👋\n\nVoici vos identifiants pour l'application GymBro :\n\n` +
+      `📱 Téléphone : ${telephone}\n🔑 Mot de passe : ${password}\n\nBonne séance ! 💪`);
   }
 
   // Envoi des identifiants à un nouveau gérant
