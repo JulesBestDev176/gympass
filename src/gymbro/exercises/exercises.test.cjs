@@ -1,4 +1,4 @@
-﻿require('ts-node/register/transpile-only');
+require('ts-node/register/transpile-only');
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {ExercisesService}=require('./exercises.service.ts');
@@ -28,12 +28,12 @@ test('import is idempotent and concurrent unique violations return the winning d
 });
 
 test('activation requires explicit review plus available media and attaching resets review',async()=>{
- let row={id:'existing',actif:false,mediaSource:'flow',mediaSourceId:'1',mediaSourceRevision:'rev'};
+ let row={id:'existing',actif:false,updatedAt:new Date('2026-10-17T00:00:00Z'),mediaSource:'flow',mediaSourceId:'1',mediaSourceRevision:'rev'};
  let available=false;
  const service=new ExercisesService({gymbroExercise:{findUnique:async()=>row,update:async({data})=>(row={...row,...data})}},{lookup:()=>available?{animationUrl:'/demo.gif',hasAnimation:true,license:'CC0-1.0'}:null,requireItem:()=>({sourceRevision:'rev'})});
- await assert.rejects(service.toggle('existing',true),e=>e.getStatus()===400);
+ await assert.rejects(service.toggle('existing',true,'2026-10-17T00:00:00.000Z'),e=>e.getStatus()===400);
  available=true;await assert.rejects(service.toggle('existing'),e=>e.getStatus()===400);
- assert.equal((await service.toggle('existing',true)).actif,true);
+ assert.equal((await service.toggle('existing',true,'2026-10-17T00:00:00.000Z')).actif,true);
  assert.ok(row.animationReviewedAt instanceof Date);
  await service.attachSource('existing','1');assert.equal(row.actif,false);assert.equal(row.animationReviewedAt,null);
 });
@@ -102,5 +102,61 @@ test('publication refuses a stale review when exercise changed during request',a
    if(where.updatedAt) throw {code:'P2025'};
    return {...original,...data};
  }}},{lookup:()=>({animationUrl:'/1.gif',hasAnimation:true,license:'CC0-1.0'})});
- await assert.rejects(service.toggle('a',true),e=>e.getStatus()===409);
+ await assert.rejects(service.toggle('a',true,'2026-10-17T00:00:00.000Z'),e=>e.getStatus()===409);
+});
+
+test('blank optional manual fields clear nullable values without rejecting draft creation',async()=>{
+ const service=new ExercisesService({gymbroExercise:{create:async({data})=>data}});
+ const created=await service.create({nomFr:'Squat',groupeMusculaire:'legs',musclesPrimairesJson:'[]',equipementRequis:'none',photoExerciceUrl:'',photoMuscleUrl:'',descriptionFr:''});
+ assert.equal(created.photoExerciceUrl,null);assert.equal(created.photoMuscleUrl,null);assert.equal(created.descriptionFr,null);
+});
+
+test('nested user programs, previews, matching and sessions hide linked drafts and enrich published exercises without changing IDs/order',async()=>{
+ const {ProgramsService}=require('../programs/programs.service.ts');const {SessionsService}=require('../sessions/sessions.service.ts');const {MatchingService}=require('../matching/matching.service.ts');
+ const links=[{id:'link-draft',ordre:1,exercise:{id:'draft',actif:false}},{id:'link-live',ordre:2,exercise:{id:'live',actif:true,mediaSource:'flow',mediaSourceId:'1',mediaSourceRevision:'rev'}}];
+ const program={id:'program',phases:[{weeks:[{sessions:[{id:'session-plan',exercises:links}]}]}]};
+ const session={id:'user-session',programSession:{id:'session-plan',exercises:links}};
+ const prisma={gymbroProgram:{findUnique:async()=>program},gymbroUserSession:{findFirst:async()=>session},gymbroUserProfile:{findUnique:async()=>({matchingStatus:'MATCHED',matchingProgramId:'program'})}};
+ const exercises=new ExercisesService(prisma,{lookup:()=>({animationUrl:'/1.gif',posterUrl:'/1.png',hasAnimation:true,license:'CC0-1.0'})});
+ for(const method of ['findOne','preview']) {
+  const result=await new ProgramsService(prisma,exercises)[method]('program');
+  const output=result.phases[0].weeks[0].sessions[0].exercises;
+  assert.deepEqual(output.map(l=>l.id),['link-live']);assert.equal(output[0].ordre,2);assert.equal(output[0].exercise.animationUrl,'/1.gif');
+ }
+ for(const method of ['findOne','today']) {
+  const result=await new SessionsService(prisma,exercises)[method]('user','session');
+  assert.deepEqual(result.programSession.exercises.map(l=>l.id),['link-live']);assert.equal(result.programSession.exercises[0].exercise.animationUrl,'/1.gif');
+ }
+ const matched=await new MatchingService(prisma,exercises).getResult('user');assert.deepEqual(matched.program.phases[0].weeks[0].sessions[0].exercises.map(l=>l.id),['link-live']);
+ assert.equal(links.length,2);assert.equal(links[0].exercise.actif,false);
+});
+
+test('activation review must match the version the administrator actually saw',async()=>{
+ const row={id:'a',actif:false,updatedAt:new Date('2026-10-17T01:00:00Z'),mediaSource:'flow',mediaSourceId:'1',mediaSourceRevision:'rev'};
+ const service=new ExercisesService({gymbroExercise:{findUnique:async()=>row,update:async({data})=>({...row,...data})}},{lookup:()=>({animationUrl:'/1.gif',hasAnimation:true,license:'CC0-1.0'})});
+ for(const version of [undefined,'2026-10-17T00:00:00.000Z','bad-date']) await assert.rejects(service.toggle('a',true,version),e=>e.getStatus()===409);
+ assert.equal((await service.toggle('a',true,'2026-10-17T01:00:00.000Z')).actif,true);
+});
+
+test('MinIO catalog computes immutable HTTPS URLs from indexed pairs without local binaries',()=>{
+ const {ExerciseCatalogService}=require('./exercise-catalog.service.ts');const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'exercise-minio-'));
+ try {
+  const record={sourceId:'0001',nameOriginal:'Squat',instructionsFr:[],groupeMusculaire:'legs',musclesPrimaires:[],musclesSecondaires:[],equipementRequis:'none',hasAnimation:true,license:'CC0-1.0'};
+  fs.writeFileSync(path.join(dir,'catalog.json'),JSON.stringify({version:1,source:'flow',revision:'rev',dataRevision:'data',media:{storage:'minio',baseUrl:'https://objects.example.test/gympass/exercises',files:['0001.gif','0001.png']},exercises:[record,{...record,sourceId:'0002'}]}));
+  const catalog=new ExerciseCatalogService({get:key=>key==='EXERCISE_CATALOG_DIR'?dir:undefined});
+  const result=catalog.browse({});assert.equal(result.stats.animated,1);assert.equal(result.items[0].animationUrl,'https://objects.example.test/gympass/exercises/flow/rev/0001.gif');assert.equal(result.items[1].animationUrl,null);
+  assert.equal(catalog.media('rev','0001.gif').url,'https://objects.example.test/gympass/exercises/flow/rev/0001.gif');
+  assert.throws(()=>catalog.media('rev','0002.gif'),e=>e.getStatus()===404);
+ } finally {fs.rmSync(dir,{recursive:true,force:true});}
+});
+
+test('starting a session omits draft links before proposed-load calculation',async()=>{
+ const {SessionsService}=require('../sessions/sessions.service.ts');
+ const links=[{id:'draft-link',exercise:{id:'draft',actif:false}},{id:'live-link',chargeDepart:20,exercise:{id:'live',actif:true}}];
+ const queried=[];
+ const prisma={gymbroUserProgram:{findFirst:async()=>({id:'enrollment'})},gymbroUserSession:{findFirst:async()=>null,create:async()=>({id:'new-session',programSession:{id:'plan',exercises:links}})},gymbroUserSet:{findFirst:async({where})=>{queried.push(where.sessionExerciseId);return null;}}};
+ const exercises=new ExercisesService(prisma,{lookup:()=>null});
+ const result=await new SessionsService(prisma,exercises).start('user',{userProgramId:'enrollment',programSessionId:'plan'});
+ assert.deepEqual(queried,['live-link']);assert.deepEqual(result.programSession.exercises.map(l=>l.id),['live-link']);assert.equal(result.programSession.exercises[0].chargeProposee,20);assert.equal(links.length,2);
 });

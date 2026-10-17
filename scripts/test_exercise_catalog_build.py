@@ -1,6 +1,9 @@
 import importlib.util
 import pathlib
 import unittest
+import sys
+
+sys.dont_write_bytecode = True
 
 spec = importlib.util.spec_from_file_location('catalog_build', pathlib.Path(__file__).with_name('exercise_catalog_build.py'))
 builder = importlib.util.module_from_spec(spec)

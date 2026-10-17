@@ -1,3 +1,4 @@
+import { ExercisesService } from '../exercises/exercises.service';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProgramDto } from './dto/create-program.dto';
@@ -26,7 +27,7 @@ const FULL_PROGRAM_INCLUDE = {
 
 @Injectable()
 export class ProgramsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly exercises: ExercisesService) {}
 
   async findAll(actif?: boolean) {
     return this.prisma.gymbroProgram.findMany({
@@ -41,7 +42,7 @@ export class ProgramsService {
       include: FULL_PROGRAM_INCLUDE,
     });
     if (!program) throw new NotFoundException('Programme introuvable');
-    return program;
+    return this.exercises.publishedProgram(program);
   }
 
   // Aperçu limité — semaine 1 seulement, sans les charges
@@ -59,7 +60,7 @@ export class ProgramsService {
                   include: {
                     exercises: {
                       take: 3,
-                      include: { exercise: { select: { nomFr: true, groupeMusculaire: true } } },
+                      include: { exercise: { select: { nomFr: true, groupeMusculaire: true, actif: true, mediaSource: true, mediaSourceId: true, mediaSourceRevision: true } } },
                     },
                   },
                 },
@@ -70,7 +71,7 @@ export class ProgramsService {
       },
     });
     if (!program) throw new NotFoundException('Programme introuvable');
-    return program;
+    return this.exercises.publishedProgram(program);
   }
 
   async create(dto: CreateProgramDto) {

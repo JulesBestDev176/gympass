@@ -1,4 +1,4 @@
-﻿ALTER TABLE "gymbro_exercises"
+ALTER TABLE "gymbro_exercises"
   ADD COLUMN "mediaSource" TEXT,
   ADD COLUMN "mediaSourceId" TEXT,
   ADD COLUMN "mediaSourceRevision" TEXT,

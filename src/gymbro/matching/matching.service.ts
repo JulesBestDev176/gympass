@@ -1,10 +1,11 @@
+import { ExercisesService } from '../exercises/exercises.service';
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { matchPrograms, UserProfileInput } from './matching.engine';
 
 @Injectable()
 export class MatchingService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly exercises: ExercisesService) {}
 
   async run(userId: string) {
     const profile = await this.prisma.gymbroUserProfile.findUnique({ where: { userId } });
@@ -84,7 +85,7 @@ export class MatchingService {
                     exercises: {
                       take: 3,
                       orderBy: { ordre: 'asc' },
-                      include: { exercise: { select: { nomFr: true, groupeMusculaire: true, photoExerciceUrl: true } } },
+                      include: { exercise: { select: { nomFr: true, groupeMusculaire: true, photoExerciceUrl: true, actif: true, mediaSource: true, mediaSourceId: true, mediaSourceRevision: true } } },
                     },
                   },
                 },
@@ -95,6 +96,6 @@ export class MatchingService {
       },
     });
 
-    return { matched: true, program };
+    return { matched: true, program: this.exercises.publishedProgram(program) };
   }
 }

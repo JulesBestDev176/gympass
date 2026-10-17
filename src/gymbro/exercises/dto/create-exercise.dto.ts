@@ -24,4 +24,5 @@ export class ImportExerciseDto extends AttachSourceDto {
 }
 export class ReviewExerciseDto {
   @IsOptional() @IsBoolean() reviewed?: boolean;
+  @IsOptional() @IsString() @MaxLength(40) expectedUpdatedAt?: string;
 }

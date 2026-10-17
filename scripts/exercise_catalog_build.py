@@ -122,7 +122,7 @@ def build(args):
             doc.close()
         frames[0].save(media / f'{ident}.png', optimize=True)
         sequence = [frames[i] for i in (0, 1, 2, 1)]
-        sequence[0].save(media / f'{ident}.gif', save_all=True, append_images=sequence[1:], duration=180, loop=0, optimize=False, disposal=2)
+        sequence[0].save(media / f'{ident}.gif', save_all=True, append_images=sequence[1:], duration=750, loop=0, optimize=False, disposal=2)
         for suffix in ('gif', 'png'):
             path = media / f'{ident}.{suffix}'
             assets[str(path.relative_to(output)).replace('\\', '/')] = hashlib.sha256(path.read_bytes()).hexdigest()
@@ -131,7 +131,7 @@ def build(args):
 
     for name in ('LICENSE', 'NOTICE.md', 'ARTWORK-LICENSE'):
         (output / ('FLOW-' + name)).write_bytes(read(name))
-    for name in ('LICENSE', 'NOTICE'):
+    for name in ('LICENSE', 'NOTICE.md'):
         try:
             data = fetch(f'https://raw.githubusercontent.com/{HASAN_REPO}/{HASAN_REV}/{name}', cache / ('HASAN-' + name), 100_000)
             (output / ('HASAN-' + name)).write_bytes(data)
@@ -153,7 +153,7 @@ Original prompt evidence exists for only 13 of 1,257 animations; upstream does n
 promise independently established clean-room origin or third-party clearance.
 Review each animation and French instruction before publication.
 
-256px GIF/PNG, dark background, original 0/1/2/1 sequence at 180ms.
+256px GIF/PNG, dark background, original 0/1/2/1 sequence slowed to 750ms per frame.
 Timing illustrates motion and is not a recommended exercise tempo.
 All upstream frame SHA-256 hashes were checked before rendering.
 Generated checksums cover every served asset. Runtime has no GitHub dependency.
@@ -165,6 +165,6 @@ Rebuild with scripts/exercise_catalog_build.py (PyMuPDF + Pillow, build only).
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--cache', default=str(ROOT.parent / '.tmp/exercise-catalog-build'))
-    parser.add_argument('--output', default=str(ROOT / 'assets/exercise-catalog'))
+    parser.add_argument('--output', default=str(ROOT.parent / '.tmp/exercise-catalog-build/rendered'))
     parser.add_argument('--python-deps')
     build(parser.parse_args())

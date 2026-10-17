@@ -1,10 +1,11 @@
+import { ExercisesService } from '../exercises/exercises.service';
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { StartSessionDto, RecordSetDto, CompleteSessionDto } from './dto/session.dto';
 
 @Injectable()
 export class SessionsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly exercises: ExercisesService) {}
 
   // ── Démarrer une séance ───────────────────────────────────────────────────
 
@@ -44,13 +45,13 @@ export class SessionsService {
 
     // Pré-calculer les charges proposées pour chaque exercice
     const exercisesWithProposedLoad = await Promise.all(
-      session.programSession.exercises.map(async (se) => {
+      session.programSession.exercises.filter(se => se.exercise.actif).map(async (se) => {
         const chargeProposee = await this.calculateProposedLoad(userId, se);
         return { ...se, chargeProposee };
       }),
     );
 
-    return { ...session, programSession: { ...session.programSession, exercises: exercisesWithProposedLoad } };
+    return { ...session, programSession: this.exercises.publishedSession({ ...session.programSession, exercises: exercisesWithProposedLoad }) };
   }
 
   // Calcule la charge proposée basée sur l'historique
@@ -180,12 +181,12 @@ export class SessionsService {
       },
     });
     if (!session) throw new NotFoundException('Séance introuvable');
-    return session;
+    return { ...session, programSession: this.exercises.publishedSession(session.programSession) };
   }
 
   // Séance du jour (prochaine non complétée)
   async today(userId: string, userProgramId: string) {
-    return this.prisma.gymbroUserSession.findFirst({
+    const session = await this.prisma.gymbroUserSession.findFirst({
       where: {
         userProgramId,
         userProgram: { userId },
@@ -203,6 +204,7 @@ export class SessionsService {
         },
       },
     });
+    return session ? { ...session, programSession: this.exercises.publishedSession(session.programSession) } : null;
   }
 
   async reportDifficulty(userId: string, sessionId: string, notes: string) {

@@ -11,3 +11,7 @@ yarn-error.log*
 .DS_Store
 *.tsbuildinfo
 coverage/
+# Generated exercise binaries live in MinIO; bundle metadata only.
+assets/exercise-catalog/flow/
+__pycache__/
+*.pyc

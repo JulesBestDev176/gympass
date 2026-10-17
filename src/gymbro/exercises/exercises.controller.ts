@@ -13,6 +13,7 @@ export class ExercisesController {
   @Get('media/flow/:revision/:file')
   media(@Param('revision') revision: string, @Param('file') file: string, @Res() res: any) {
     const media = this.catalog.media(revision, file);
+    if (media.url) return res.redirect(302, media.url);
     res.setHeader('Content-Type', media.contentType);
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -45,7 +46,7 @@ export class ExercisesController {
 
   @Patch('admin/:id/toggle')
   @UseGuards(GymDashGuard)
-  toggle(@Param('id') id: string, @Body() dto: ReviewExerciseDto) { return this.service.toggle(id, dto.reviewed); }
+  toggle(@Param('id') id: string, @Body() dto: ReviewExerciseDto) { return this.service.toggle(id, dto.reviewed, dto.expectedUpdatedAt); }
 
   @Patch('admin/:id')
   @UseGuards(GymDashGuard)

@@ -33,6 +33,7 @@ export class ExercisesService {
       photoExerciceUrl: 2000, photoMuscleUrl: 2000 };
     for (const [key, max] of Object.entries(limits)) {
       if (dto[key] === undefined) continue;
+      if (['descriptionFr', 'difficulte', 'photoExerciceUrl', 'photoMuscleUrl'].includes(key) && (dto[key] === null || (typeof dto[key] === 'string' && !dto[key].trim()))) { data[key] = null; continue; }
       if (typeof dto[key] !== 'string' || dto[key].length > max || !dto[key].trim()) throw new BadRequestException(`Champ invalide: ${key}`);
       data[key] = dto[key].trim();
     }
@@ -61,9 +62,12 @@ export class ExercisesService {
     return this.enrich(await this.prisma.gymbroExercise.update({ where: { id }, data }));
   }
 
-  async toggle(id: string, reviewed?: boolean) {
+  async toggle(id: string, reviewed?: boolean, expectedUpdatedAt?: string) {
     const ex = await this.findOne(id, false);
     if (!ex.actif && (reviewed !== true || !ex.animationUrl)) throw new BadRequestException('Une animation disponible et une confirmation de vérification sont requises');
+    if (!ex.actif && (!expectedUpdatedAt || new Date(expectedUpdatedAt).getTime() !== new Date(ex.updatedAt).getTime())) {
+      throw new ConflictException('Exercice modifié entre-temps : rechargez et vérifiez à nouveau');
+    }
     try {
       return this.enrich(await this.prisma.gymbroExercise.update({
         where: { id, updatedAt: ex.updatedAt, actif: ex.actif },
@@ -73,6 +77,21 @@ export class ExercisesService {
       if (error.code === 'P2025') throw new ConflictException('Exercice modifié entre-temps : rechargez et vérifiez à nouveau');
       throw error;
     }
+  }
+
+  publishedSession(session: any) {
+    if (!session) return session;
+    return { ...session, exercises: (session.exercises || []).filter(link => link.exercise?.actif === true)
+      .map(link => ({ ...link, exercise: this.enrich(link.exercise) })) };
+  }
+
+  publishedProgram(program: any) {
+    if (!program) return program;
+    return { ...program, phases: (program.phases || []).map(phase => ({ ...phase,
+      weeks: (phase.weeks || []).map(week => ({ ...week,
+        sessions: (week.sessions || []).map(session => this.publishedSession(session)),
+      })),
+    })) };
   }
 
   async browseCatalog(query: Record<string, string>) {

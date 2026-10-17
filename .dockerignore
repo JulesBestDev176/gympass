@@ -9,3 +9,4 @@ coverage/
 .github/
 *.md
 !assets/exercise-catalog/*.md
+assets/exercise-catalog/flow/

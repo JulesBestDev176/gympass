@@ -8,7 +8,8 @@ interface CatalogRecord {
   musclesPrimaires: string[]; musclesSecondaires: string[]; equipementRequis: string;
   hasAnimation: boolean; license: 'CC0-1.0';
 }
-interface Manifest { version: number; source: string; revision: string; dataRevision: string; exercises: CatalogRecord[]; }
+interface Manifest { version: number; source: string; revision: string; dataRevision: string; exercises: CatalogRecord[];
+  media?: { storage: 'minio'; baseUrl: string; files: string[] }; }
 const token = /^[A-Za-z0-9_-]{1,160}$/;
 
 @Injectable()
@@ -27,6 +28,12 @@ export class ExerciseCatalogService {
     try {
       const manifest = JSON.parse(readFileSync(resolve(this.directory, 'catalog.json'), 'utf8')) as Manifest;
       if (manifest.version !== 1 || manifest.source !== 'flow' || !token.test(manifest.revision) || !Array.isArray(manifest.exercises)) throw Error('Invalid manifest');
+      if (manifest.media) {
+        const url = new URL(manifest.media.baseUrl);
+        if (manifest.media.storage !== 'minio' || url.protocol !== 'https:' || url.username || url.password || url.search || url.hash ||
+          !Array.isArray(manifest.media.files) || !manifest.media.files.every(file => /^[A-Za-z0-9_-]{1,160}\.(gif|png)$/.test(file))) throw Error('Invalid media index');
+        manifest.media.baseUrl = url.toString().replace(/\/+$/, '');
+      }
       const seen = new Set<string>();
       for (const item of manifest.exercises) {
         if (!token.test(item.sourceId) || seen.has(item.sourceId) || item.license !== 'CC0-1.0' || typeof item.hasAnimation !== 'boolean' ||
@@ -48,9 +55,12 @@ export class ExerciseCatalogService {
   }
 
   private item(record: CatalogRecord) {
-    const { revision } = this.load();
-    const available = record.hasAnimation && !!this.filePath(revision, `${record.sourceId}.gif`) && !!this.filePath(revision, `${record.sourceId}.png`);
-    const base = `${this.publicBase}/gymbro/exercises/media/flow/${revision}/${record.sourceId}`;
+    const { revision, media } = this.load();
+    const available = record.hasAnimation && (media
+      ? media.files.includes(`${record.sourceId}.gif`) && media.files.includes(`${record.sourceId}.png`)
+      : !!this.filePath(revision, `${record.sourceId}.gif`) && !!this.filePath(revision, `${record.sourceId}.png`));
+    const base = media ? `${media.baseUrl}/flow/${revision}/${record.sourceId}`
+      : `${this.publicBase}/gymbro/exercises/media/flow/${revision}/${record.sourceId}`;
     return { ...record, source: 'flow' as const, sourceRevision: revision, hasAnimation: available,
       animationUrl: available ? `${base}.gif` : null, posterUrl: available ? `${base}.png` : null, importedExerciseId: null as string | null };
   }
@@ -93,8 +103,10 @@ export class ExerciseCatalogService {
     const match = /^([A-Za-z0-9_-]{1,160})\.(gif|png)$/.exec(file);
     if (!match || !token.test(revision) || this.load().revision !== revision) throw new NotFoundException('Média introuvable');
     const item = this.requireItem(match[1]);
+    if (this.load().media && item.hasAnimation) return { url: match[2] === 'gif' ? item.animationUrl : item.posterUrl, path: undefined,
+      contentType: match[2] === 'gif' ? 'image/gif' : 'image/png' };
     const path = item.hasAnimation && this.filePath(revision, file);
     if (!path) throw new NotFoundException('Média introuvable');
-    return { path, contentType: match[2] === 'gif' ? 'image/gif' : 'image/png' };
+    return { path, url: undefined, contentType: match[2] === 'gif' ? 'image/gif' : 'image/png' };
   }
 }
