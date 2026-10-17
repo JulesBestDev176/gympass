@@ -73,6 +73,21 @@ export class GymController {
     return this.gymService.setGymbroUserRole(userId, role);
   }
 
+  @UseGuards(GymDashGuard)
+  @Patch('gymbro-user/:userId/toggle-actif')
+  toggleGymbroActif(@Param('userId') userId: string) {
+    return this.gymService.toggleGymbroUserActif(userId);
+  }
+
+  @UseGuards(GymDashGuard)
+  @Patch(':gymId/members/:memberId/carte/toggle')
+  toggleMemberCarte(
+    @Param('gymId') gymId: string,
+    @Param('memberId') memberId: string,
+  ) {
+    return this.membersService.toggleCarte(gymId, memberId);
+  }
+
   // ── JWT authentifié ──────────────────────────────────────────────────────────
   @UseGuards(JwtAuthGuard)
   @Get()

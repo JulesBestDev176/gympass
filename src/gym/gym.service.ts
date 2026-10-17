@@ -112,4 +112,15 @@ export class GymService {
     const { passwordHash, refreshTokenHash, ...safe } = updated;
     return safe;
   }
+
+  async toggleGymbroUserActif(id: string) {
+    const user = await this.prisma.gymbroUser.findUnique({ where: { id } });
+    if (!user) throw new NotFoundException('Utilisateur GymBro introuvable');
+    const updated = await this.prisma.gymbroUser.update({
+      where: { id },
+      data: { actif: !user.actif },
+    });
+    const { passwordHash, refreshTokenHash, ...safe } = updated;
+    return safe;
+  }
 }
