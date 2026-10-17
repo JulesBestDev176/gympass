@@ -110,3 +110,25 @@ test('cancelled PDF preserves original total and reason while showing no amount 
  assert.ok(content.includes('Aucun montant dû'),content);
  assert.ok(!content.includes('Solde : 20 000 FCFA'),content);
 });
+
+test('real Nest HTTP serves private PDF bytes unchanged through global TransformInterceptor', async t=>{
+ require('reflect-metadata');
+ const {Test}=require('@nestjs/testing');const {ConfigModule}=require('@nestjs/config');const {PassportModule}=require('@nestjs/passport');
+ const {JwtStrategy}=require('../auth/strategies/jwt.strategy.ts');const {PrismaService}=require('../prisma/prisma.service.ts');const {TransformInterceptor}=require('../common/interceptors/transform.interceptor.ts');
+ const {PlatformBillingModule}=require('./platform-billing.module.ts');const {BillingAccessModule}=require('./access.module.ts');const {BillingAccessService}=require('./access.service.ts');const {renderInvoice}=require('./invoice-pdf.ts');const jwt=require('jsonwebtoken');
+ const users={platform:{id:'pdf-platform-fixture',email:'pdf-platform@example.invalid',role:'ADMIN',gymId:'pdf-gym-fixture',actif:true},owner:{id:'pdf-owner-fixture',email:'pdf-owner@example.invalid',role:'ADMIN',gymId:'pdf-gym-fixture',actif:true}};
+ const config={JWT_SECRET:'pdf-test-only-jwt-secret',GYMDASH_SECRET:'pdf-test-only-server-secret',GYMDASH_BILLING_ADMIN_EMAILS:users.platform.email};
+ const bytes=await renderInvoice({number:'GP-2026-000001',issuedAt:'2026-10-17T00:00:00.000Z',issuer:{name:'Fictitious issuer'},customer:{name:'Fictitious customer'},months:1,unitPriceFcfa:10000,totalFcfa:10000,paidFcfa:0,status:'UNPAID',payments:[]},'Fictitious HTTP fixture');
+ const module=await Test.createTestingModule({imports:[ConfigModule.forRoot({isGlobal:true,ignoreEnvFile:true,load:[()=>config]}),PassportModule,PlatformBillingModule,BillingAccessModule],providers:[JwtStrategy]})
+  .overrideProvider(PrismaService).useValue({user:{findUnique:async({where})=>Object.values(users).find(u=>u.id===where.id)||null}})
+  .overrideProvider(PlatformBillingService).useValue({invoicePdf:async()=>bytes})
+  .overrideProvider(BillingAccessService).useValue({assertAllowed:async()=>{}}).compile();
+ const app=module.createNestApplication();app.setGlobalPrefix('api/v1');app.useGlobalInterceptors(new TransformInterceptor());await app.listen(0,'127.0.0.1');t.after(()=>app.close());
+ const origin=await app.getUrl();const path='/api/v1/platform-billing/invoices/fictitious-invoice/pdf';const token=u=>jwt.sign({sub:u.id,email:u.email},config.JWT_SECRET,{expiresIn:'5m'});
+ const headers=u=>({Authorization:'Bearer '+token(u),'x-gymdash-secret':config.GYMDASH_SECRET});
+ assert.equal((await fetch(origin+path)).status,401);
+ assert.equal((await fetch(origin+path,{headers:headers(users.owner)})).status,403);
+ const response=await fetch(origin+path,{headers:headers(users.platform)});
+ assert.equal(response.status,200);assert.equal(response.headers.get('content-type'),'application/pdf');assert.equal(response.headers.get('cache-control'),'private, no-store');assert.match(response.headers.get('content-disposition'),/^attachment;/);
+ const actual=Buffer.from(await response.arrayBuffer());assert.equal(actual.subarray(0,4).toString(),'%PDF');assert.deepEqual(actual,bytes);
+});
