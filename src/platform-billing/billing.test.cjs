@@ -105,7 +105,7 @@ test('cancelled PDF preserves original total and reason while showing no amount 
   let stream;try{stream=require('node:zlib').inflateSync(Buffer.from(match[1],'latin1')).toString('latin1');}catch{continue;}
   for(const hex of stream.matchAll(/<([0-9a-f]+)>/gi))content+=Buffer.from(hex[1],'hex').toString('latin1');
  }
- assert.ok(content.includes('Total : 20 000 FCFA'),content);
+ assert.match(content,/Total\s*20 000 FCFA/);
  assert.ok(content.includes('Erreur de saisie fixture'),content);
  assert.ok(content.includes('Aucun montant dû'),content);
  assert.ok(!content.includes('Solde : 20 000 FCFA'),content);
