@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Patch, Param, Body, Query, UseGuards } from '@nestjs/common';
-import { GymService, CreateGymDto } from './gym.service';
+import { GymService, CreateGymDto, AdminCreateGymbroUserDto } from './gym.service';
 import { UpdateGymDto, UpdatePricingDto, UpdateStatutDto } from './dto/update-gym.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GymDashGuard } from '../auth/guards/gymdash.guard';
@@ -59,6 +59,12 @@ export class GymController {
   @Get('all-users')
   findAllUsers() {
     return this.gymService.findAllUsers();
+  }
+
+  @UseGuards(GymDashGuard)
+  @Post('gymbro-user')
+  createGymbroUser(@Body() dto: AdminCreateGymbroUserDto) {
+    return this.gymService.createGymbroUser(dto);
   }
 
   @UseGuards(GymDashGuard)

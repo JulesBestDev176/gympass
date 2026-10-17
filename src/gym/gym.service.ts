@@ -1,7 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { IsString, IsInt, IsOptional, Min, IsNotEmpty } from 'class-validator';
+import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateGymDto, UpdatePricingDto, UpdateStatutDto } from './dto/update-gym.dto';
+
+export class AdminCreateGymbroUserDto {
+  @IsString() @IsNotEmpty() prenom: string;
+  @IsString() @IsNotEmpty() nom: string;
+  @IsString() @IsNotEmpty() telephone: string;
+  @IsString() @IsNotEmpty() password: string;
+  @IsOptional() @IsString() role?: 'USER' | 'COACH';
+}
 
 export class CreateGymDto {
   @IsString() @IsNotEmpty() nom: string;
@@ -146,6 +155,29 @@ export class GymService {
         user: { select: { id: true, nom: true, prenom: true } },
       },
     });
+  }
+
+  async createGymbroUser(dto: AdminCreateGymbroUserDto) {
+    const phone = dto.telephone.trim();
+    const systemEmail = `${phone.replace(/\D/g, '')}@gymbro.sn`;
+
+    const existing = await this.prisma.gymbroUser.findUnique({ where: { email: systemEmail } });
+    if (existing) throw new ConflictException('Un compte avec ce numéro existe déjà');
+
+    const passwordHash = await bcrypt.hash(dto.password, 10);
+    const user = await this.prisma.gymbroUser.create({
+      data: {
+        email: systemEmail,
+        passwordHash,
+        prenom: dto.prenom.trim(),
+        nom: dto.nom.trim(),
+        telephone: phone,
+        role: (dto.role ?? 'USER') as any,
+        profile: { create: {} },
+      },
+    });
+    const { passwordHash: _, refreshTokenHash: __, ...safe } = user;
+    return safe;
   }
 
   async findGymbroUser(id: string) {
