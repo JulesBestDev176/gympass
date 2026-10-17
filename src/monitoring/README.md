@@ -15,10 +15,12 @@ URLs disable collection with a generic warning. Never expose these values in a b
 Requests are timed with the monotonic high-resolution clock from middleware entry
 until the response `finish` event (milliseconds). Completed 4xx and 5xx responses
 are included. Connections that close without `finish` are not measured. Only the
-resolved Express `req.route.path` template is kept, with `<unmatched>` for unresolved
-or unsupported routes. Bodies, headers, path parameters, query strings, raw URLs
+resolved Express `req.route.path` template is kept, with `/_unmatched` for unresolved
+or unsupported routes. Templates must match the collector's safe path character
+set and must not contain raw numeric or UUID identifier segments. Bodies, headers, path parameters, query strings, raw URLs
 and IP addresses are never read or exported. Methods outside the standard HTTP
-method set collapse to `<other>`. Collection routes `/ingest`, `/metrics` and
+method set (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS) collapse to `OTHER`,
+including CONNECT and TRACE. Collection routes `/ingest`, `/metrics` and
 `*/monitoring/{ingest,metrics}` are excluded.
 
 Every 30 seconds, the service batches UTC-minute, method and route aggregates as
@@ -31,11 +33,13 @@ followed by overflow. Boundary values fall in the bucket ending at that value.
 Requests never await the network. At most one flush runs concurrently; each HTTP
 attempt times out after 5 seconds and redirects are rejected. Failed batches retain
 the original UUID and contents, allowing the collector to deduplicate retries.
-Successful batches are removed before subsequent sends. Requests arriving during a
+An HTTP 400 permanently discards the invalid batch, increments dropped counters
+and emits a generic warning; it cannot block later batches. Authentication failures
+(401) and server failures retain the batch for retry. Successful batches are removed before subsequent sends. Requests arriving during a
 flush accumulate separately. Successful recovery drains pending batches in order.
 
 Memory is bounded to 500 active minute/method/route series and 10 pending batches
-(at most 500 points each). Route templates are capped at 256 characters. New series
+(at most 500 points each). Route templates are capped at 240 characters. New series
 over capacity are dropped; if the retry queue is full at rotation, the newest
 active batch is dropped. Warnings report cumulative `droppedRequests` and
 `droppedPoints`, without route/request content. For active capacity overflow, each
@@ -51,5 +55,7 @@ node --test src/monitoring/telemetry.test.cjs
 npm run build
 ```
 
-Tests use Node's built-in runner, ts-node and a local HTTP collector. They neither
+Tests use Node's built-in runner, ts-node and a local HTTP collector. The integration
+test also uses `python` and the sibling `monitoring-agent/collector.py` validator to
+check generated batches against the actual ingestion contract. They neither
 contact production nor send notifications. No schema changes or migrations are needed.

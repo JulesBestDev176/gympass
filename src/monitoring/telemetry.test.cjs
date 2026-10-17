@@ -3,6 +3,8 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { EventEmitter } = require('node:events');
 const { createServer } = require('node:http');
+const { spawnSync } = require('node:child_process');
+const { resolve } = require('node:path');
 const { RequestMetrics, requestTelemetry } = require('./request-metrics.ts');
   async function collector(t, respond = () => 204) {
     const requests = [];
@@ -74,7 +76,7 @@ const { RequestMetrics, requestTelemetry } = require('./request-metrics.ts');
     metrics.record(observation({ route: '/metrics' }));
     await metrics.flush();
     assert.equal(sink.requests[0].body.points.length, 1);
-    assert.equal(sink.requests[0].body.points[0].route, '<unmatched>');
+    assert.equal(sink.requests[0].body.points[0].route, '/_unmatched');
     assert.equal(sink.requests[0].body.points[0].count, 2);
   });
 
@@ -103,11 +105,69 @@ const { RequestMetrics, requestTelemetry } = require('./request-metrics.ts');
     const points = sink.requests[0].body.points;
     assert.equal(points.length, 2);
     const matched = points.find(point => point.route === '/api/v1/members/:id');
-    const unmatched = points.find(point => point.route === '<unmatched>');
+    const unmatched = points.find(point => point.route === '/_unmatched');
     assert.equal(matched.count, 2);
     assert.equal(unmatched.count, 2);
     assert.equal(unmatched.errors4xx, 2);
     assert.equal(/private-id|secret-query/.test(JSON.stringify(points)), false);
+  });
+
+  test('unsafe templates and unsupported methods produce a batch accepted by the actual Python collector', async t => {
+    const sink = await collector(t);
+    const metrics = new RequestMetrics({ url: sink.url, token: 'test-token' });
+    const routes = [undefined, '/members/123', '/members/01234567-1234-5678-abcd-0123456789ab',
+      '/private?token=secret', '/' + 'x'.repeat(240), 'no-slash', '/weird[route]'];
+    routes.forEach((route, i) => metrics.record(observation({ route, method: ['TRACE', 'CONNECT', 'CUSTOM'][i % 3] })));
+    metrics.record(observation({ route: '/members/:id' }));
+    metrics.record(observation({ route: '/' + 'x'.repeat(239) }));
+    await metrics.flush();
+    const batch = sink.requests[0].body;
+    assert.equal(batch.points.length, 3);
+    assert.equal(batch.points[0].method, 'OTHER');
+    assert.equal(batch.points[0].route, '/_unmatched');
+    assert.equal(batch.points[0].count, 7);
+    assert.equal(batch.points[2].route.length, 240);
+    const validation = spawnSync('python', ['-c', [
+      'import json, sys',
+      'from datetime import datetime',
+      'from collector import validate_batch',
+      'data = json.load(sys.stdin)',
+      'now = datetime.fromisoformat(data["points"][0]["minute"].replace("Z", "+00:00")).timestamp() + 30',
+      'validate_batch(data, now=now)',
+      'print("accepted")',
+    ].join('\n')], { cwd: resolve(__dirname, '../../../monitoring-agent'), input: JSON.stringify(batch), encoding: 'utf8' });
+    assert.equal(validation.status, 0, validation.stderr || validation.error?.message);
+    assert.equal(validation.stdout.trim(), 'accepted');
+  });
+
+  test('permanent 400 rejection drops the batch with counters and permits subsequent batches', async t => {
+    const sink = await collector(t, n => n === 1 ? 400 : 204);
+    const warnings = [];
+    const metrics = new RequestMetrics({ url: sink.url, token: 'test-token', warn: text => warnings.push(text) });
+    metrics.record(observation());
+    await metrics.flush();
+    await metrics.flush();
+    assert.equal(sink.requests.length, 1);
+    assert.equal(metrics.pendingBatches, 0);
+    assert.equal(metrics.droppedRequests, 1);
+    assert.equal(metrics.droppedPoints, 1);
+    assert.ok(warnings.some(text => text.includes('400') && text.includes('droppedRequests=1')));
+    assert.equal(warnings.some(text => text.includes('/members')), false);
+    metrics.record(observation());
+    await metrics.flush();
+    assert.equal(sink.requests.length, 2);
+    assert.notEqual(sink.requests[1].body.batchId, sink.requests[0].body.batchId);
+  });
+
+  test('401 rejection retains the original batch ID until authentication recovers', async t => {
+    const sink = await collector(t, n => n === 1 ? 401 : 204);
+    const metrics = new RequestMetrics({ url: sink.url, token: 'test-token' });
+    metrics.record(observation());
+    await metrics.flush();
+    assert.equal(metrics.pendingBatches, 1);
+    await metrics.flush();
+    assert.deepEqual(sink.requests[1].body, sink.requests[0].body);
+    assert.equal(metrics.droppedRequests, 0);
   });
 
   test('failed batches retry with identical IDs and content while new requests remain separate', async t => {

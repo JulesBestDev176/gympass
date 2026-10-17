@@ -1,7 +1,9 @@
 import { randomUUID } from 'node:crypto';
 
 const CEILINGS_MS = [5, 10, 25, 50, 100, 200, 300, 500, 750, 1000, 1500, 2000, 3000, 5000, 10000, 30000, 60000];
-const METHODS = new Set(['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS', 'CONNECT', 'TRACE']);
+const METHODS = new Set(['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS']);
+const SAFE_ROUTE = /^\/[A-Za-z0-9_/:.*{}()\-]*$/;
+const RAW_IDENTIFIER = /\/(?:\d+|[0-9a-fA-F]{8}-[0-9a-fA-F-]{27,})(?:\/|$)/;
 
 interface Point {
   minute: string;
@@ -82,10 +84,11 @@ export class RequestMetrics {
 
   record(observation: Observation): void {
     if (!this.enabled || !Number.isFinite(observation.durationMs) || observation.durationMs < 0) return;
-    const route = typeof observation.route === 'string' && observation.route.startsWith('/') && observation.route.length <= 256
-      ? observation.route : '<unmatched>';
+    const route = typeof observation.route === 'string' && observation.route.length <= 240
+      && SAFE_ROUTE.test(observation.route) && !RAW_IDENTIFIER.test(observation.route)
+      ? observation.route : '/_unmatched';
     if (route === '/ingest' || route === '/metrics' || /\/monitoring\/(ingest|metrics)$/.test(route)) return;
-    const method = METHODS.has(observation.method?.toUpperCase()) ? observation.method.toUpperCase() : '<other>';
+    const method = METHODS.has(observation.method?.toUpperCase()) ? observation.method.toUpperCase() : 'OTHER';
     const timestamp = (observation.time ?? new Date()).getTime();
     if (!Number.isFinite(timestamp)) return;
     const minute = new Date(Math.floor(timestamp / 60000) * 60000).toISOString();
@@ -139,6 +142,14 @@ export class RequestMetrics {
           });
           // Drain no response content into memory or logs.
           await response.body?.cancel();
+          if (response.status === 400) {
+            const rejected = this.queue.shift()!;
+            this.droppedRequests += rejected.points.reduce((total, point) => total + point.count, 0);
+            this.droppedPoints += rejected.points.length;
+            this.reportedDrops = this.droppedRequests;
+            this.warn(`Monitoring batch rejected (HTTP 400); discarded: droppedRequests=${this.droppedRequests}, droppedPoints=${this.droppedPoints}`);
+            continue;
+          }
           if (!response.ok) throw new Error('Collector rejected batch');
           this.queue.shift();
         } catch {
