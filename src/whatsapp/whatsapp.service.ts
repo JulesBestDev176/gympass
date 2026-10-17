@@ -43,10 +43,12 @@ export class WhatsappService {
       const session = this.sessionId ? sessions.find(s => s.id === this.sessionId || s._id === this.sessionId) : sessions.length === 1 ? sessions[0] : undefined;
       if (!session || typeof session.id !== 'string' || !session.id) return { status: 'failed' };
       if (String(session.status).toUpperCase() !== 'READY') return { status: 'disconnected' };
-      const { data } = await axios.post(`${this.baseUrl}/sessions/${encodeURIComponent(session.id)}/messages/text`, { chatId: `${phone}@c.us`, body: message }, options);
+      // Relayio forwards this JID unchanged to the Baileys socket.
+      const { data } = await axios.post(`${this.baseUrl}/sessions/${encodeURIComponent(session.id)}/messages/text`, { chatId: `${phone}@s.whatsapp.net`, body: message }, options);
       if (!data || typeof data !== 'object' || ['failed', 'error', 'undelivered'].includes(String(data.status).toLowerCase())) return { status: 'failed' };
       const messageId = typeof data.id === 'string' ? data.id : typeof data._id === 'string' ? data._id : undefined;
       if (!messageId) return { status: 'failed' };
+      this.logger.log('Message pris en charge par Relayio ; livraison non confirmée.');
       return { status: 'accepted', messageId };
     } catch {
       // Axios errors include request headers and message contents; never log them.

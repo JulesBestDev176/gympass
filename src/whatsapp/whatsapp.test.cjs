@@ -15,7 +15,7 @@ test('GymBro credentials use the configured READY session and x-api-key, with on
   });
   const post = mock.method(axios, 'post', async (url, body, options) => {
     assert.equal(url, 'https://relay.example/v1/sessions/session-a/messages/text');
-    assert.equal(body.chatId, '221770000000@c.us');
+    assert.equal(body.chatId, '221770000000@s.whatsapp.net');
     assert.match(body.body, /GymBro/);
     assert.match(body.body, /temp-pass/);
     assert.match(body.body, /Awa/);
