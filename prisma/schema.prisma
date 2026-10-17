@@ -310,9 +310,12 @@ model GymbroUser {
   refreshTokenHash  String?
   prenom            String
   nom               String
-  telephone         String?
+  telephone         String?     @unique
   role              GymbroRole  @default(USER)
   actif             Boolean     @default(true)
+  phoneVerified     Boolean     @default(false)
+  otpCode           String?
+  otpExpiresAt      DateTime?
   fcmToken          String?
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
@@ -402,7 +405,14 @@ model GymbroExercise {
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
 
+  mediaSource            String?
+  mediaSourceId          String?
+  mediaSourceRevision    String?
+  animationReviewedAt    DateTime?
+
   sessionExercises       GymbroSessionExercise[]
+
+  @@unique([mediaSource, mediaSourceId])
 
   @@map("gymbro_exercises")
 }

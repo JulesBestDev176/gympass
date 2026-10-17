@@ -63,6 +63,15 @@ export class WhatsappService {
       `📱 Téléphone : ${telephone}\n🔑 Mot de passe : ${password}\n\nBonne séance ! 💪`);
   }
 
+  async sendGymbroOtp(telephone: string, otp: string, prenom: string): Promise<WhatsappDelivery> {
+    return this.send(telephone,
+      `Bonjour ${prenom} ! 👋\n\n` +
+      `Ton code de confirmation GymBro :\n\n` +
+      `🔐 *${otp}*\n\n` +
+      `Ce code expire dans 10 minutes. Ne le partage pas.\n\n` +
+      `GymBro 💪`);
+  }
+
   // Envoi des identifiants à un nouveau gérant
   async sendCredentials(telephone: string, email: string, password: string, prenom: string): Promise<void> {
     const message =

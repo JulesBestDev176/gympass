@@ -7,7 +7,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { GymbroAuthService } from './gymbro-auth.service';
-import { GymbroRegisterDto } from './dto/register.dto';
+import { GymbroInitRegisterDto, GymbroConfirmOtpDto } from './dto/register.dto';
 import { GymbroLoginDto } from './dto/login.dto';
 import { GymbroJwtGuard } from './guards/gymbro-jwt.guard';
 
@@ -15,11 +15,25 @@ import { GymbroJwtGuard } from './guards/gymbro-jwt.guard';
 export class GymbroAuthController {
   constructor(private readonly authService: GymbroAuthService) {}
 
-  @Post('register')
-  register(@Body() dto: GymbroRegisterDto) {
-    return this.authService.register(dto);
+  /** Étape 1 : saisie infos + envoi OTP WhatsApp */
+  @Post('register/init')
+  initRegister(@Body() dto: GymbroInitRegisterDto) {
+    return this.authService.initRegister(dto);
   }
 
+  /** Étape 2 : confirmation OTP → compte activé + tokens */
+  @Post('register/confirm')
+  confirmOtp(@Body() dto: GymbroConfirmOtpDto) {
+    return this.authService.confirmOtp(dto);
+  }
+
+  /** Renvoi d'un OTP (code expiré ou non reçu) */
+  @Post('register/resend')
+  resendOtp(@Body('telephone') telephone: string) {
+    return this.authService.resendOtp(telephone);
+  }
+
+  /** Connexion par téléphone + mot de passe */
   @Post('login')
   login(@Body() dto: GymbroLoginDto) {
     return this.authService.login(dto);

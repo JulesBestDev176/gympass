@@ -5,10 +5,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GymbroAuthService } from './gymbro-auth.service';
 import { GymbroAuthController } from './gymbro-auth.controller';
 import { GymbroJwtStrategy } from './strategies/gymbro-jwt.strategy';
+import { WhatsappModule } from '../../whatsapp/whatsapp.module';
 
 @Module({
   imports: [
     PassportModule,
+    WhatsappModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({

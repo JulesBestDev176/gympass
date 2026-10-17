@@ -2,12 +2,14 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
-import { GymbroRegisterDto } from './dto/register.dto';
+import { WhatsappService } from '../../whatsapp/whatsapp.service';
 import { GymbroLoginDto } from './dto/login.dto';
+import { GymbroInitRegisterDto, GymbroConfirmOtpDto } from './dto/register.dto';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
@@ -16,22 +18,37 @@ export class GymbroAuthService {
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
+    private readonly whatsapp: WhatsappService,
   ) {}
 
   private publicUser(user: any) {
     return {
       id: user.id,
-      email: user.email,
       prenom: user.prenom,
       nom: user.nom,
       telephone: user.telephone,
       actif: user.actif,
+      phoneVerified: user.phoneVerified,
+      role: user.role,
     };
   }
 
-  private async issueTokens(user: any) {
-    const payload = { sub: user.id, email: user.email, app: 'gymbro' };
+  private normalizePhone(tel: string): string {
+    let p = tel.trim().replace(/[\s\-().]/g, '');
+    if (!p.startsWith('+')) p = `+${p}`;
+    return p;
+  }
 
+  private systemEmail(telephone: string): string {
+    return `${telephone.replace(/\D/g, '')}@gymbro.sn`;
+  }
+
+  private generateOtp(): string {
+    return String(Math.floor(100000 + Math.random() * 900000));
+  }
+
+  private async issueTokens(user: any) {
+    const payload = { sub: user.id, app: 'gymbro' };
     const accessToken = await this.jwt.signAsync(
       { ...payload, tokenType: 'access' },
       { expiresIn: this.config.get('JWT_EXPIRES_IN', '15m') },
@@ -48,38 +65,111 @@ export class GymbroAuthService {
     return { accessToken, refreshToken };
   }
 
-  async register(dto: GymbroRegisterDto) {
-    const existing = await this.prisma.gymbroUser.findUnique({ where: { email: dto.email } });
-    if (existing) throw new ConflictException('Email déjà utilisé');
+  // ─── ÉTAPE 1 : envoi OTP ────────────────────────────────────────────────────
 
+  async initRegister(dto: GymbroInitRegisterDto) {
+    const telephone = this.normalizePhone(dto.telephone);
+    const existing = await this.prisma.gymbroUser.findUnique({ where: { telephone } });
+
+    if (existing && existing.actif && existing.phoneVerified) {
+      throw new ConflictException('Ce numéro est déjà associé à un compte.');
+    }
+
+    const otp = this.generateOtp();
+    const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
     const passwordHash = await bcrypt.hash(dto.password, 10);
-    const user = await this.prisma.gymbroUser.create({
-      data: {
-        email: dto.email,
-        passwordHash,
-        prenom: dto.prenom,
-        nom: dto.nom,
-        telephone: dto.telephone,
-        // Créer le profil questionnaire vide
-        profile: { create: {} },
-      },
+    const email = this.systemEmail(telephone);
+
+    if (existing) {
+      await this.prisma.gymbroUser.update({
+        where: { telephone },
+        data: { prenom: dto.prenom, nom: dto.nom, passwordHash, otpCode: otp, otpExpiresAt },
+      });
+    } else {
+      await this.prisma.gymbroUser.create({
+        data: {
+          email,
+          passwordHash,
+          prenom: dto.prenom,
+          nom: dto.nom,
+          telephone,
+          actif: false,
+          phoneVerified: false,
+          otpCode: otp,
+          otpExpiresAt,
+          profile: { create: {} },
+        },
+      });
+    }
+
+    await this.whatsapp.sendGymbroOtp(telephone, otp, dto.prenom);
+    return { message: `Code envoyé au ${telephone}` };
+  }
+
+  // ─── ÉTAPE 2 : confirmation OTP ─────────────────────────────────────────────
+
+  async confirmOtp(dto: GymbroConfirmOtpDto) {
+    const telephone = this.normalizePhone(dto.telephone);
+    const user = await this.prisma.gymbroUser.findUnique({ where: { telephone } });
+
+    if (!user) throw new BadRequestException('Numéro non reconnu.');
+    if (!user.otpCode || !user.otpExpiresAt) {
+      throw new BadRequestException('Aucun code en attente. Relance l\'inscription.');
+    }
+    if (new Date() > user.otpExpiresAt) {
+      throw new BadRequestException('Code expiré. Relance l\'inscription.');
+    }
+    if (user.otpCode !== dto.otpCode) {
+      throw new BadRequestException('Code incorrect.');
+    }
+
+    const updated = await this.prisma.gymbroUser.update({
+      where: { telephone },
+      data: { actif: true, phoneVerified: true, otpCode: null, otpExpiresAt: null },
     });
 
-    const tokens = await this.issueTokens(user);
-    return { ...tokens, user: this.publicUser(user) };
+    const tokens = await this.issueTokens(updated);
+    return { ...tokens, user: this.publicUser(updated) };
   }
+
+  // ─── CONNEXION ───────────────────────────────────────────────────────────────
 
   async login(dto: GymbroLoginDto) {
-    const user = await this.prisma.gymbroUser.findUnique({ where: { email: dto.email } });
-    if (!user) throw new UnauthorizedException('Email ou mot de passe incorrect');
-    if (!user.actif) throw new UnauthorizedException('Compte désactivé');
+    const telephone = this.normalizePhone(dto.telephone);
+    const user = await this.prisma.gymbroUser.findUnique({ where: { telephone } });
+
+    if (!user) throw new UnauthorizedException('Numéro ou mot de passe incorrect.');
+    if (!user.actif) throw new UnauthorizedException('Compte non activé. Vérifie ton numéro.');
+    if (!user.phoneVerified) throw new UnauthorizedException('Numéro non vérifié. Finalise ton inscription.');
 
     const valid = await bcrypt.compare(dto.password, user.passwordHash);
-    if (!valid) throw new UnauthorizedException('Email ou mot de passe incorrect');
+    if (!valid) throw new UnauthorizedException('Numéro ou mot de passe incorrect.');
 
     const tokens = await this.issueTokens(user);
     return { ...tokens, user: this.publicUser(user) };
   }
+
+  // ─── RENVOI OTP ──────────────────────────────────────────────────────────────
+
+  async resendOtp(telephone: string) {
+    const tel = this.normalizePhone(telephone);
+    const user = await this.prisma.gymbroUser.findUnique({ where: { telephone: tel } });
+
+    if (!user) throw new BadRequestException('Numéro non reconnu.');
+    if (user.phoneVerified) throw new BadRequestException('Numéro déjà vérifié.');
+
+    const otp = this.generateOtp();
+    const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    await this.prisma.gymbroUser.update({
+      where: { telephone: tel },
+      data: { otpCode: otp, otpExpiresAt },
+    });
+
+    await this.whatsapp.sendGymbroOtp(tel, otp, user.prenom);
+    return { message: `Nouveau code envoyé au ${tel}` };
+  }
+
+  // ─── REFRESH ─────────────────────────────────────────────────────────────────
 
   async refresh(refreshToken: string) {
     if (!refreshToken) throw new UnauthorizedException('Refresh token manquant');
