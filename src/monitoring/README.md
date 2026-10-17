@@ -3,7 +3,7 @@
 Set both environment variables to enable telemetry:
 
 ```dotenv
-MONITORING_URL=http://gympass-monitoring:9108
+MONITORING_URL=http://gympass-monitoring-agent:9108
 MONITORING_TOKEN=<same-secret-as-the-internal-collector>
 ```
 
