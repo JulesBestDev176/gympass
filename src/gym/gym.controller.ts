@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Body, Query, UseGuards } from '@nestjs/common';
 import { GymService, CreateGymDto } from './gym.service';
 import { UpdateGymDto, UpdatePricingDto, UpdateStatutDto } from './dto/update-gym.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -7,10 +7,16 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UserRole } from '@prisma/client';
+import { MembersService } from '../members/members.service';
+import { UsersService } from '../users/users.service';
 
 @Controller('gym')
 export class GymController {
-  constructor(private readonly gymService: GymService) {}
+  constructor(
+    private readonly gymService: GymService,
+    private readonly membersService: MembersService,
+    private readonly usersService: UsersService,
+  ) {}
 
   // ── GymDash super-admin ──────────────────────────────────────────────────────
   @UseGuards(GymDashGuard)
@@ -29,6 +35,18 @@ export class GymController {
   @Patch(':id/statut')
   updateStatut(@Param('id') id: string, @Body() dto: UpdateStatutDto) {
     return this.gymService.updateStatut(id, dto);
+  }
+
+  @UseGuards(GymDashGuard)
+  @Get(':id/members')
+  getMembers(@Param('id') id: string, @Query('search') search?: string) {
+    return this.membersService.findAll(id, search);
+  }
+
+  @UseGuards(GymDashGuard)
+  @Get(':id/users')
+  getUsers(@Param('id') id: string) {
+    return this.usersService.findAll(id);
   }
 
   // ── JWT authentifié ──────────────────────────────────────────────────────────
