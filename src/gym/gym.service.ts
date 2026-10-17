@@ -123,4 +123,27 @@ export class GymService {
     const { passwordHash, refreshTokenHash, ...safe } = updated;
     return safe;
   }
+
+  async findAllPayments() {
+    return this.prisma.payment.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        member: { select: { id: true, nom: true, prenom: true } },
+        gym: { select: { id: true, nom: true, ville: true } },
+        user: { select: { id: true, nom: true, prenom: true } },
+      },
+    });
+  }
+
+  async findGymbroUser(id: string) {
+    const user = await this.prisma.gymbroUser.findUnique({
+      where: { id },
+      include: {
+        subscriptions: { orderBy: { dateExpiration: 'desc' } },
+      },
+    });
+    if (!user) throw new NotFoundException('Utilisateur GymBro introuvable');
+    const { passwordHash, refreshTokenHash, ...safe } = user;
+    return safe;
+  }
 }

@@ -62,6 +62,18 @@ export class GymController {
   }
 
   @UseGuards(GymDashGuard)
+  @Get('gymbro-users/:id')
+  getGymbroUser(@Param('id') id: string) {
+    return this.gymService.findGymbroUser(id);
+  }
+
+  @UseGuards(GymDashGuard)
+  @Get('all-payments')
+  getAllPayments() {
+    return this.gymService.findAllPayments();
+  }
+
+  @UseGuards(GymDashGuard)
   @Patch('user/:userId/toggle')
   toggleUser(@Param('userId') userId: string) {
     return this.usersService.toggleById(userId);
