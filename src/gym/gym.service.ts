@@ -135,11 +135,40 @@ export class GymService {
     });
   }
 
+  async findPaymentsByGym(gymId: string) {
+    const gym = await this.prisma.gym.findUnique({ where: { id: gymId } });
+    if (!gym) throw new NotFoundException('Gym introuvable');
+    return this.prisma.payment.findMany({
+      where: { gymId },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        member: { select: { id: true, nom: true, prenom: true } },
+        user: { select: { id: true, nom: true, prenom: true } },
+      },
+    });
+  }
+
   async findGymbroUser(id: string) {
     const user = await this.prisma.gymbroUser.findUnique({
       where: { id },
       include: {
         subscriptions: { orderBy: { dateExpiration: 'desc' } },
+        profile: true,
+        userPrograms: {
+          orderBy: { createdAt: 'desc' },
+          take: 3,
+          include: {
+            program: {
+              select: {
+                id: true, nom: true, objectif: true,
+                nbSemaines: true, seancesParSemaine: true, niveauMin: true, niveauMax: true,
+              },
+            },
+            sessions: { select: { statut: true } },
+          },
+        },
+        weightLogs: { orderBy: { date: 'asc' } },
+        bilans: { orderBy: { semaine: 'asc' } },
       },
     });
     if (!user) throw new NotFoundException('Utilisateur GymBro introuvable');

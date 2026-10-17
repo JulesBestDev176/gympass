@@ -44,6 +44,12 @@ export class GymController {
   }
 
   @UseGuards(GymDashGuard)
+  @Get(':id/payments')
+  getPayments(@Param('id') id: string) {
+    return this.gymService.findPaymentsByGym(id);
+  }
+
+  @UseGuards(GymDashGuard)
   @Get(':id/users')
   getUsers(@Param('id') id: string) {
     return this.usersService.findAll(id);
