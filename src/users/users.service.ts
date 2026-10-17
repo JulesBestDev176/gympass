@@ -90,4 +90,12 @@ export class UsersService {
     await this.prisma.user.update({ where: { id: userId }, data: { fcmToken } });
     return { message: 'Token FCM enregistré' };
   }
+
+  async toggleById(id: string) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) throw new NotFoundException();
+    return this.omitPassword(
+      await this.prisma.user.update({ where: { id }, data: { actif: !user.actif } })
+    );
+  }
 }

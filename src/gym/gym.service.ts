@@ -80,4 +80,25 @@ export class GymService {
     if (!gym) throw new NotFoundException('Gym introuvable');
     return this.prisma.gym.update({ where: { id: gymId }, data: { statut: dto.statut } });
   }
+
+  async findAllUsers() {
+    const users = await this.prisma.user.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: { gym: { select: { id: true, nom: true, slug: true } } },
+    });
+    return users.map(({ passwordHash, ...u }) => u);
+  }
+
+  async findAllGymbroUsers() {
+    const users = await this.prisma.gymbroUser.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        subscriptions: {
+          orderBy: { dateExpiration: 'desc' },
+          take: 1,
+        },
+      },
+    });
+    return users.map(({ passwordHash, refreshTokenHash, ...u }) => u);
+  }
 }

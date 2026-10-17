@@ -49,6 +49,24 @@ export class GymController {
     return this.usersService.findAll(id);
   }
 
+  @UseGuards(GymDashGuard)
+  @Get('all-users')
+  findAllUsers() {
+    return this.gymService.findAllUsers();
+  }
+
+  @UseGuards(GymDashGuard)
+  @Get('gymbro-users')
+  findAllGymbroUsers() {
+    return this.gymService.findAllGymbroUsers();
+  }
+
+  @UseGuards(GymDashGuard)
+  @Patch('user/:userId/toggle')
+  toggleUser(@Param('userId') userId: string) {
+    return this.usersService.toggleById(userId);
+  }
+
   // ── JWT authentifié ──────────────────────────────────────────────────────────
   @UseGuards(JwtAuthGuard)
   @Get()
