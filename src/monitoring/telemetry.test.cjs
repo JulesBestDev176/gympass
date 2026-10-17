@@ -116,7 +116,8 @@ const { RequestMetrics, requestTelemetry } = require('./request-metrics.ts');
     const sink = await collector(t);
     const metrics = new RequestMetrics({ url: sink.url, token: 'test-token' });
     const routes = [undefined, '/members/123', '/members/01234567-1234-5678-abcd-0123456789ab',
-      '/private?token=secret', '/' + 'x'.repeat(240), 'no-slash', '/weird[route]'];
+      '/private?token=secret', '/' + 'x'.repeat(240), 'no-slash', '/weird[route]',
+      '/private\n', '/private\r', '/private\u2028'];
     routes.forEach((route, i) => metrics.record(observation({ route, method: ['TRACE', 'CONNECT', 'CUSTOM'][i % 3] })));
     metrics.record(observation({ route: '/members/:id' }));
     metrics.record(observation({ route: '/' + 'x'.repeat(239) }));
@@ -125,7 +126,7 @@ const { RequestMetrics, requestTelemetry } = require('./request-metrics.ts');
     assert.equal(batch.points.length, 3);
     assert.equal(batch.points[0].method, 'OTHER');
     assert.equal(batch.points[0].route, '/_unmatched');
-    assert.equal(batch.points[0].count, 7);
+    assert.equal(batch.points[0].count, 10);
     assert.equal(batch.points[2].route.length, 240);
     const validation = spawnSync('python', ['-c', [
       'import json, sys',
