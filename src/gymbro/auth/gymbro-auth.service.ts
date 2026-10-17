@@ -200,13 +200,18 @@ export class GymbroAuthService {
   async me(userId: string) {
     const user = await this.prisma.gymbroUser.findUnique({
       where: { id: userId },
-      include: { profile: true, subscriptions: { where: { statut: 'ACTIVE' }, take: 1 } },
+      include: {
+        profile: true,
+        subscriptions: { where: { statut: 'ACTIVE', dateExpiration: { gt: new Date() } }, take: 1 },
+        userPrograms: { where: { actif: true }, take: 1, orderBy: { createdAt: 'desc' } },
+      },
     });
     if (!user || !user.actif) throw new UnauthorizedException('Compte inactif ou introuvable');
     return {
       user: this.publicUser(user),
       profile: user.profile,
       hasActiveSubscription: user.subscriptions.length > 0,
+      userProgramId: user.userPrograms[0]?.id ?? null,
     };
   }
 

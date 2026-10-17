@@ -1,5 +1,5 @@
 import { ExercisesService } from '../exercises/exercises.service';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProgramDto } from './dto/create-program.dto';
 
@@ -129,5 +129,31 @@ export class ProgramsService {
   async toggleActif(id: string) {
     const p = await this.findOne(id);
     return this.prisma.gymbroProgram.update({ where: { id }, data: { actif: !p.actif } });
+  }
+
+  async enroll(userId: string) {
+    // Check active subscription
+    const sub = await this.prisma.gymbroSubscription.findFirst({
+      where: { userId, statut: 'ACTIVE', dateExpiration: { gt: new Date() } },
+    });
+    if (!sub) throw new ForbiddenException('Abonnement actif requis pour s\'inscrire au programme');
+
+    // Check existing active userProgram
+    const existing = await this.prisma.gymbroUserProgram.findFirst({
+      where: { userId, actif: true },
+      include: { program: true },
+    });
+    if (existing) return { userProgramId: existing.id, programId: existing.programId, alreadyEnrolled: true };
+
+    // Get matched program
+    const profile = await this.prisma.gymbroUserProfile.findUnique({ where: { userId } });
+    if (!profile?.matchingProgramId) throw new BadRequestException('Aucun programme matché. Lance le questionnaire d\'abord.');
+
+    // Create userProgram
+    const userProgram = await this.prisma.gymbroUserProgram.create({
+      data: { userId, programId: profile.matchingProgramId, actif: true },
+    });
+
+    return { userProgramId: userProgram.id, programId: userProgram.programId, alreadyEnrolled: false };
   }
 }

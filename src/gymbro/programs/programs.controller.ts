@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Body, UseGuards, Req } from '@nestjs/common';
 import { ProgramsService } from './programs.service';
 import { CreateProgramDto } from './dto/create-program.dto';
 import { GymbroJwtGuard } from '../auth/guards/gymbro-jwt.guard';
@@ -7,6 +7,12 @@ import { AuthGuard } from '@nestjs/passport';
 @Controller('gymbro/programs')
 export class ProgramsController {
   constructor(private readonly service: ProgramsService) {}
+
+  @Post('enroll')
+  @UseGuards(GymbroJwtGuard)
+  enroll(@Req() req: any) {
+    return this.service.enroll(req.user.id);
+  }
 
   // Aperçu public (non abonné) — limité semaine 1
   @Get(':id/preview')
