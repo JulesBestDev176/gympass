@@ -48,6 +48,12 @@ enum NotifType {
   SYSTEME
 }
 
+enum GymStatut {
+  ACTIF
+  INACTIF
+  SUSPENDU
+}
+
 // ─────────────────────────── GYM ──────────────────────────────────────────────
 
 model Gym {
@@ -65,6 +71,8 @@ model Gym {
 
   // Paramètres scanner
   antiDoubleScanSec Int @default(5)
+
+  statut    GymStatut @default(ACTIF)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

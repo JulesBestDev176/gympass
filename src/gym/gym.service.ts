@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { IsString, IsInt, IsOptional, Min, IsNotEmpty } from 'class-validator';
 import { PrismaService } from '../prisma/prisma.service';
-import { UpdateGymDto, UpdatePricingDto } from './dto/update-gym.dto';
+import { UpdateGymDto, UpdatePricingDto, UpdateStatutDto } from './dto/update-gym.dto';
 
 export class CreateGymDto {
   @IsString() @IsNotEmpty() nom: string;
@@ -73,5 +73,11 @@ export class GymService {
 
   async updatePricing(gymId: string, dto: UpdatePricingDto) {
     return this.prisma.gym.update({ where: { id: gymId }, data: dto });
+  }
+
+  async updateStatut(gymId: string, dto: UpdateStatutDto) {
+    const gym = await this.prisma.gym.findUnique({ where: { id: gymId } });
+    if (!gym) throw new NotFoundException('Gym introuvable');
+    return this.prisma.gym.update({ where: { id: gymId }, data: { statut: dto.statut } });
   }
 }

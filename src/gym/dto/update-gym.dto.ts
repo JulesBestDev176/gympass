@@ -1,8 +1,13 @@
-import { IsString, IsInt, IsOptional, Min } from 'class-validator';
+import { IsString, IsInt, IsOptional, IsEnum, Min } from 'class-validator';
+import { GymStatut } from '@prisma/client';
 
 export class UpdateGymDto {
   @IsOptional() @IsString() nom?: string;
   @IsOptional() @IsString() ville?: string;
+}
+
+export class UpdateStatutDto {
+  @IsEnum(GymStatut) statut: GymStatut;
 }
 
 export class UpdatePricingDto {

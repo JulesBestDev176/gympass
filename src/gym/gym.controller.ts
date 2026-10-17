@@ -1,6 +1,6 @@
-import { Controller, Get, Post, Patch, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Body, UseGuards } from '@nestjs/common';
 import { GymService, CreateGymDto } from './gym.service';
-import { UpdateGymDto, UpdatePricingDto } from './dto/update-gym.dto';
+import { UpdateGymDto, UpdatePricingDto, UpdateStatutDto } from './dto/update-gym.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GymDashGuard } from '../auth/guards/gymdash.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -23,6 +23,12 @@ export class GymController {
   @Post()
   create(@Body() dto: CreateGymDto) {
     return this.gymService.create(dto);
+  }
+
+  @UseGuards(GymDashGuard)
+  @Patch(':id/statut')
+  updateStatut(@Param('id') id: string, @Body() dto: UpdateStatutDto) {
+    return this.gymService.updateStatut(id, dto);
   }
 
   // ── JWT authentifié ──────────────────────────────────────────────────────────
