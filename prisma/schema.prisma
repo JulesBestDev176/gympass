@@ -301,6 +301,14 @@ enum GymbroPhotoAngle {
   DOS
 }
 
+enum EditorialStatus {
+  DRAFT
+  COACH_REVIEW
+  VALIDATED
+  PUBLISHED
+  RETIRED
+}
+
 // ─────────────────────────── GYMBRO USER ──────────────────────────────────────
 
 model GymbroUser {
@@ -431,12 +439,26 @@ model GymbroProgram {
   dureeSeanceMin      Int                  // durée moyenne d'une séance (minutes)
   nbSemaines          Int                  @default(12)
   actif               Boolean              @default(true)
+
+  // Editorial fields (added in Task 6)
+  versionCode         String?              @unique
+  familyId            String?
+  editorialStatus     EditorialStatus      @default(DRAFT)
+  checksum            String?
+  goalCoverageJson    String?              // JSON string[] of goal tags
+  publishedAt         DateTime?
+
+  // Validation report (JSON blob)
+  validationReportJson String?
+
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
 
   phases              GymbroProgramPhase[]
   userPrograms        GymbroUserProgram[]
 
+  @@index([editorialStatus])
+  @@index([familyId])
   @@map("gymbro_programs")
 }
 
