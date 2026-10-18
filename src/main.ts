@@ -1,5 +1,5 @@
 import { NestFactory, Reflector } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, ConsoleLogger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
@@ -8,7 +8,12 @@ import { MonitoringService } from './monitoring/monitoring.service';
 import { requestTelemetry } from './monitoring/request-metrics';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const isProduction = process.env.NODE_ENV === 'production';
+  // En production (Docker/Coolify) : pas de couleurs ANSI pour éviter les artefacts de log
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore — `colors` exist at runtime but is missing from the type def in this NestJS version
+  const appLogger = new ConsoleLogger('', { colors: !isProduction });
+  const app = await NestFactory.create(AppModule, { logger: appLogger });
   app.use(requestTelemetry(app.get(MonitoringService).metrics));
   app.enableShutdownHooks();
 

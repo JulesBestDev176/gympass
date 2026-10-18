@@ -43,7 +43,9 @@ USER node
 
 ENV NODE_ENV=production \
     NODE_OPTIONS=--max-old-space-size=512 \
-    PORT=3000
+    PORT=3000 \
+    FORCE_COLOR=0 \
+    NO_COLOR=1
 
 EXPOSE 3000
 
