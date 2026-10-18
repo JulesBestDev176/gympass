@@ -3,6 +3,7 @@ import {
   UnauthorizedException,
   ConflictException,
   BadRequestException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -11,6 +12,8 @@ import { WhatsappService } from '../../whatsapp/whatsapp.service';
 import { GymbroLoginDto } from './dto/login.dto';
 import { GymbroInitRegisterDto, GymbroConfirmOtpDto } from './dto/register.dto';
 import * as bcrypt from 'bcryptjs';
+import { createHmac, randomInt, timingSafeEqual } from 'node:crypto';
+import { GymbroPasswordForgotDto, GymbroPasswordResetDto } from './dto/password-recovery.dto';
 
 @Injectable()
 export class GymbroAuthService {
@@ -44,10 +47,66 @@ export class GymbroAuthService {
   }
 
   private generateOtp(): string {
-    return String(Math.floor(100000 + Math.random() * 900000));
+    return String(randomInt(100000, 1000000));
   }
 
-  private async issueTokens(user: any) {
+  private resetDigest(telephone: string, code: string): string {
+    const secret = this.config.get<string>('JWT_SECRET');
+    if (!secret) throw new ServiceUnavailableException('Récupération indisponible.');
+    return createHmac('sha256', secret).update(`gymbro-password-reset:${telephone}:${code}`).digest('hex');
+  }
+
+  async requestPasswordReset(dto: GymbroPasswordForgotDto) {
+    const result = { message: 'Si ce numéro correspond à un compte actif, un code sera envoyé sur WhatsApp.' };
+    const telephone = this.normalizePhone(dto.telephone);
+    const user = await this.prisma.gymbroUser.findUnique({ where: { telephone } });
+    if (!user?.actif || !user.phoneVerified) return result;
+    const now = Date.now();
+    const ttl = 10 * 60 * 1000;
+    if (user.otpCode?.startsWith('reset:') && user.otpExpiresAt &&
+        user.otpExpiresAt.getTime() - ttl + 60000 > now) return result;
+    const code = this.generateOtp();
+    const reserved = await this.prisma.gymbroUser.updateMany({
+      where: { id: user.id, actif: true, phoneVerified: true,
+        otpCode: user.otpCode, otpExpiresAt: user.otpExpiresAt },
+      data: { otpCode: `reset:0:${this.resetDigest(telephone, code)}`, otpExpiresAt: new Date(now + ttl) },
+    });
+    if (reserved.count !== 1) return result;
+    // A generic acknowledgment avoids disclosing account existence or delivery.
+    void this.whatsapp.sendGymbroPasswordResetOtp(telephone, code, user.prenom).catch(() => undefined);
+    return result;
+  }
+
+  async resetPassword(dto: GymbroPasswordResetDto) {
+    const invalid = () => new BadRequestException('Code incorrect ou expiré. Demande un nouveau code.');
+    const telephone = this.normalizePhone(dto.telephone);
+    const user = await this.prisma.gymbroUser.findUnique({ where: { telephone } });
+    const match = /^reset:([0-5]):([a-f0-9]{64})$/.exec(user?.otpCode ?? '');
+    if (!user?.actif || !user.phoneVerified || !match || Number(match[1]) >= 5 ||
+        !user.otpExpiresAt || user.otpExpiresAt.getTime() <= Date.now()) throw invalid();
+    const reservedCode = `reset:${Number(match[1]) + 1}:${match[2]}`;
+    const attempt = await this.prisma.gymbroUser.updateMany({
+      where: { id: user.id, actif: true, phoneVerified: true, otpCode: user.otpCode,
+        otpExpiresAt: { gt: new Date() } },
+      data: { otpCode: reservedCode },
+    });
+    if (attempt.count !== 1) throw invalid();
+    const expected = Buffer.from(match[2], 'hex');
+    const actual = Buffer.from(this.resetDigest(telephone, dto.otpCode), 'hex');
+    if (!timingSafeEqual(expected, actual)) {
+      throw invalid();
+    }
+    const passwordHash = await bcrypt.hash(dto.password, 10);
+    const updated = await this.prisma.gymbroUser.updateMany({
+      where: { id: user.id, actif: true, phoneVerified: true, otpCode: reservedCode,
+        otpExpiresAt: { gt: new Date() } },
+      data: { passwordHash, refreshTokenHash: null, otpCode: null, otpExpiresAt: null },
+    });
+    if (updated.count !== 1) throw invalid();
+    return { message: 'Mot de passe modifié. Tu peux te connecter.' };
+  }
+
+  private async issueTokens(user: any, expectedRefreshHash?: string) {
     const payload = { sub: user.id, app: 'gymbro' };
     const accessToken = await this.jwt.signAsync(
       { ...payload, tokenType: 'access' },
@@ -58,10 +117,12 @@ export class GymbroAuthService {
       { expiresIn: this.config.get('JWT_REFRESH_EXPIRES_IN', '30d') },
     );
     const refreshTokenHash = await bcrypt.hash(refreshToken, 10);
-    await this.prisma.gymbroUser.update({
-      where: { id: user.id },
+    const rotated = await this.prisma.gymbroUser.updateMany({
+      where: { id: user.id, actif: true, passwordHash: user.passwordHash,
+        ...(expectedRefreshHash === undefined ? {} : { refreshTokenHash: expectedRefreshHash }) },
       data: { refreshTokenHash },
     });
+    if (rotated.count !== 1) throw new UnauthorizedException('Session expirée. Reconnecte-toi.');
     return { accessToken, refreshToken };
   }
 
@@ -102,7 +163,8 @@ export class GymbroAuthService {
       });
     }
 
-    await this.whatsapp.sendGymbroOtp(telephone, otp, dto.prenom);
+    const delivery = await this.whatsapp.sendGymbroOtp(telephone, otp, dto.prenom);
+    if (delivery.status !== 'accepted') throw new ServiceUnavailableException('Le code n’a pas pu être envoyé. Réessaie dans un instant.');
     return { message: `Code envoyé au ${telephone}` };
   }
 
@@ -165,7 +227,8 @@ export class GymbroAuthService {
       data: { otpCode: otp, otpExpiresAt },
     });
 
-    await this.whatsapp.sendGymbroOtp(tel, otp, user.prenom);
+    const delivery = await this.whatsapp.sendGymbroOtp(tel, otp, user.prenom);
+    if (delivery.status !== 'accepted') throw new ServiceUnavailableException('Le code n’a pas pu être envoyé. Réessaie dans un instant.');
     return { message: `Nouveau code envoyé au ${tel}` };
   }
 
@@ -193,7 +256,7 @@ export class GymbroAuthService {
     const valid = await bcrypt.compare(refreshToken, user.refreshTokenHash);
     if (!valid) throw new UnauthorizedException('Session expirée');
 
-    const tokens = await this.issueTokens(user);
+    const tokens = await this.issueTokens(user, user.refreshTokenHash);
     return { ...tokens, user: this.publicUser(user) };
   }
 
@@ -221,5 +284,24 @@ export class GymbroAuthService {
       data: { refreshTokenHash: null },
     });
     return { message: 'Déconnexion réussie' };
+  }
+
+  // ─── SUPPRESSION (admin / tests) ─────────────────────────────────────────────
+
+  async deleteByTelephone(telephone: string) {
+    const tel = this.normalizePhone(telephone);
+    const user = await this.prisma.gymbroUser.findUnique({ where: { telephone: tel } });
+    if (!user) throw new BadRequestException(`Aucun utilisateur avec le numéro ${tel}`);
+
+    await this.prisma.gymbroUser.delete({ where: { telephone: tel } });
+    return { message: `Utilisateur ${tel} supprimé.`, id: user.id };
+  }
+
+  async deleteById(id: string) {
+    const user = await this.prisma.gymbroUser.findUnique({ where: { id } });
+    if (!user) throw new BadRequestException(`Aucun utilisateur avec l'id ${id}`);
+
+    await this.prisma.gymbroUser.delete({ where: { id } });
+    return { message: `Utilisateur ${id} supprimé.`, telephone: user.telephone };
   }
 }

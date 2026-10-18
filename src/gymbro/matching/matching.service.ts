@@ -2,6 +2,7 @@ import { ExercisesService } from '../exercises/exercises.service';
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { matchPrograms, UserProfileInput } from './matching.engine';
+import { V3_PROGRAM_PENDING_REASON } from '../questionnaire/questionnaire-v3';
 
 @Injectable()
 export class MatchingService {
@@ -13,6 +14,7 @@ export class MatchingService {
     if (!profile.questionnaireComplet) {
       throw new BadRequestException('Questionnaire non complété');
     }
+    if (profile.questionnaireV3) return {matched: false, reason: V3_PROGRAM_PENDING_REASON};
 
     // Charger les programmes actifs
     const programs = await this.prisma.gymbroProgram.findMany({ where: { actif: true } });
@@ -62,6 +64,10 @@ export class MatchingService {
   async getResult(userId: string) {
     const profile = await this.prisma.gymbroUserProfile.findUnique({ where: { userId } });
     if (!profile) throw new NotFoundException('Profil introuvable');
+    if (profile.questionnaireV3) return {
+      matched: false,
+      reason: profile.questionnaireComplet ? V3_PROGRAM_PENDING_REASON : 'Complète et valide ton questionnaire avant de choisir un programme.',
+    };
 
     if (profile.matchingStatus === 'NO_MATCH') {
       return { matched: false, reason: 'Aucun programme disponible pour votre profil.' };

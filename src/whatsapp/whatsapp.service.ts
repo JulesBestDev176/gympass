@@ -72,6 +72,12 @@ export class WhatsappService {
       `GymBro 💪`);
   }
 
+  async sendGymbroPasswordResetOtp(telephone: string, otp: string, prenom: string): Promise<WhatsappDelivery> {
+    return this.send(telephone,
+      `Bonjour ${prenom},\n\nTon code de récupération GymBro : ${otp}\n\n` +
+      `Il expire dans 10 minutes. Ne le partage pas. Si tu n’as pas demandé ce code, ignore ce message.\n\nGymBro`);
+  }
+
   // Envoi des identifiants à un nouveau gérant
   async sendCredentials(telephone: string, email: string, password: string, prenom: string): Promise<void> {
     const message =
