@@ -8,47 +8,44 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 
 // ─────────────────────────── MINIMAL VALID MANIFEST ──────────────────────────
+// Uses the established ProgramManifest format: schemaVersion, familyCode, versionCode,
+// durationWeeks: 12, and exactly 12 weeks with sessions.
+
+function buildSession(weekNum, sessionNum) {
+  return {
+    occurrenceCode: `P99-L-v1-W${weekNum}-S${sessionNum}`,
+    blueprintCode: 'D-A',
+    sessionNumber: sessionNum,
+    format: 'STANDARD',
+    slots: [],
+    rounds: null,
+    betweenExerciseRestSeconds: null,
+    betweenRoundRestSeconds: null,
+    estimatedSeconds: 2700,
+    measuredSeconds: null,
+  };
+}
+
+function buildWeek(weekNum) {
+  return {
+    weekNumber: weekNum,
+    phaseNumber: weekNum <= 4 ? 1 : weekNum <= 8 ? 2 : 3,
+    sessions: [buildSession(weekNum, 1), buildSession(weekNum, 2), buildSession(weekNum, 3)],
+  };
+}
 
 function buildManifest(overrides = {}) {
   return {
-    versionCode: 'test-force-3j-v1',
-    nom: 'Force Débutant 3j',
-    objectif: 'FORCE',
-    niveauMin: 'DEBUTANT',
-    niveauMax: 'QUELQUES_MOIS',
-    seancesParSemaine: 3,
-    typeEquipement: 'SALLE_COMPLETE',
-    dureeSeanceMin: 60,
-    nbSemaines: 12,
-    blueprints: [
-      {
-        blueprintCode: 'BP-PUSH',
-        nom: 'Push A',
-        sessionFormat: 'STANDARD',
-        slots: [
-          {
-            slotCode: 'SLOT-BP',
-            slotRole: 'MAIN',
-            ordre: 1,
-            nbSeries: 4,
-            repsMin: 5,
-            repsMax: 8,
-            options: [
-              { exerciseId: 'exercise-cuid-001', grade: 'PRIMARY', priority: 1, approved: true },
-            ],
-          },
-        ],
-      },
-    ],
-    weeks: [
-      {
-        numero: 1,
-        estDecharge: false,
-        occurrences: [
-          { occurrenceCode: 'W1D1', numero: 1, blueprintCode: 'BP-PUSH' },
-        ],
-      },
-    ],
+    schemaVersion: 'gymbro-program-catalog/1',
+    familyCode: 'P99',
+    versionCode: 'P99-L-v1',
+    status: 'DRAFT',
+    durationWeeks: 12,
+    goalCoverage: ['REMISE_EN_FORME'],
+    prescriptionPolicy: 'double-progression',
+    progressionPolicy: 'reps-then-load',
+    maxSessionMinutes: 60,
+    weeks: Array.from({length: 12}, (_, i) => buildWeek(i + 1)),
     ...overrides,
   };
 }
@@ -212,9 +209,7 @@ test('Rollback on missing family — no GymbroProgram row created if upsert thro
   };
 
   const svc = buildService(mock);
-  const manifest = buildManifest({
-    family: { familyCode: 'FAM-FORCE', goalCoverage: ['FORCE'] },
-  });
+  const manifest = buildManifest({ familyCode: 'P99' });
 
   await assert.rejects(
     () => svc.importDraft(manifest),
@@ -232,7 +227,7 @@ test('Checksum conflict on published version — throws 409', async () => {
   // Simulate an existing PUBLISHED program with a different checksum
   const existingProgram = {
     id: 'existing-pub-id',
-    versionCode: 'test-force-3j-v1',
+    versionCode: 'P99-L-v1',
     checksum: 'old-checksum-abc123',
     editorialStatus: 'PUBLISHED',
   };
@@ -240,8 +235,8 @@ test('Checksum conflict on published version — throws 409', async () => {
   const mock = buildPrismaMock([existingProgram]);
   const svc = buildService(mock);
 
-  // The new manifest will have a different checksum (different content)
-  const manifest = buildManifest({ nom: 'Force Débutant 3j — MODIFIÉ' });
+  // The new manifest will have a different checksum (different goalCoverage)
+  const manifest = buildManifest({ goalCoverage: ['FORCE'] });
 
   await assert.rejects(
     async () => svc.importDraft(manifest),
