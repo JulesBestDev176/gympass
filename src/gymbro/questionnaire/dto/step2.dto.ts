@@ -2,7 +2,7 @@ import { IsInt, IsNumber, IsOptional, Min, Max } from 'class-validator';
 
 export class QuestionnaireStep2Dto {
   @IsInt()
-  @Min(13)
+  @Min(1)
   @Max(80)
   age: number;
 

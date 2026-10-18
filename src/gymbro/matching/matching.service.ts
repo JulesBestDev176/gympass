@@ -58,6 +58,11 @@ export class MatchingService {
           progressionPolicy: p.progressionPolicy ?? p.family!.progressionPolicy,
         }));
 
+      // No published programs yet → return pending reason without running the engine
+      if (publishedVersions.length === 0) {
+        return { matched: false, reason: V3_PROGRAM_PENDING_REASON };
+      }
+
       const decision = matchProgram(normalizedProfile, publishedVersions);
 
       // Find the latest profile snapshot for this user
@@ -79,7 +84,16 @@ export class MatchingService {
         });
       }
 
-      return decision;
+      // Normalize to legacy {matched, reason} shape so existing consumers stay compatible
+      if (decision.status === 'MATCHED') {
+        return { matched: true, versionCode: decision.versionCode, score: decision.score, rulesVersion: decision.rulesVersion };
+      }
+      const reasonMap: Record<string, string> = {
+        NEEDS_MEDICAL_REVIEW: 'Une revue médicale est nécessaire avant de choisir un programme.',
+        NEEDS_CLARIFICATION: 'Certaines informations sont manquantes dans ton profil.',
+        NO_COVERAGE: V3_PROGRAM_PENDING_REASON,
+      };
+      return { matched: false, reason: reasonMap[decision.status] ?? V3_PROGRAM_PENDING_REASON, status: decision.status, reasonCodes: decision.reasonCodes };
     }
 
     // Charger les programmes actifs

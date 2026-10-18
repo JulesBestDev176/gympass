@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { validateProgramManifest } from './contracts/program-manifest.schema';
-import type { ProgramManifest, ValidationReport, EditorialStatus } from './contracts/program-contracts';
+import type { ProgramManifest, ValidationReport, ValidationIssue, EditorialStatus } from './contracts/program-contracts';
 
 // ─────────────────────────── ALLOWED TRANSITIONS ─────────────────────────────
 
@@ -24,6 +24,35 @@ const ALLOWED_TRANSITIONS: Record<string, EditorialStatus[]> = {
 @Injectable()
 export class ProgramImportService {
   constructor(private readonly prisma: PrismaService) {}
+
+  // ── validate (DB-based structural check, for admin UI) ──────────────────────
+
+  async validate(programId: string): Promise<ValidationReport> {
+    const program = await (this.prisma as any).gymbroProgram.findUnique({
+      where: { id: programId },
+      include: {
+        phases: { include: { weeks: { include: { sessions: { include: { exercises: { include: { exercise: true } } } } } } } },
+      },
+    });
+    if (!program) throw new NotFoundException(`Program ${programId} not found`);
+    const issues: ValidationIssue[] = [];
+    let weekCount = 0;
+    for (const phase of program.phases ?? []) {
+      for (const week of phase.weeks ?? []) {
+        weekCount++;
+        if (!week.sessions?.length) issues.push({ code: 'EMPTY_WEEK', path: `weeks.${week.numero}`, message: `Semaine ${week.numero} vide` });
+        for (const session of week.sessions ?? []) {
+          if (!session.exercises?.length) issues.push({ code: 'EMPTY_SESSION', path: `weeks.${week.numero}`, message: `Séance "${session.nom}" vide` });
+          for (const link of session.exercises ?? []) {
+            if (!link.exercise?.actif) issues.push({ code: 'INACTIVE_EXERCISE', path: `weeks.${week.numero}`, message: `Exercice inactif dans "${session.nom}"` });
+            if (!link.exercise?.mediaSource) issues.push({ code: 'MISSING_MEDIA', path: `weeks.${week.numero}`, message: `Animation à vérifier dans "${session.nom}"` });
+          }
+        }
+      }
+    }
+    if (weekCount < (program.nbSemaines ?? 12)) issues.push({ code: 'MISSING_WEEKS', path: 'weeks', message: `${weekCount}/${program.nbSemaines} semaines trouvées` });
+    return { valid: issues.length === 0, issues, checksum: program.checksum ?? '' };
+  }
 
   // ── dryRun ──────────────────────────────────────────────────────────────────
 

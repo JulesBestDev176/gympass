@@ -27,6 +27,23 @@ function fixture(){
   return {service:new QuestionnaireService(prisma),prisma,row:()=>row};
 }
 
+test('profile accepts ages under 18 and rejects invalid ages without saving',async()=>{
+  const f=fixture();
+  await f.service.saveV3Step('user',2,{...steps[2],ageYears:17});
+  assert.equal((await f.service.getMyProfile('user')).ageYears,17);
+  for(const ageYears of [0,-1,1.5,81,'17',null]) {
+    await assert.rejects(f.service.saveV3Step('user',2,{...steps[2],ageYears}),e=>e.getStatus()===400);
+  }
+  assert.equal((await f.service.getMyProfile('user')).ageYears,17);
+});
+
+test('all ten specific muscle priorities can be saved and restored',async()=>{
+  const f=fixture();
+  const priorityMuscles=['PECTORAUX','DOS','EPAULES','BICEPS','TRICEPS','ABDOMINAUX','FESSIERS','QUADRICEPS','ISCHIO','MOLLETS'];
+  await f.service.saveV3Step('user',1,{...steps[1],priorityMuscles});
+  assert.deepEqual((await f.service.getMyProfile('user')).priorityMuscles,priorityMuscles);
+});
+
 test('all eight mobile steps persist and reload without dropping nulls, sports or equipment',async()=>{
   const f=fixture();
   await Promise.all(Object.entries(steps).map(([step,payload])=>f.service.saveV3Step('user',+step,payload)));
@@ -65,7 +82,7 @@ test('editing a completed questionnaire invalidates completion and any stale mat
 test('V3 never falls through to the legacy matcher or exposes an old matched program',async()=>{
   const {MatchingService}=require('../matching/matching.service.ts');
   const profile={questionnaireV3:{step1:steps[1]},questionnaireComplet:true,matchingStatus:'MATCHED',matchingProgramId:'stale'};
-  const service=new MatchingService({gymbroUserProfile:{findUnique:async()=>profile}},{});
+  const service=new MatchingService({gymbroUserProfile:{findUnique:async()=>profile},gymbroProgram:{findMany:async()=>[]},gymbroProfileSnapshot:{findFirst:async()=>null},gymbroMatchingDecision:{create:async(x)=>x.data}},{});
   const run=await service.run('user');assert.equal(run.matched,false);assert.match(run.reason,/préparation/);
   const result=await service.getResult('user');assert.equal(result.matched,false);assert.match(result.reason,/préparation/);
 });
