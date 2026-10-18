@@ -1,126 +1,130 @@
-# Program catalog — bindings and substitutions
+# Program Catalog — Import Guide
 
-The program catalog defines how abstract program slots (e.g. `HP`, `FS`, `VR`) map to
-concrete exercises from the exercise catalog, and how those exercises can be substituted
-based on available equipment or client reasons.
+## Overview
 
-## Files
+The program catalog is a set of compiled JSON manifests that define GymBro training programs. Each manifest describes a complete program including:
 
-| File | Purpose |
-|---|---|
-| `assets/program-catalog/exercise-bindings.json` | Slot → exercise mappings (PRIMARY + alternatives A1–A3) |
-| `assets/program-catalog/substitutions.json` | Directed substitution rules (A → B, not B → A) |
-| `src/gymbro/programs/contracts/program-contracts.ts` | TypeScript interfaces for all catalog types |
-| `src/gymbro/programs/equipment-resolver.ts` | `resolveSlot` / `resolveSubstitution` / `validateBindings` |
+- Identity metadata (`versionCode`, `nom`, `objectif`, etc.)
+- Session blueprints (reusable session templates with exercise slots)
+- Week structure (which blueprint is used on each day of each week)
+- Family information (optional grouping for related programs)
 
-## Slot codes (22 total)
-
-| Code | Description | Notes |
-|---|---|---|
-| SQ | Squat | L=dumbbells, M=Smith machine, BW=bodyweight |
-| UNI | Unilateral leg | L=dumbbells, M=Smith split |
-| HN | Hip hinge narrow | L=dumbbells, BAR=barbell |
-| KF | Knee flexion (curl) | EL=band inverse, M=leg curl machine |
-| HE | Hip extension | BW=glute bridge, BAR=barbell hip thrust |
-| HP | Horizontal push | L=dumbbells (0289), M=chest machine (0577), BW=push-up (0259) |
-| IP | Incline push | L=dumbbells (0314), M=incline machine (1299) |
-| VP | Vertical push | L=dumbbells (0405), M=shoulder machine (0587) |
-| HR | Horizontal row | L=dumbbells (0293), M=cable row (0861) |
-| VR | Vertical row | M=lat pulldown (2330), BW=pull-up (0651) |
-| LA | Lateral raise | L=dumbbells (0334), M=cable (0178) |
-| RD | Rear delt | L=dumbbells (0326), M=cable (0602) |
-| EF | Elbow flexion (curl) | L=dumbbells (0285), M=cable (0868) |
-| EE | Elbow extension (tricep) | L=dumbbells (0351), M=cable (0200) |
-| CA | Calf raise | BW (1373), M=calf machine (0594) |
-| AE | Abdominal extension | All=crunch (0276) |
-| AL | Abdominal lateral | All=oblique (1775) |
-| AF | Abdominal flexion | CABLE=cable crunch (0175), BW=leg raise (0212) |
-| CO | Cardio | M=treadmill (2331), M2=bike (2138) |
-| FS | Free squat (barbell) | Requires RACK+SAFETY_BARS+BARBELL (0043) |
-| FB | Free bench (barbell) | Requires BENCH+SAFETY_BARS+BARBELL (0025) |
-| FR | Free row (barbell) | Requires BARBELL (0085) |
-
-## Equipment keys
-
-Equipment codes used in `requiredEquipment` arrays:
-
-- `DUMBBELLS` — dumbbell set
-- `BARBELL` — olympic barbell
-- `RACK` — squat / power rack
-- `SAFETY_BARS` — safety bars / spotter arms
-- `BENCH` — flat bench
-- `MACHINE_SMITH` — Smith machine
-- `MACHINE_CHEST_PRESS` — horizontal chest press machine
-- `MACHINE_INCLINE_PRESS` — incline press machine
-- `MACHINE_SHOULDER_PRESS` — shoulder press machine
-- `MACHINE_LEG_CURL` — seated or lying leg curl
-- `MACHINE_CALF` — standing or seated calf raise machine
-- `MACHINE_ROW` — lever row machine
-- `CABLE_MACHINE` — cable station (single)
-- `CABLE_ROW` — cable row attachment
-- `LAT_PULLDOWN` — lat pulldown machine
-- `ASSISTED_PULLUP` — assisted pull-up machine
-- `PULLUP_BAR` — overhead bar for pull-ups
-- `BAND` — resistance band
-- `HIGH_ANCHOR` — overhead anchor point for bands
-- `EZ_BAR` — EZ-curl bar
-- `TREADMILL` — treadmill
-- `STATIONARY_BIKE` — stationary bike
-
-## Load conventions
-
-| Convention | Usage |
-|---|---|
-| `TOTAL_EXTERNAL` | Barbell total (FS, FB, FR) — plates + bar |
-| `PER_DUMBBELL` | Load per dumbbell (HP-L) |
-| `MACHINE_DISPLAY` | Weight shown on machine stack (HP-M, VR-M) |
-| `BODYWEIGHT` | No external load (AE, AL, BW variants) |
-
-## Excluded sourceIds
-
-The following sourceIds must never appear as PRIMARY bindings:
-
-- `0599`, `0705`, `0430`, `3523`
-
-These are enforced by `validateBindings()` in `equipment-resolver.ts`.
-
-## Resolution logic
+## Directory structure
 
 ```
-resolveSlot(slot, profile, inventory)
-  → find all bindings for slot, sorted PRIMARY → A1 → A2 → A3 (then by priority)
-  → for each approved binding:
-      if all requiredEquipment available → RESOLVED (recalibrateLoad=true if grade ≠ PRIMARY)
-  → if nothing resolves:
-      - requiredEquipment contains HIGH_ANCHOR and anchor missing → UNRESOLVED MISSING_ANCHOR
-      - otherwise → UNRESOLVED MISSING_EQUIPMENT
-      - no approved binding at all → UNRESOLVED NO_APPROVED_ALTERNATIVE
-
-resolveSubstitution({slot, profile, inventory, reason, originalExerciseCode?})
-  → reason === 'PAIN' → {status: 'NEEDS_REVIEW'} always
-  → look up directed substitution rules from slot.exerciseCode
-  → skip rules targeting originalExerciseCode (prevents reverse substitution)
-  → check equipment conditions and minLevel
-  → first passing rule → RESOLVED with A1/A2 grade
-  → no rule passes → UNRESOLVED NO_APPROVED_ALTERNATIVE
+assets/program-catalog/
+  generated/           # Compiled manifest files (one per program)
+    force-debutant-3j-v1.json
+    masse-intermediaire-4j-v1.json
+    ...
+  families.json        # Family definitions
 ```
 
-## Substitution directionality
+## Manifest format
 
-Substitutions are directed: `HP-L → HP-M` is a separate rule from `HP-M → HP-L`.
-The `originalExerciseCode` parameter prevents A→B→A circular substitution loops.
+```jsonc
+{
+  "versionCode": "force-debutant-3j-v1",
+  "nom": "Force Débutant — 3 jours",
+  "objectif": "FORCE",
+  "niveauMin": "DEBUTANT",
+  "niveauMax": "QUELQUES_MOIS",
+  "seancesParSemaine": 3,
+  "typeEquipement": "SALLE_COMPLETE",
+  "dureeSeanceMin": 60,
+  "nbSemaines": 12,
 
-## Running tests
+  // Optional family grouping
+  "family": {
+    "familyCode": "FAM-FORCE",
+    "goalCoverage": ["FORCE"],
+    "prescriptionPolicy": "linear",
+    "progressionPolicy": "weekly_increment"
+  },
+
+  // Session blueprints (reusable templates)
+  "blueprints": [
+    {
+      "blueprintCode": "BP-PUSH-A",
+      "nom": "Push A",
+      "sessionFormat": "STANDARD",
+      "slots": [
+        {
+          "slotCode": "SLOT-BENCH",
+          "slotRole": "MAIN",
+          "ordre": 1,
+          "nbSeries": 5,
+          "repsMin": 5,
+          "repsMax": 5,
+          "options": [
+            { "exerciseId": "<cuid>", "grade": "PRIMARY", "priority": 1, "approved": true }
+          ]
+        }
+      ]
+    }
+  ],
+
+  // Week schedule
+  "weeks": [
+    {
+      "numero": 1,
+      "estDecharge": false,
+      "occurrences": [
+        { "occurrenceCode": "W1D1", "numero": 1, "blueprintCode": "BP-PUSH-A" },
+        { "occurrenceCode": "W1D2", "numero": 2, "blueprintCode": "BP-PULL-A" },
+        { "occurrenceCode": "W1D3", "numero": 3, "blueprintCode": "BP-LEGS-A" }
+      ]
+    }
+  ]
+}
+```
+
+## Import commands
+
+### Validate only (no DB writes)
 
 ```bash
-cd gympass_backend
-node --test src/gymbro/programs/exercise-resolution.test.cjs
+node scripts/program_catalog_import.cjs --dry-run --dir assets/program-catalog/generated
 ```
 
-All 13 tests should pass (10 originally specified + 3 sub-cases added for T3/T5).
-
-## Build check
+### Validate + import as DRAFT
 
 ```bash
-npm run build
+node scripts/program_catalog_import.cjs --apply-drafts --dir assets/program-catalog/generated
 ```
+
+Set `DATABASE_URL` in your environment before running with `--apply-drafts`.
+
+## Editorial lifecycle
+
+Programs go through the following states after import:
+
+```
+DRAFT → COACH_REVIEW → VALIDATED → PUBLISHED
+  ↘                                   ↗
+                  RETIRED
+```
+
+- **DRAFT** — freshly imported; not visible to users.
+- **COACH_REVIEW** — sent to a coach for review.
+- **VALIDATED** — approved by a coach; ready for publication.
+- **PUBLISHED** — visible to users. Immutable (a new `versionCode` is required for any content change).
+- **RETIRED** — no longer available; can be reached from any state.
+
+Use `ProgramImportService.transition(programId, target, actorId, expectedChecksum)` to move a program through the lifecycle.
+
+## Idempotency
+
+The import is fully idempotent:
+
+- Importing the same manifest twice (same `versionCode` + same `checksum`) is a no-op and returns `{created: false}`.
+- Importing a manifest with the same `versionCode` but different content updates the program (only if it is not PUBLISHED).
+- Attempting to overwrite a PUBLISHED program with different content throws HTTP 409.
+
+## Tests
+
+```bash
+node --test src/gymbro/programs/program-import.test.cjs
+```
+
+All tests use an in-memory Prisma mock and require no database connection.
