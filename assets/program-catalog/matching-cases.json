@@ -1,0 +1,199 @@
+[
+  {
+    "id": "beginner-3j-salle",
+    "description": "Beginner, 3 sessions/week, salle, FORME_GENERALE goal with dumbbells",
+    "profile": {
+      "userId": "fixture-user-1",
+      "safetyStatus": "CLEAREDFORSTANDARDONBOARDING",
+      "trainingLevel": "BEGINNER",
+      "sessionsPerWeek": 3,
+      "primaryTrainingLocation": "SALLE",
+      "primaryGoal": "FORME_GENERALE",
+      "availableEquipment": ["MACHINES", "HALTERES"],
+      "maxSessionMinutes": 60
+    },
+    "publishedVersions": [
+      {
+        "id": "v-P01-L-v1",
+        "versionCode": "P01-L-v1",
+        "familyCode": "P01",
+        "goalCoverage": ["PRISE_MUSCLE", "FORME_GENERALE", "FORCE"],
+        "sessionsPerWeek": 2,
+        "maxSessionMinutes": 50,
+        "prescriptionPolicy": "foundation-12w-v1",
+        "progressionPolicy": "double-progression-v1"
+      },
+      {
+        "id": "v-P02-L-v1",
+        "versionCode": "P02-L-v1",
+        "familyCode": "P02",
+        "goalCoverage": ["PRISE_MUSCLE", "FORME_GENERALE", "FORCE"],
+        "sessionsPerWeek": 3,
+        "maxSessionMinutes": 50,
+        "prescriptionPolicy": "foundation-12w-v1",
+        "progressionPolicy": "double-progression-v1"
+      },
+      {
+        "id": "v-P02-M-v1",
+        "versionCode": "P02-M-v1",
+        "familyCode": "P02",
+        "goalCoverage": ["PRISE_MUSCLE", "FORME_GENERALE", "FORCE"],
+        "sessionsPerWeek": 3,
+        "maxSessionMinutes": 50,
+        "prescriptionPolicy": "foundation-12w-v1",
+        "progressionPolicy": "double-progression-v1"
+      }
+    ],
+    "expectedStatus": "MATCHED",
+    "expectedFamilyCode": "P02",
+    "expectedVersionCode": "P02-L-v1",
+    "notes": "P02 wins: exact sessions match (3=3) + level match (BEGINNER∈P01-P12) + goal match + L variant"
+  },
+  {
+    "id": "medical-restriction",
+    "description": "User with medical restriction is always blocked regardless of other profile fields",
+    "profile": {
+      "userId": "fixture-user-2",
+      "safetyStatus": "NEEDSMEDICALREVIEW",
+      "trainingLevel": "INTERMEDIATE",
+      "sessionsPerWeek": 4,
+      "primaryTrainingLocation": "SALLE",
+      "primaryGoal": "PRISE_MUSCLE",
+      "availableEquipment": ["MACHINES", "HALTERES", "BARRE_DISQUES", "RACK"],
+      "maxSessionMinutes": 75
+    },
+    "publishedVersions": [
+      {
+        "id": "v-P06-L-v1",
+        "versionCode": "P06-L-v1",
+        "familyCode": "P06",
+        "goalCoverage": ["PRISE_MUSCLE"],
+        "sessionsPerWeek": 4,
+        "maxSessionMinutes": 70,
+        "prescriptionPolicy": "hypertrophy-12w-v1",
+        "progressionPolicy": "double-progression-v1"
+      }
+    ],
+    "expectedStatus": "NEEDS_MEDICAL_REVIEW",
+    "expectedFamilyCode": null,
+    "expectedVersionCode": null,
+    "notes": "Safety gate is a HARD block — no program selected regardless of score"
+  },
+  {
+    "id": "missing-sessions",
+    "description": "Profile cleared for standard onboarding but missing sessionsPerWeek",
+    "profile": {
+      "userId": "fixture-user-3",
+      "safetyStatus": "CLEAREDFORSTANDARDONBOARDING",
+      "trainingLevel": "BEGINNER",
+      "sessionsPerWeek": null,
+      "primaryTrainingLocation": "SALLE",
+      "availableEquipment": ["MACHINES"],
+      "maxSessionMinutes": 60
+    },
+    "publishedVersions": [
+      {
+        "id": "v-P01-L-v1",
+        "versionCode": "P01-L-v1",
+        "familyCode": "P01",
+        "goalCoverage": ["PRISE_MUSCLE", "FORME_GENERALE", "FORCE"],
+        "sessionsPerWeek": 3,
+        "maxSessionMinutes": 50,
+        "prescriptionPolicy": "foundation-12w-v1",
+        "progressionPolicy": "double-progression-v1"
+      }
+    ],
+    "expectedStatus": "NEEDS_CLARIFICATION",
+    "expectedReasonCodes": ["MISSING_SESSIONS_PER_WEEK"],
+    "notes": "null sessionsPerWeek must return NEEDS_CLARIFICATION — never assume a default"
+  },
+  {
+    "id": "domicile-training",
+    "description": "User training at home is routed to domicile family P18–P20",
+    "profile": {
+      "userId": "fixture-user-4",
+      "safetyStatus": "CLEAREDFORSTANDARDONBOARDING",
+      "trainingLevel": "BEGINNER",
+      "sessionsPerWeek": 3,
+      "primaryTrainingLocation": "DOMICILE",
+      "primaryGoal": "FORME_GENERALE",
+      "availableEquipment": ["POIDS_CORPS", "ELASTIQUES"],
+      "maxSessionMinutes": 45
+    },
+    "publishedVersions": [
+      {
+        "id": "v-P01-L-v1",
+        "versionCode": "P01-L-v1",
+        "familyCode": "P01",
+        "goalCoverage": ["FORME_GENERALE"],
+        "sessionsPerWeek": 3,
+        "maxSessionMinutes": 50,
+        "prescriptionPolicy": "foundation-12w-v1",
+        "progressionPolicy": "double-progression-v1"
+      },
+      {
+        "id": "v-P18-L-v1",
+        "versionCode": "P18-L-v1",
+        "familyCode": "P18",
+        "goalCoverage": ["FORME_GENERALE", "PRISE_MUSCLE"],
+        "sessionsPerWeek": 3,
+        "maxSessionMinutes": 45,
+        "prescriptionPolicy": "home-12w-v1",
+        "progressionPolicy": "double-progression-v1"
+      },
+      {
+        "id": "v-P19-L-v1",
+        "versionCode": "P19-L-v1",
+        "familyCode": "P19",
+        "goalCoverage": ["FORME_GENERALE"],
+        "sessionsPerWeek": 4,
+        "maxSessionMinutes": 45,
+        "prescriptionPolicy": "home-12w-v1",
+        "progressionPolicy": "double-progression-v1"
+      }
+    ],
+    "expectedStatus": "MATCHED",
+    "expectedFamilyCode": "P18",
+    "notes": "DOMICILE location filters to P18–P20 only; P01 (salle) is excluded"
+  },
+  {
+    "id": "machines-only-m-variant",
+    "description": "Intermediate user with only machines gets M variant",
+    "profile": {
+      "userId": "fixture-user-5",
+      "safetyStatus": "CLEAREDFORSTANDARDONBOARDING",
+      "trainingLevel": "INTERMEDIATE",
+      "sessionsPerWeek": 4,
+      "primaryTrainingLocation": "SALLE",
+      "primaryGoal": "PRISE_MUSCLE",
+      "availableEquipment": ["MACHINES"],
+      "maxSessionMinutes": 70
+    },
+    "publishedVersions": [
+      {
+        "id": "v-P06-L-v1",
+        "versionCode": "P06-L-v1",
+        "familyCode": "P06",
+        "goalCoverage": ["PRISE_MUSCLE"],
+        "sessionsPerWeek": 4,
+        "maxSessionMinutes": 70,
+        "prescriptionPolicy": "hypertrophy-12w-v1",
+        "progressionPolicy": "double-progression-v1"
+      },
+      {
+        "id": "v-P06-M-v1",
+        "versionCode": "P06-M-v1",
+        "familyCode": "P06",
+        "goalCoverage": ["PRISE_MUSCLE"],
+        "sessionsPerWeek": 4,
+        "maxSessionMinutes": 70,
+        "prescriptionPolicy": "hypertrophy-12w-v1",
+        "progressionPolicy": "double-progression-v1"
+      }
+    ],
+    "expectedStatus": "MATCHED",
+    "expectedFamilyCode": "P06",
+    "expectedVersionCode": "P06-M-v1",
+    "notes": "No dumbbells and no barbells with machines present → M variant preferred (+3 score)"
+  }
+]

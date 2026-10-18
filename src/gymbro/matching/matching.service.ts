@@ -2,7 +2,8 @@ import { ExercisesService } from '../exercises/exercises.service';
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { matchPrograms, UserProfileInput } from './matching.engine';
-import { V3_PROGRAM_PENDING_REASON } from '../questionnaire/questionnaire-v3';
+import { V3_PROGRAM_PENDING_REASON, flattenV3 } from '../questionnaire/questionnaire-v3';
+import { matchProgram, RULES_VERSION, type PublishedVersion, type V3NormalizedProfile } from './matching-engine-v2';
 
 @Injectable()
 export class MatchingService {
@@ -14,7 +15,72 @@ export class MatchingService {
     if (!profile.questionnaireComplet) {
       throw new BadRequestException('Questionnaire non complété');
     }
-    if (profile.questionnaireV3) return {matched: false, reason: V3_PROGRAM_PENDING_REASON};
+    if (profile.questionnaireV3) {
+      // ── V3 matching path ─────────────────────────────────────────────────────
+      const flat = flattenV3(profile.questionnaireV3);
+
+      const normalizedProfile: V3NormalizedProfile = {
+        userId,
+        safetyStatus: flat.safetyStatus,
+        trainingLevel: flat.trainingLevel,
+        primaryGoal: flat.primaryGoal,
+        sessionsPerWeek: flat.sessionsPerWeek ?? null,
+        primaryTrainingLocation: flat.primaryTrainingLocation,
+        trainingLocations: flat.trainingLocations,
+        availableEquipment: flat.availableEquipment ?? [],
+        maxSessionMinutes: flat.sessionDurationMinutes ?? null,
+      };
+
+      // Load all PUBLISHED versions
+      const publishedPrograms = await this.prisma.gymbroProgram.findMany({
+        where: { editorialStatus: 'PUBLISHED' },
+        select: {
+          id: true,
+          versionCode: true,
+          seancesParSemaine: true,
+          family: { select: { familyCode: true, goalCoverage: true, prescriptionPolicy: true, progressionPolicy: true, maxSessionMinutes: true } },
+          maxSessionMinutes: true,
+          prescriptionPolicy: true,
+          progressionPolicy: true,
+        },
+      });
+
+      const publishedVersions: PublishedVersion[] = publishedPrograms
+        .filter(p => p.versionCode && p.family)
+        .map(p => ({
+          id: p.id,
+          versionCode: p.versionCode!,
+          familyCode: p.family!.familyCode,
+          goalCoverage: p.family!.goalCoverage,
+          sessionsPerWeek: p.seancesParSemaine,
+          maxSessionMinutes: p.maxSessionMinutes ?? p.family!.maxSessionMinutes,
+          prescriptionPolicy: p.prescriptionPolicy ?? p.family!.prescriptionPolicy,
+          progressionPolicy: p.progressionPolicy ?? p.family!.progressionPolicy,
+        }));
+
+      const decision = matchProgram(normalizedProfile, publishedVersions);
+
+      // Find the latest profile snapshot for this user
+      const snapshot = await (this.prisma as any).gymbroProfileSnapshot.findFirst({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      if (snapshot) {
+        await (this.prisma as any).gymbroMatchingDecision.create({
+          data: {
+            profileSnapshotId: snapshot.id,
+            status: decision.status,
+            score: decision.score,
+            versionCode: decision.versionCode,
+            reasonCodesJson: decision.reasonCodes,
+            rulesVersion: decision.rulesVersion,
+          },
+        });
+      }
+
+      return decision;
+    }
 
     // Charger les programmes actifs
     const programs = await this.prisma.gymbroProgram.findMany({ where: { actif: true } });
@@ -64,10 +130,32 @@ export class MatchingService {
   async getResult(userId: string) {
     const profile = await this.prisma.gymbroUserProfile.findUnique({ where: { userId } });
     if (!profile) throw new NotFoundException('Profil introuvable');
-    if (profile.questionnaireV3) return {
-      matched: false,
-      reason: profile.questionnaireComplet ? V3_PROGRAM_PENDING_REASON : 'Complète et valide ton questionnaire avant de choisir un programme.',
-    };
+    if (profile.questionnaireV3) {
+      if (!profile.questionnaireComplet) {
+        return { matched: false, reason: 'Complète et valide ton questionnaire avant de choisir un programme.' };
+      }
+      // Return latest matching decision if available
+      const snapshot = await (this.prisma as any).gymbroProfileSnapshot.findFirst({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+      });
+      if (snapshot) {
+        const latestDecision = await (this.prisma as any).gymbroMatchingDecision.findFirst({
+          where: { profileSnapshotId: snapshot.id },
+          orderBy: { decidedAt: 'desc' },
+        });
+        if (latestDecision) {
+          return {
+            status: latestDecision.status,
+            score: latestDecision.score,
+            versionCode: latestDecision.versionCode,
+            reasonCodes: latestDecision.reasonCodesJson,
+            rulesVersion: latestDecision.rulesVersion,
+          };
+        }
+      }
+      return { matched: false, reason: V3_PROGRAM_PENDING_REASON };
+    }
 
     if (profile.matchingStatus === 'NO_MATCH') {
       return { matched: false, reason: 'Aucun programme disponible pour votre profil.' };
