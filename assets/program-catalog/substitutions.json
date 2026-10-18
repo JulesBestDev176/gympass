@@ -1,0 +1,80 @@
+[
+  {
+    "fromExerciseCode": "HP-L-PRIMARY",
+    "toExerciseCode": "HP-M-PRIMARY",
+    "grade": "A1",
+    "reason": "ABSENT",
+    "conditions": {
+      "requiredEquipment": ["MACHINE_CHEST_PRESS"]
+    },
+    "recalibrateLoad": true,
+    "reviewStatus": "VALIDATED"
+  },
+  {
+    "fromExerciseCode": "HP-M-PRIMARY",
+    "toExerciseCode": "HP-L-PRIMARY",
+    "grade": "A1",
+    "reason": "ABSENT",
+    "conditions": {
+      "requiredEquipment": ["DUMBBELLS"]
+    },
+    "recalibrateLoad": true,
+    "reviewStatus": "VALIDATED"
+  },
+  {
+    "fromExerciseCode": "HR-L-PRIMARY",
+    "toExerciseCode": "HR-M-PRIMARY",
+    "grade": "A1",
+    "reason": "ABSENT",
+    "conditions": {
+      "requiredEquipment": ["CABLE_ROW"]
+    },
+    "recalibrateLoad": true,
+    "reviewStatus": "VALIDATED"
+  },
+  {
+    "fromExerciseCode": "HR-M-PRIMARY",
+    "toExerciseCode": "HR-L-PRIMARY",
+    "grade": "A1",
+    "reason": "ABSENT",
+    "conditions": {
+      "requiredEquipment": ["DUMBBELLS"]
+    },
+    "recalibrateLoad": true,
+    "reviewStatus": "VALIDATED"
+  },
+  {
+    "fromExerciseCode": "VR-M-PRIMARY",
+    "toExerciseCode": "VR-BW-PRIMARY",
+    "grade": "A1",
+    "reason": "ABSENT",
+    "conditions": {
+      "requiredEquipment": ["PULLUP_BAR"],
+      "minLevel": "ADVANCED"
+    },
+    "recalibrateLoad": true,
+    "reviewStatus": "VALIDATED"
+  },
+  {
+    "fromExerciseCode": "KF-M-PRIMARY",
+    "toExerciseCode": "KF-EL-PRIMARY",
+    "grade": "A1",
+    "reason": "ABSENT",
+    "conditions": {
+      "requiredEquipment": ["BAND", "HIGH_ANCHOR"]
+    },
+    "recalibrateLoad": true,
+    "reviewStatus": "VALIDATED"
+  },
+  {
+    "fromExerciseCode": "FS-BAR-PRIMARY",
+    "toExerciseCode": "FR-BAR-PRIMARY",
+    "grade": "A1",
+    "reason": "ABSENT",
+    "conditions": {
+      "requiredEquipment": ["BARBELL"]
+    },
+    "recalibrateLoad": false,
+    "reviewStatus": "VALIDATED"
+  }
+]
