@@ -1,0 +1,2344 @@
+{
+  "schemaVersion": "gymbro-program-catalog/1",
+  "familyCode": "P12",
+  "versionCode": "P12-M-v1",
+  "status": "DRAFT",
+  "durationWeeks": 12,
+  "goalCoverage": [
+    "FORME_GENERALE",
+    "PRISE_MUSCLE"
+  ],
+  "prescriptionPolicy": "sport-support-12w-v1",
+  "progressionPolicy": "double-progression-v1",
+  "maxSessionMinutes": 55,
+  "weeks": [
+    {
+      "weekNumber": 1,
+      "phaseNumber": 1,
+      "sessions": [
+        {
+          "occurrenceCode": "P12-M-v1-W1-S1",
+          "blueprintCode": "S-A",
+          "sessionNumber": 1,
+          "format": "STANDARD",
+          "slots": [
+            {
+              "slotCode": "FS",
+              "variant": "BAR",
+              "exerciseCode": "FS-BAR-PRIMARY",
+              "sessionPosition": 1,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "HP",
+              "variant": "M",
+              "exerciseCode": "HP-M-PRIMARY",
+              "sessionPosition": 2,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "HR",
+              "variant": "M",
+              "exerciseCode": "HR-M-PRIMARY",
+              "sessionPosition": 3,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            }
+          ],
+          "rounds": null,
+          "betweenExerciseRestSeconds": null,
+          "betweenRoundRestSeconds": null,
+          "estimatedSeconds": 2028,
+          "measuredSeconds": null
+        },
+        {
+          "occurrenceCode": "P12-M-v1-W1-S2",
+          "blueprintCode": "S-B",
+          "sessionNumber": 2,
+          "format": "STANDARD",
+          "slots": [
+            {
+              "slotCode": "FR",
+              "variant": "BAR",
+              "exerciseCode": "FR-BAR-PRIMARY",
+              "sessionPosition": 1,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "FB",
+              "variant": "BAR",
+              "exerciseCode": "FB-BAR-PRIMARY",
+              "sessionPosition": 2,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "SQ",
+              "variant": "M",
+              "exerciseCode": "SQ-M-PRIMARY",
+              "sessionPosition": 3,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            }
+          ],
+          "rounds": null,
+          "betweenExerciseRestSeconds": null,
+          "betweenRoundRestSeconds": null,
+          "estimatedSeconds": 2352,
+          "measuredSeconds": null
+        }
+      ]
+    },
+    {
+      "weekNumber": 2,
+      "phaseNumber": 1,
+      "sessions": [
+        {
+          "occurrenceCode": "P12-M-v1-W2-S1",
+          "blueprintCode": "S-A",
+          "sessionNumber": 3,
+          "format": "STANDARD",
+          "slots": [
+            {
+              "slotCode": "FS",
+              "variant": "BAR",
+              "exerciseCode": "FS-BAR-PRIMARY",
+              "sessionPosition": 1,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "HP",
+              "variant": "M",
+              "exerciseCode": "HP-M-PRIMARY",
+              "sessionPosition": 2,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "HR",
+              "variant": "M",
+              "exerciseCode": "HR-M-PRIMARY",
+              "sessionPosition": 3,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            }
+          ],
+          "rounds": null,
+          "betweenExerciseRestSeconds": null,
+          "betweenRoundRestSeconds": null,
+          "estimatedSeconds": 2028,
+          "measuredSeconds": null
+        },
+        {
+          "occurrenceCode": "P12-M-v1-W2-S2",
+          "blueprintCode": "S-B",
+          "sessionNumber": 4,
+          "format": "STANDARD",
+          "slots": [
+            {
+              "slotCode": "FR",
+              "variant": "BAR",
+              "exerciseCode": "FR-BAR-PRIMARY",
+              "sessionPosition": 1,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "FB",
+              "variant": "BAR",
+              "exerciseCode": "FB-BAR-PRIMARY",
+              "sessionPosition": 2,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "SQ",
+              "variant": "M",
+              "exerciseCode": "SQ-M-PRIMARY",
+              "sessionPosition": 3,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            }
+          ],
+          "rounds": null,
+          "betweenExerciseRestSeconds": null,
+          "betweenRoundRestSeconds": null,
+          "estimatedSeconds": 2352,
+          "measuredSeconds": null
+        }
+      ]
+    },
+    {
+      "weekNumber": 3,
+      "phaseNumber": 1,
+      "sessions": [
+        {
+          "occurrenceCode": "P12-M-v1-W3-S1",
+          "blueprintCode": "S-A",
+          "sessionNumber": 5,
+          "format": "STANDARD",
+          "slots": [
+            {
+              "slotCode": "FS",
+              "variant": "BAR",
+              "exerciseCode": "FS-BAR-PRIMARY",
+              "sessionPosition": 1,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "HP",
+              "variant": "M",
+              "exerciseCode": "HP-M-PRIMARY",
+              "sessionPosition": 2,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "HR",
+              "variant": "M",
+              "exerciseCode": "HR-M-PRIMARY",
+              "sessionPosition": 3,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            }
+          ],
+          "rounds": null,
+          "betweenExerciseRestSeconds": null,
+          "betweenRoundRestSeconds": null,
+          "estimatedSeconds": 2028,
+          "measuredSeconds": null
+        },
+        {
+          "occurrenceCode": "P12-M-v1-W3-S2",
+          "blueprintCode": "S-B",
+          "sessionNumber": 6,
+          "format": "STANDARD",
+          "slots": [
+            {
+              "slotCode": "FR",
+              "variant": "BAR",
+              "exerciseCode": "FR-BAR-PRIMARY",
+              "sessionPosition": 1,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "FB",
+              "variant": "BAR",
+              "exerciseCode": "FB-BAR-PRIMARY",
+              "sessionPosition": 2,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "SQ",
+              "variant": "M",
+              "exerciseCode": "SQ-M-PRIMARY",
+              "sessionPosition": 3,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            }
+          ],
+          "rounds": null,
+          "betweenExerciseRestSeconds": null,
+          "betweenRoundRestSeconds": null,
+          "estimatedSeconds": 2352,
+          "measuredSeconds": null
+        }
+      ]
+    },
+    {
+      "weekNumber": 4,
+      "phaseNumber": 1,
+      "sessions": [
+        {
+          "occurrenceCode": "P12-M-v1-W4-S1",
+          "blueprintCode": "S-A",
+          "sessionNumber": 7,
+          "format": "STANDARD",
+          "slots": [
+            {
+              "slotCode": "FS",
+              "variant": "BAR",
+              "exerciseCode": "FS-BAR-PRIMARY",
+              "sessionPosition": 1,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "HP",
+              "variant": "M",
+              "exerciseCode": "HP-M-PRIMARY",
+              "sessionPosition": 2,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "HR",
+              "variant": "M",
+              "exerciseCode": "HR-M-PRIMARY",
+              "sessionPosition": 3,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            }
+          ],
+          "rounds": null,
+          "betweenExerciseRestSeconds": null,
+          "betweenRoundRestSeconds": null,
+          "estimatedSeconds": 2028,
+          "measuredSeconds": null
+        },
+        {
+          "occurrenceCode": "P12-M-v1-W4-S2",
+          "blueprintCode": "S-B",
+          "sessionNumber": 8,
+          "format": "STANDARD",
+          "slots": [
+            {
+              "slotCode": "FR",
+              "variant": "BAR",
+              "exerciseCode": "FR-BAR-PRIMARY",
+              "sessionPosition": 1,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "FB",
+              "variant": "BAR",
+              "exerciseCode": "FB-BAR-PRIMARY",
+              "sessionPosition": 2,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "SQ",
+              "variant": "M",
+              "exerciseCode": "SQ-M-PRIMARY",
+              "sessionPosition": 3,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            }
+          ],
+          "rounds": null,
+          "betweenExerciseRestSeconds": null,
+          "betweenRoundRestSeconds": null,
+          "estimatedSeconds": 2352,
+          "measuredSeconds": null
+        }
+      ]
+    },
+    {
+      "weekNumber": 5,
+      "phaseNumber": 2,
+      "sessions": [
+        {
+          "occurrenceCode": "P12-M-v1-W5-S1",
+          "blueprintCode": "S-A",
+          "sessionNumber": 9,
+          "format": "STANDARD",
+          "slots": [
+            {
+              "slotCode": "FS",
+              "variant": "BAR",
+              "exerciseCode": "FS-BAR-PRIMARY",
+              "sessionPosition": 1,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "HP",
+              "variant": "M",
+              "exerciseCode": "HP-M-PRIMARY",
+              "sessionPosition": 2,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "HR",
+              "variant": "M",
+              "exerciseCode": "HR-M-PRIMARY",
+              "sessionPosition": 3,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            }
+          ],
+          "rounds": null,
+          "betweenExerciseRestSeconds": null,
+          "betweenRoundRestSeconds": null,
+          "estimatedSeconds": 2028,
+          "measuredSeconds": null
+        },
+        {
+          "occurrenceCode": "P12-M-v1-W5-S2",
+          "blueprintCode": "S-B",
+          "sessionNumber": 10,
+          "format": "STANDARD",
+          "slots": [
+            {
+              "slotCode": "FR",
+              "variant": "BAR",
+              "exerciseCode": "FR-BAR-PRIMARY",
+              "sessionPosition": 1,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "FB",
+              "variant": "BAR",
+              "exerciseCode": "FB-BAR-PRIMARY",
+              "sessionPosition": 2,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "SQ",
+              "variant": "M",
+              "exerciseCode": "SQ-M-PRIMARY",
+              "sessionPosition": 3,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            }
+          ],
+          "rounds": null,
+          "betweenExerciseRestSeconds": null,
+          "betweenRoundRestSeconds": null,
+          "estimatedSeconds": 2352,
+          "measuredSeconds": null
+        }
+      ]
+    },
+    {
+      "weekNumber": 6,
+      "phaseNumber": 2,
+      "sessions": [
+        {
+          "occurrenceCode": "P12-M-v1-W6-S1",
+          "blueprintCode": "S-A",
+          "sessionNumber": 11,
+          "format": "STANDARD",
+          "slots": [
+            {
+              "slotCode": "FS",
+              "variant": "BAR",
+              "exerciseCode": "FS-BAR-PRIMARY",
+              "sessionPosition": 1,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "HP",
+              "variant": "M",
+              "exerciseCode": "HP-M-PRIMARY",
+              "sessionPosition": 2,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "HR",
+              "variant": "M",
+              "exerciseCode": "HR-M-PRIMARY",
+              "sessionPosition": 3,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            }
+          ],
+          "rounds": null,
+          "betweenExerciseRestSeconds": null,
+          "betweenRoundRestSeconds": null,
+          "estimatedSeconds": 2028,
+          "measuredSeconds": null
+        },
+        {
+          "occurrenceCode": "P12-M-v1-W6-S2",
+          "blueprintCode": "S-B",
+          "sessionNumber": 12,
+          "format": "STANDARD",
+          "slots": [
+            {
+              "slotCode": "FR",
+              "variant": "BAR",
+              "exerciseCode": "FR-BAR-PRIMARY",
+              "sessionPosition": 1,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "FB",
+              "variant": "BAR",
+              "exerciseCode": "FB-BAR-PRIMARY",
+              "sessionPosition": 2,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "SQ",
+              "variant": "M",
+              "exerciseCode": "SQ-M-PRIMARY",
+              "sessionPosition": 3,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            }
+          ],
+          "rounds": null,
+          "betweenExerciseRestSeconds": null,
+          "betweenRoundRestSeconds": null,
+          "estimatedSeconds": 2352,
+          "measuredSeconds": null
+        }
+      ]
+    },
+    {
+      "weekNumber": 7,
+      "phaseNumber": 2,
+      "sessions": [
+        {
+          "occurrenceCode": "P12-M-v1-W7-S1",
+          "blueprintCode": "S-A",
+          "sessionNumber": 13,
+          "format": "STANDARD",
+          "slots": [
+            {
+              "slotCode": "FS",
+              "variant": "BAR",
+              "exerciseCode": "FS-BAR-PRIMARY",
+              "sessionPosition": 1,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "HP",
+              "variant": "M",
+              "exerciseCode": "HP-M-PRIMARY",
+              "sessionPosition": 2,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "HR",
+              "variant": "M",
+              "exerciseCode": "HR-M-PRIMARY",
+              "sessionPosition": 3,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            }
+          ],
+          "rounds": null,
+          "betweenExerciseRestSeconds": null,
+          "betweenRoundRestSeconds": null,
+          "estimatedSeconds": 2028,
+          "measuredSeconds": null
+        },
+        {
+          "occurrenceCode": "P12-M-v1-W7-S2",
+          "blueprintCode": "S-B",
+          "sessionNumber": 14,
+          "format": "STANDARD",
+          "slots": [
+            {
+              "slotCode": "FR",
+              "variant": "BAR",
+              "exerciseCode": "FR-BAR-PRIMARY",
+              "sessionPosition": 1,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "FB",
+              "variant": "BAR",
+              "exerciseCode": "FB-BAR-PRIMARY",
+              "sessionPosition": 2,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "SQ",
+              "variant": "M",
+              "exerciseCode": "SQ-M-PRIMARY",
+              "sessionPosition": 3,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            }
+          ],
+          "rounds": null,
+          "betweenExerciseRestSeconds": null,
+          "betweenRoundRestSeconds": null,
+          "estimatedSeconds": 2352,
+          "measuredSeconds": null
+        }
+      ]
+    },
+    {
+      "weekNumber": 8,
+      "phaseNumber": 2,
+      "sessions": [
+        {
+          "occurrenceCode": "P12-M-v1-W8-S1",
+          "blueprintCode": "S-A",
+          "sessionNumber": 15,
+          "format": "STANDARD",
+          "slots": [
+            {
+              "slotCode": "FS",
+              "variant": "BAR",
+              "exerciseCode": "FS-BAR-PRIMARY",
+              "sessionPosition": 1,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "HP",
+              "variant": "M",
+              "exerciseCode": "HP-M-PRIMARY",
+              "sessionPosition": 2,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "HR",
+              "variant": "M",
+              "exerciseCode": "HR-M-PRIMARY",
+              "sessionPosition": 3,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            }
+          ],
+          "rounds": null,
+          "betweenExerciseRestSeconds": null,
+          "betweenRoundRestSeconds": null,
+          "estimatedSeconds": 2028,
+          "measuredSeconds": null
+        },
+        {
+          "occurrenceCode": "P12-M-v1-W8-S2",
+          "blueprintCode": "S-B",
+          "sessionNumber": 16,
+          "format": "STANDARD",
+          "slots": [
+            {
+              "slotCode": "FR",
+              "variant": "BAR",
+              "exerciseCode": "FR-BAR-PRIMARY",
+              "sessionPosition": 1,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "FB",
+              "variant": "BAR",
+              "exerciseCode": "FB-BAR-PRIMARY",
+              "sessionPosition": 2,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "SQ",
+              "variant": "M",
+              "exerciseCode": "SQ-M-PRIMARY",
+              "sessionPosition": 3,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            }
+          ],
+          "rounds": null,
+          "betweenExerciseRestSeconds": null,
+          "betweenRoundRestSeconds": null,
+          "estimatedSeconds": 2352,
+          "measuredSeconds": null
+        }
+      ]
+    },
+    {
+      "weekNumber": 9,
+      "phaseNumber": 3,
+      "sessions": [
+        {
+          "occurrenceCode": "P12-M-v1-W9-S1",
+          "blueprintCode": "S-A",
+          "sessionNumber": 17,
+          "format": "STANDARD",
+          "slots": [
+            {
+              "slotCode": "FS",
+              "variant": "BAR",
+              "exerciseCode": "FS-BAR-PRIMARY",
+              "sessionPosition": 1,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "HP",
+              "variant": "M",
+              "exerciseCode": "HP-M-PRIMARY",
+              "sessionPosition": 2,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "HR",
+              "variant": "M",
+              "exerciseCode": "HR-M-PRIMARY",
+              "sessionPosition": 3,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            }
+          ],
+          "rounds": null,
+          "betweenExerciseRestSeconds": null,
+          "betweenRoundRestSeconds": null,
+          "estimatedSeconds": 2028,
+          "measuredSeconds": null
+        },
+        {
+          "occurrenceCode": "P12-M-v1-W9-S2",
+          "blueprintCode": "S-B",
+          "sessionNumber": 18,
+          "format": "STANDARD",
+          "slots": [
+            {
+              "slotCode": "FR",
+              "variant": "BAR",
+              "exerciseCode": "FR-BAR-PRIMARY",
+              "sessionPosition": 1,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "FB",
+              "variant": "BAR",
+              "exerciseCode": "FB-BAR-PRIMARY",
+              "sessionPosition": 2,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "SQ",
+              "variant": "M",
+              "exerciseCode": "SQ-M-PRIMARY",
+              "sessionPosition": 3,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            }
+          ],
+          "rounds": null,
+          "betweenExerciseRestSeconds": null,
+          "betweenRoundRestSeconds": null,
+          "estimatedSeconds": 2352,
+          "measuredSeconds": null
+        }
+      ]
+    },
+    {
+      "weekNumber": 10,
+      "phaseNumber": 3,
+      "sessions": [
+        {
+          "occurrenceCode": "P12-M-v1-W10-S1",
+          "blueprintCode": "S-A",
+          "sessionNumber": 19,
+          "format": "STANDARD",
+          "slots": [
+            {
+              "slotCode": "FS",
+              "variant": "BAR",
+              "exerciseCode": "FS-BAR-PRIMARY",
+              "sessionPosition": 1,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "HP",
+              "variant": "M",
+              "exerciseCode": "HP-M-PRIMARY",
+              "sessionPosition": 2,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "HR",
+              "variant": "M",
+              "exerciseCode": "HR-M-PRIMARY",
+              "sessionPosition": 3,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            }
+          ],
+          "rounds": null,
+          "betweenExerciseRestSeconds": null,
+          "betweenRoundRestSeconds": null,
+          "estimatedSeconds": 2028,
+          "measuredSeconds": null
+        },
+        {
+          "occurrenceCode": "P12-M-v1-W10-S2",
+          "blueprintCode": "S-B",
+          "sessionNumber": 20,
+          "format": "STANDARD",
+          "slots": [
+            {
+              "slotCode": "FR",
+              "variant": "BAR",
+              "exerciseCode": "FR-BAR-PRIMARY",
+              "sessionPosition": 1,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "FB",
+              "variant": "BAR",
+              "exerciseCode": "FB-BAR-PRIMARY",
+              "sessionPosition": 2,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "SQ",
+              "variant": "M",
+              "exerciseCode": "SQ-M-PRIMARY",
+              "sessionPosition": 3,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            }
+          ],
+          "rounds": null,
+          "betweenExerciseRestSeconds": null,
+          "betweenRoundRestSeconds": null,
+          "estimatedSeconds": 2352,
+          "measuredSeconds": null
+        }
+      ]
+    },
+    {
+      "weekNumber": 11,
+      "phaseNumber": 3,
+      "sessions": [
+        {
+          "occurrenceCode": "P12-M-v1-W11-S1",
+          "blueprintCode": "S-A",
+          "sessionNumber": 21,
+          "format": "STANDARD",
+          "slots": [
+            {
+              "slotCode": "FS",
+              "variant": "BAR",
+              "exerciseCode": "FS-BAR-PRIMARY",
+              "sessionPosition": 1,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "HP",
+              "variant": "M",
+              "exerciseCode": "HP-M-PRIMARY",
+              "sessionPosition": 2,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "HR",
+              "variant": "M",
+              "exerciseCode": "HR-M-PRIMARY",
+              "sessionPosition": 3,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            }
+          ],
+          "rounds": null,
+          "betweenExerciseRestSeconds": null,
+          "betweenRoundRestSeconds": null,
+          "estimatedSeconds": 2028,
+          "measuredSeconds": null
+        },
+        {
+          "occurrenceCode": "P12-M-v1-W11-S2",
+          "blueprintCode": "S-B",
+          "sessionNumber": 22,
+          "format": "STANDARD",
+          "slots": [
+            {
+              "slotCode": "FR",
+              "variant": "BAR",
+              "exerciseCode": "FR-BAR-PRIMARY",
+              "sessionPosition": 1,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "FB",
+              "variant": "BAR",
+              "exerciseCode": "FB-BAR-PRIMARY",
+              "sessionPosition": 2,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "SQ",
+              "variant": "M",
+              "exerciseCode": "SQ-M-PRIMARY",
+              "sessionPosition": 3,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            }
+          ],
+          "rounds": null,
+          "betweenExerciseRestSeconds": null,
+          "betweenRoundRestSeconds": null,
+          "estimatedSeconds": 2352,
+          "measuredSeconds": null
+        }
+      ]
+    },
+    {
+      "weekNumber": 12,
+      "phaseNumber": 3,
+      "sessions": [
+        {
+          "occurrenceCode": "P12-M-v1-W12-S1",
+          "blueprintCode": "S-A",
+          "sessionNumber": 23,
+          "format": "STANDARD",
+          "slots": [
+            {
+              "slotCode": "FS",
+              "variant": "BAR",
+              "exerciseCode": "FS-BAR-PRIMARY",
+              "sessionPosition": 1,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "HP",
+              "variant": "M",
+              "exerciseCode": "HP-M-PRIMARY",
+              "sessionPosition": 2,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "HR",
+              "variant": "M",
+              "exerciseCode": "HR-M-PRIMARY",
+              "sessionPosition": 3,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            }
+          ],
+          "rounds": null,
+          "betweenExerciseRestSeconds": null,
+          "betweenRoundRestSeconds": null,
+          "estimatedSeconds": 2028,
+          "measuredSeconds": null
+        },
+        {
+          "occurrenceCode": "P12-M-v1-W12-S2",
+          "blueprintCode": "S-B",
+          "sessionNumber": 24,
+          "format": "STANDARD",
+          "slots": [
+            {
+              "slotCode": "FR",
+              "variant": "BAR",
+              "exerciseCode": "FR-BAR-PRIMARY",
+              "sessionPosition": 1,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "FB",
+              "variant": "BAR",
+              "exerciseCode": "FB-BAR-PRIMARY",
+              "sessionPosition": 2,
+              "defaultPrescription": {
+                "sets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "restSec": 180,
+                "loadConvention": "TOTAL_EXTERNAL"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 4,
+                "repsMin": 4,
+                "repsMax": 6,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 1,
+                "targetRirMax": 2,
+                "restTargetSeconds": 180,
+                "restAllowedMaxSeconds": 240,
+                "loadConvention": "TOTAL_EXTERNAL",
+                "initialLoadKg": null
+              }
+            },
+            {
+              "slotCode": "SQ",
+              "variant": "M",
+              "exerciseCode": "SQ-M-PRIMARY",
+              "sessionPosition": 3,
+              "defaultPrescription": {
+                "sets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "restSec": 120,
+                "loadConvention": "MACHINE_DISPLAY"
+              },
+              "prescription": {
+                "metric": "REPS",
+                "workingSets": 3,
+                "repsMin": 8,
+                "repsMax": 12,
+                "durationMinSeconds": null,
+                "durationMaxSeconds": null,
+                "targetRirMin": 2,
+                "targetRirMax": 3,
+                "restTargetSeconds": 120,
+                "restAllowedMaxSeconds": 180,
+                "loadConvention": "MACHINE_DISPLAY",
+                "initialLoadKg": null
+              }
+            }
+          ],
+          "rounds": null,
+          "betweenExerciseRestSeconds": null,
+          "betweenRoundRestSeconds": null,
+          "estimatedSeconds": 2352,
+          "measuredSeconds": null
+        }
+      ]
+    }
+  ]
+}

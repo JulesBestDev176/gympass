@@ -1,0 +1,602 @@
+{
+  "builtAt": "2026-10-18T14:03:53.571Z",
+  "status": "DRAFT",
+  "totalFamilies": 37,
+  "totalManifests": 74,
+  "validCount": 74,
+  "blockedCount": 0,
+  "manifests": [
+    {
+      "versionCode": "P01-L-v1",
+      "familyCode": "P01",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "4857cbf98f1608e2e50aee7374c85963a068e2aadf7b7dbb7ab453de575cf227"
+    },
+    {
+      "versionCode": "P01-M-v1",
+      "familyCode": "P01",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "61cc85be942c82ee46374d4aa9598b4fd635173155b3dad479e77ac203924a64"
+    },
+    {
+      "versionCode": "P02-L-v1",
+      "familyCode": "P02",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "ed53f057b661836daeab68cff4d51c83b03acd8b893af922a6b60cb2baf4722e"
+    },
+    {
+      "versionCode": "P02-M-v1",
+      "familyCode": "P02",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "ac9ef4f573c30e33dcc306904e02948884f95cee8a2c1f26fff50e783f3349bb"
+    },
+    {
+      "versionCode": "P03-L-v1",
+      "familyCode": "P03",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "aec0a1bd9483b956c79a39df775391ea71e02889aedd47d264b5b6d285a6bc12"
+    },
+    {
+      "versionCode": "P03-M-v1",
+      "familyCode": "P03",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "b2d2bde8518a025e5544ae4960a9535b423c262fb84a2ab5e0d29dacb5ec4ca6"
+    },
+    {
+      "versionCode": "P04-L-v1",
+      "familyCode": "P04",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "79956b7ef0e6015627c9ada33c7a9334af88a8a85131df3ffa9621f6c4a045e3"
+    },
+    {
+      "versionCode": "P04-M-v1",
+      "familyCode": "P04",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "c6b74a11c54c98c0b5a6ea3a1b558a3a697b368e86d330ae993b3ab6a69284ae"
+    },
+    {
+      "versionCode": "P05-L-v1",
+      "familyCode": "P05",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "633a64a78e3a7729722798c3b64eb6166906643822e61ca639f452b8c30e31b1"
+    },
+    {
+      "versionCode": "P05-M-v1",
+      "familyCode": "P05",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "f17a5ee98171a59208f077821707c309d41b27c61fa12c40736ae2f6bbaa5cd3"
+    },
+    {
+      "versionCode": "P06-L-v1",
+      "familyCode": "P06",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "48177ecf6bb257178719c87cbb193e5741018df20ec9f9f49f95d8835e0513e4"
+    },
+    {
+      "versionCode": "P06-M-v1",
+      "familyCode": "P06",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "0d8fb154fe3183fc70f12d0a20b5695ce43f0780f7ee2ae6ee29c739a82b400b"
+    },
+    {
+      "versionCode": "P07-L-v1",
+      "familyCode": "P07",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "fdc9a120d96dc20cd1574b290016606570f76efdb3bafef0c67e428a3d614d85"
+    },
+    {
+      "versionCode": "P07-M-v1",
+      "familyCode": "P07",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "1f98897b3bb4512e2d456be043110842e24528395b6139b9ea4d1836570e81d1"
+    },
+    {
+      "versionCode": "P08-L-v1",
+      "familyCode": "P08",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "819b99629131993b6522f9610daff30e459c8fee83ec3b195f3e95afd2b56521"
+    },
+    {
+      "versionCode": "P08-M-v1",
+      "familyCode": "P08",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "ce8555f30ab41154f0043c288a00e246363d532653b0c2b66cd9e767fcdadd68"
+    },
+    {
+      "versionCode": "P09-L-v1",
+      "familyCode": "P09",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "b5c59c4ea9e6227a571c649704783c3ff7fd97c0cfdacf604423e2f1f40f3490"
+    },
+    {
+      "versionCode": "P09-M-v1",
+      "familyCode": "P09",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "797ac13528220d7332eb86d8c665068ff879de0ceed3ab8d150f6759326e286f"
+    },
+    {
+      "versionCode": "P10-L-v1",
+      "familyCode": "P10",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "1204702710fce6aa28dab4c098f66ae408cf5188b9b409fc384ce3ed31d5dffb"
+    },
+    {
+      "versionCode": "P10-M-v1",
+      "familyCode": "P10",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "df410af10e24af2a03a28d1c4aa30474ac73660e59da3775b226a8b6dfcaa3f5"
+    },
+    {
+      "versionCode": "P11-L-v1",
+      "familyCode": "P11",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "56b621404f79deff1a881052cc22299abfdde86710ad7ecfc0a7a4aa342f6f1d"
+    },
+    {
+      "versionCode": "P11-M-v1",
+      "familyCode": "P11",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "48d846573dd97134d817505160d20d23a8f8e6745bcb19f286c2083084591942"
+    },
+    {
+      "versionCode": "P12-L-v1",
+      "familyCode": "P12",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "6b64b1c1f90d89a1f0f5915cfc270e8e07eeafbb345e1626f4713477a8d64abe"
+    },
+    {
+      "versionCode": "P12-M-v1",
+      "familyCode": "P12",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "a1cc6e43e42fe67be20e121b76e49b5d29474e41faa81c627f2e8ec003ad96f2"
+    },
+    {
+      "versionCode": "P13-L-v1",
+      "familyCode": "P13",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "92b9389a063c537bb4f4aadb9622e52a9c0daf4fe94eb2208d139d17954b5260"
+    },
+    {
+      "versionCode": "P13-M-v1",
+      "familyCode": "P13",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "28a7b26c4da786e177a83f7c342c4e069989d74d8ad685926e6e09ff33ed18d0"
+    },
+    {
+      "versionCode": "P14-L-v1",
+      "familyCode": "P14",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "55a24cc28b214991f42b9b7bcb2ccdc3e2b60d06d529baf78977601154afd04f"
+    },
+    {
+      "versionCode": "P14-M-v1",
+      "familyCode": "P14",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "fbb07d0cfb1619fbbeb016a089dfc3ab0614b1624d9e24353e58ddc32f85a7ab"
+    },
+    {
+      "versionCode": "P15-L-v1",
+      "familyCode": "P15",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "d54d02dfb0b39c2257cec556b4f54560d3813dabedfdfc5c1f667f60165f04be"
+    },
+    {
+      "versionCode": "P15-M-v1",
+      "familyCode": "P15",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "7262bc5a6e70381ae16e2945951ed1e65c18ca76a9b6282ed1a7557104ccac0d"
+    },
+    {
+      "versionCode": "P16-L-v1",
+      "familyCode": "P16",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "dbe3c6b72510ccd6577208a00b4ad0d234f28df575a9649f036a41ca11cefe92"
+    },
+    {
+      "versionCode": "P16-M-v1",
+      "familyCode": "P16",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "2ade2528e237705919c52208a5e0664509278c4cbe154afd1fcfc9073b1ed628"
+    },
+    {
+      "versionCode": "P17-L-v1",
+      "familyCode": "P17",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "61b18bd65b2605017fde41854fbc7391ebe25c12655383039b45b97f45d38a21"
+    },
+    {
+      "versionCode": "P17-M-v1",
+      "familyCode": "P17",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "d8ee02a9aa48be76f600590f5b581eb008c47189b8ffe297dcb3bd38036a628b"
+    },
+    {
+      "versionCode": "P18-EL-v1",
+      "familyCode": "P18",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "66ec776b7c54471f249327dbe725530b00649747f405f48fdc3cfe1be19628ac"
+    },
+    {
+      "versionCode": "P18-DB-v1",
+      "familyCode": "P18",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "339162153db518ab483f96036d6bdaa3a8c51a51ff1c4f7f89df2629c2f0b79d"
+    },
+    {
+      "versionCode": "P19-EL-v1",
+      "familyCode": "P19",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "e0dc28b00963ffb5485085060fae8e3a93cca2df0ffe1ba5b91b9386731c4893"
+    },
+    {
+      "versionCode": "P19-DB-v1",
+      "familyCode": "P19",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "4cc545cfd48a02769a60d6d2e75e06ddf3345c11055f5a8b9a24aefd1512d90d"
+    },
+    {
+      "versionCode": "P20-EL-v1",
+      "familyCode": "P20",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "20f5553f179b9b6ccf1aa8fa1f9d4d0630ae2394abb438ab62e7f363998d4307"
+    },
+    {
+      "versionCode": "P20-DB-v1",
+      "familyCode": "P20",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "ff956c787ebe7b47b117321ce033c483e6cb6ef4395c97a859169d83a5a11e1e"
+    },
+    {
+      "versionCode": "P21-L-v1",
+      "familyCode": "P21",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "24e6a01ea22d121f29b69e92b17e8ee898e1d0d394f10e9bf2e971ef2b03837d"
+    },
+    {
+      "versionCode": "P21-M-v1",
+      "familyCode": "P21",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "4d2e260e92e1cf6781aaefdfa65c2709d43009e6d994c8373c4a2a6f8b99e9b8"
+    },
+    {
+      "versionCode": "P22-L-v1",
+      "familyCode": "P22",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "5cf6d5c8d73be8b361d23173247b5e6b09475620feeeab3d81f0c725ad6bdd70"
+    },
+    {
+      "versionCode": "P22-M-v1",
+      "familyCode": "P22",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "202b08249485a9fad318138b3605e93b4d176fdf3780e14438fd47cdf6b9a6a7"
+    },
+    {
+      "versionCode": "P23-L-v1",
+      "familyCode": "P23",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "e4c489dd89eaeeb23d4478b89b5a67252ba9a1cc6dcb1d72e6708f0cb2a7fb5f"
+    },
+    {
+      "versionCode": "P23-M-v1",
+      "familyCode": "P23",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "85e12ca84de7a93acbe387ff611e429c1860bdf7298bf08391793f11dfbd4740"
+    },
+    {
+      "versionCode": "P24-L-v1",
+      "familyCode": "P24",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "8152315830a4a43f792fade6293e42138c1803e045f823e434ad30d50b1527ae"
+    },
+    {
+      "versionCode": "P24-M-v1",
+      "familyCode": "P24",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "d8e85e4d46b717d3571ff2e78eafad0031dcd21be5f1f781d9ec0f6e405dd064"
+    },
+    {
+      "versionCode": "P25-L-v1",
+      "familyCode": "P25",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "cca3a463b1428f07a029f842ffde4a6346f5a926ce85c37397aaa0f54070d02b"
+    },
+    {
+      "versionCode": "P25-M-v1",
+      "familyCode": "P25",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "54d351415b48fdd6c89de47d01fc5f723090f4490a0254478a81fa9b454dcfb9"
+    },
+    {
+      "versionCode": "P26-L-v1",
+      "familyCode": "P26",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "c0ab1d31e5b19692182edf2ab0ef7931bb8b1fb14ab2594ea1720a448cbeee93"
+    },
+    {
+      "versionCode": "P26-M-v1",
+      "familyCode": "P26",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "a69c626d6786ba728f61a9c075ff3a8fbaf389c3c2a844b937a77e00e2579085"
+    },
+    {
+      "versionCode": "P27-L-v1",
+      "familyCode": "P27",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "fa2fdc47c024fd77ca4ed9ebc552831b411b1343bdff9ea68faca4e49515b950"
+    },
+    {
+      "versionCode": "P27-M-v1",
+      "familyCode": "P27",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "322c634f12f3f91490681a67d2992b62f348b1b581d5c7692de5236608853ffa"
+    },
+    {
+      "versionCode": "P28-L-v1",
+      "familyCode": "P28",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "5dba050f0c82b3ad193bbf5740a8bc320d240441bf66b404cc336da9b864ebfa"
+    },
+    {
+      "versionCode": "P28-M-v1",
+      "familyCode": "P28",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "4da13202d4af6eec34f2735df15c6dbab839a46dcd2d434d61d3f3fa5664be0f"
+    },
+    {
+      "versionCode": "P29-L-v1",
+      "familyCode": "P29",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "92cb3f7312d3fd2f52462d9b4947fc4e0fe46279dc90ee5503f49b51c8ef8cf2"
+    },
+    {
+      "versionCode": "P29-M-v1",
+      "familyCode": "P29",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "dbc7b8346008e7acdaff1c7c9a543ebacec403dc1d40c77ddb4a9fcfec24361d"
+    },
+    {
+      "versionCode": "P30-L-v1",
+      "familyCode": "P30",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "1b3114f6b9191142a1c9930ad9503c1d2d668cdf9d5966fb48141d2b062893bc"
+    },
+    {
+      "versionCode": "P30-M-v1",
+      "familyCode": "P30",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "e8cc5fb8801379a988e2ece8171f3c28f73dfdb8452cb500c748902504664e1f"
+    },
+    {
+      "versionCode": "P31-L-v1",
+      "familyCode": "P31",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "30643bebdd0f338dd6750e8a2e57da534e25a11b806a463f11ea1418d4b894a4"
+    },
+    {
+      "versionCode": "P31-M-v1",
+      "familyCode": "P31",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "fb4c3287c56eb82295aa029b6c8c939f168ebc1953f3dd16e2182cfa5fe0a713"
+    },
+    {
+      "versionCode": "P32-L-v1",
+      "familyCode": "P32",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "554f032b5d80f0f1dbec712c41867b8cb6726624e3f77120518bde57c34edeb3"
+    },
+    {
+      "versionCode": "P32-M-v1",
+      "familyCode": "P32",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "f18727a80857310ade87a1152296591ed48f14455d21e5e347c45d166ad37b59"
+    },
+    {
+      "versionCode": "P33-L-v1",
+      "familyCode": "P33",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "38393aac9b268fbf9aff6d8414908bda957705017951f7ed3ca707eb4dd9686d"
+    },
+    {
+      "versionCode": "P33-M-v1",
+      "familyCode": "P33",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "d691a5bf701eb322f8a844e543ff5cced024c97b09da61487b053e1deb68b730"
+    },
+    {
+      "versionCode": "P34-L-v1",
+      "familyCode": "P34",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "6e9f096515ee305e437885456de6ff4e98a8be20446dea8e25347992b9f113eb"
+    },
+    {
+      "versionCode": "P34-M-v1",
+      "familyCode": "P34",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "4f2071f1ba1dd31d1fc6fcc5d327557aa6c4878fcf56ce4cd0205e142cda91e6"
+    },
+    {
+      "versionCode": "P35-L-v1",
+      "familyCode": "P35",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "f99462e435eef222ba9b2f73c7d7480da8f6b914a5682e23fc4d329d7427a3f9"
+    },
+    {
+      "versionCode": "P35-M-v1",
+      "familyCode": "P35",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "87e70828a2eceadf50d75f916f71f00d6a6bd69a3941da69a1973cb3d289f280"
+    },
+    {
+      "versionCode": "P36-L-v1",
+      "familyCode": "P36",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "68f5a7d740b12e28afc80f135ec11c57a498e906d067c52fee511779d31b90cb"
+    },
+    {
+      "versionCode": "P36-M-v1",
+      "familyCode": "P36",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "785ca9d8dc81e0813e525b0d410b08b83aa4dec0038133c8c1705b1c0060fa0b"
+    },
+    {
+      "versionCode": "P37-L-v1",
+      "familyCode": "P37",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "c4d31049213d77e235291c63f73c84031fbbe7c3b317cd545160e8fce1de25a8"
+    },
+    {
+      "versionCode": "P37-M-v1",
+      "familyCode": "P37",
+      "valid": true,
+      "blocked": false,
+      "issues": [],
+      "checksum": "b6ae4083aa084e57b5e4b9705e38c463385594c4940b503e6d9bc4a0eebf7ac5"
+    }
+  ]
+}
