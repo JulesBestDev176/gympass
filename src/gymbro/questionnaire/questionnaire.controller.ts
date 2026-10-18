@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Body, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Param, ParseIntPipe, UseGuards, Req } from '@nestjs/common';
 import { QuestionnaireService } from './questionnaire.service';
 import { GymbroJwtGuard } from '../auth/guards/gymbro-jwt.guard';
 import { QuestionnaireStep1Dto } from './dto/step1.dto';
@@ -16,6 +16,16 @@ export class QuestionnaireController {
   @Get()
   getMyProfile(@Req() req: any) {
     return this.service.getMyProfile(req.user.id);
+  }
+
+  @Patch('step/:step')
+  saveV3Step(@Req() req: any, @Param('step', ParseIntPipe) step: number, @Body() input: unknown) {
+    return this.service.saveV3Step(req.user.id, step, input);
+  }
+
+  @Post('validate')
+  validateV3(@Req() req: any) {
+    return this.service.validateV3(req.user.id);
   }
 
   @Post('step/1')

@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import { flattenV3, validateV3Step } from './questionnaire-v3';
 import { PrismaService } from '../../prisma/prisma.service';
 import { QuestionnaireStep1Dto } from './dto/step1.dto';
 import { QuestionnaireStep2Dto } from './dto/step2.dto';
@@ -18,7 +19,50 @@ export class QuestionnaireService {
   }
 
   async getMyProfile(userId: string) {
-    return this.getProfile(userId);
+    const profile = await this.getProfile(userId);
+    if (!profile.questionnaireV3) return profile;
+    return {
+      ...profile, ...flattenV3(profile.questionnaireV3),
+      questionnaireSchemaVersion: 'gymbro-questionnaire/3',
+      currentStep: profile.etapeActuelle, isComplete: profile.questionnaireComplet,
+    };
+  }
+
+  async saveV3Step(userId: string, step: number, input: unknown) {
+    const data = validateV3Step(step, input);
+    // One atomic JSONB merge prevents parallel saves of different steps from
+    // overwriting each other. Each step is replaced so removed answers disappear.
+    const patch = JSON.stringify({[`step${step}`]: data});
+    const rows = await this.prisma.$queryRaw<any[]>`
+      UPDATE "gymbro_user_profiles"
+      SET "questionnaireV3" = COALESCE("questionnaireV3", '{}'::jsonb) || ${patch}::jsonb,
+          "etapeActuelle" = GREATEST("etapeActuelle", ${step + 1}),
+          "questionnaireComplet" = false, "matchingStatus" = 'PENDING',
+          "matchingProgramId" = NULL, "updatedAt" = CURRENT_TIMESTAMP
+      WHERE "userId" = ${userId}
+      RETURNING "id"
+    `;
+    if (!rows.length) throw new NotFoundException('Profil introuvable');
+    return {saved: true, step, questionnaireSchemaVersion: 'gymbro-questionnaire/3'};
+  }
+
+  async validateV3(userId: string) {
+    const profile = await this.getProfile(userId);
+    const stored = profile.questionnaireV3 as Record<string, any> | null;
+    for (let step = 1; step <= 8; step++) {
+      if (!stored?.[`step${step}`]) throw new BadRequestException(`Complète l’étape ${step} avant de créer ton programme.`);
+      validateV3Step(step, stored[`step${step}`]);
+    }
+    const data = flattenV3(stored);
+    if (data.safetyStatus === 'NEEDSMEDICALREVIEW') {
+      throw new BadRequestException('La section santé nécessite un avis professionnel avant de créer un programme.');
+    }
+    const result = await this.prisma.gymbroUserProfile.updateMany({
+      where: {userId, updatedAt: profile.updatedAt},
+      data: {questionnaireComplet: true, etapeActuelle: 9, matchingStatus: 'NO_MATCH', matchingProgramId: null},
+    });
+    if (result.count !== 1) throw new ConflictException('Tes réponses ont changé. Vérifie-les et réessaie.');
+    return {isComplete: true, questionnaireSchemaVersion: 'gymbro-questionnaire/3', programStatus: 'CATALOG_PENDING'};
   }
 
   async saveStep1(userId: string, dto: QuestionnaireStep1Dto) {
@@ -113,6 +157,7 @@ export class QuestionnaireService {
 
   async submit(userId: string) {
     const profile = await this.getProfile(userId);
+    if (profile.questionnaireV3) return this.validateV3(userId);
 
     // Vérifier que les étapes obligatoires sont remplies
     const missingFields: string[] = [];
