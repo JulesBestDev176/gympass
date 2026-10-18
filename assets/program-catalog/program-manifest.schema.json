@@ -1,0 +1,298 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "gymbro-program-catalog/1",
+  "title": "GymBro Program Manifest",
+  "description": "JSON Schema (draft-07) for validating a GymBro ProgramManifest object.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "familyCode",
+    "versionCode",
+    "status",
+    "durationWeeks",
+    "goalCoverage",
+    "prescriptionPolicy",
+    "progressionPolicy",
+    "maxSessionMinutes",
+    "weeks"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "schemaVersion": {
+      "const": "gymbro-program-catalog/1",
+      "description": "Identifies this document as a GymBro program manifest version 1."
+    },
+    "familyCode": {
+      "type": "string",
+      "pattern": "^P[0-9]{2}$",
+      "description": "Family identifier, e.g. 'P01'."
+    },
+    "versionCode": {
+      "type": "string",
+      "description": "Unique version identifier, e.g. 'P01-L-v1'."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["DRAFT", "COACH_REVIEW", "VALIDATED", "PUBLISHED", "RETIRED"],
+      "description": "Editorial lifecycle status. Only PUBLISHED versions may be selected by the matching engine."
+    },
+    "durationWeeks": {
+      "const": 12,
+      "description": "All GymBro programs run exactly 12 weeks."
+    },
+    "goalCoverage": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["PRISE_MUSCLE", "FORME_GENERALE", "FORCE", "PERTE_GRAISSE"]
+      },
+      "minItems": 1,
+      "description": "Fitness goals covered by this program."
+    },
+    "prescriptionPolicy": {
+      "type": "string",
+      "description": "Identifier of the prescription policy, e.g. 'foundation-12w-v1'."
+    },
+    "progressionPolicy": {
+      "type": "string",
+      "description": "Identifier of the progression policy, e.g. 'double-progression-v1'."
+    },
+    "maxSessionMinutes": {
+      "type": "number",
+      "minimum": 1,
+      "description": "Maximum session duration in minutes (budget filter during matching)."
+    },
+    "weeks": {
+      "type": "array",
+      "minItems": 12,
+      "maxItems": 12,
+      "description": "Exactly 12 week definitions, weekNumber 1–12.",
+      "items": {
+        "$ref": "#/definitions/ProgramWeek"
+      }
+    },
+    "exerciseBindings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ExerciseBinding"
+      },
+      "description": "Optional exercise-to-media bindings included in the manifest."
+    },
+    "families": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["familyCode", "versionCode", "goalCoverage"],
+        "properties": {
+          "familyCode": { "type": "string" },
+          "versionCode": { "type": "string" },
+          "goalCoverage": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "description": "Optional inline family entries for duplicate-versionCode checks."
+    },
+    "reviewedAt": { "type": "string", "format": "date-time" },
+    "reviewAuthor": { "type": "string" },
+    "publishedAt": { "type": "string", "format": "date-time" },
+    "id": { "type": "string" }
+  },
+  "definitions": {
+    "ProgramWeek": {
+      "type": "object",
+      "required": ["weekNumber", "phaseNumber", "sessions"],
+      "additionalProperties": false,
+      "properties": {
+        "weekNumber": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12
+        },
+        "phaseNumber": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sessions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/CompiledSession"
+          }
+        }
+      }
+    },
+    "CompiledSession": {
+      "type": "object",
+      "required": [
+        "occurrenceCode",
+        "blueprintCode",
+        "sessionNumber",
+        "format",
+        "slots",
+        "estimatedSeconds"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "occurrenceCode": { "type": "string" },
+        "blueprintCode": { "type": "string" },
+        "sessionNumber": { "type": "integer", "minimum": 1 },
+        "format": { "type": "string", "enum": ["STANDARD", "CIRCUIT"] },
+        "slots": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/ProgramExerciseSlot" }
+        },
+        "rounds": { "type": ["integer", "null"], "minimum": 1 },
+        "betweenExerciseRestSeconds": { "type": ["integer", "null"], "minimum": 0 },
+        "betweenRoundRestSeconds": { "type": ["integer", "null"], "minimum": 0 },
+        "estimatedSeconds": { "type": "number", "minimum": 0 },
+        "measuredSeconds": { "type": ["number", "null"], "minimum": 0 }
+      },
+      "if": { "properties": { "format": { "const": "CIRCUIT" } } },
+      "then": {
+        "required": ["rounds", "betweenExerciseRestSeconds", "betweenRoundRestSeconds"],
+        "properties": {
+          "rounds": { "type": "integer", "minimum": 1 }
+        }
+      }
+    },
+    "ProgramExerciseSlot": {
+      "type": "object",
+      "required": ["slotCode", "role", "required", "prescription", "options"],
+      "additionalProperties": true,
+      "properties": {
+        "slotCode": { "type": "string" },
+        "role": { "type": "string" },
+        "required": { "type": "boolean" },
+        "prescription": { "$ref": "#/definitions/Prescription" },
+        "options": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/ProgramSlotOption" }
+        }
+      }
+    },
+    "Prescription": {
+      "type": "object",
+      "required": [
+        "metric",
+        "workingSets",
+        "restTargetSeconds",
+        "restAllowedMaxSeconds",
+        "loadConvention",
+        "initialLoadKg"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "metric": {
+          "type": "string",
+          "enum": ["REPS", "DURATION", "DISTANCE"]
+        },
+        "workingSets": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "repsMin": { "type": ["integer", "null"], "minimum": 0 },
+        "repsMax": { "type": ["integer", "null"], "minimum": 0 },
+        "durationMinSeconds": { "type": ["number", "null"], "minimum": 0 },
+        "durationMaxSeconds": { "type": ["number", "null"], "minimum": 0 },
+        "distanceMinMeters": { "type": ["number", "null"], "minimum": 0 },
+        "distanceMaxMeters": { "type": ["number", "null"], "minimum": 0 },
+        "targetRirMin": { "type": ["integer", "null"], "minimum": 0, "maximum": 10 },
+        "targetRirMax": { "type": ["integer", "null"], "minimum": 0, "maximum": 10 },
+        "restTargetSeconds": { "type": "number", "minimum": 0 },
+        "restAllowedMaxSeconds": { "type": "number", "minimum": 0 },
+        "loadConvention": {
+          "type": "string",
+          "enum": [
+            "TOTAL_EXTERNAL",
+            "PER_DUMBBELL",
+            "MACHINE_DISPLAY",
+            "ADDED_PLATES",
+            "ASSISTANCE",
+            "BAND_SETUP",
+            "BODYWEIGHT"
+          ]
+        },
+        "initialLoadKg": {
+          "type": ["string", "null"],
+          "description": "Decimal string or null (calibrate on first session)."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "metric": { "const": "REPS" } }
+          },
+          "then": {
+            "properties": {
+              "durationMinSeconds": { "type": "null" },
+              "durationMaxSeconds": { "type": "null" },
+              "distanceMinMeters": { "type": "null" },
+              "distanceMaxMeters": { "type": "null" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "metric": { "const": "DURATION" } }
+          },
+          "then": {
+            "properties": {
+              "repsMin": { "type": "null" },
+              "repsMax": { "type": "null" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "metric": { "const": "DISTANCE" } }
+          },
+          "then": {
+            "properties": {
+              "repsMin": { "type": "null" },
+              "repsMax": { "type": "null" },
+              "durationMinSeconds": { "type": "null" },
+              "durationMaxSeconds": { "type": "null" }
+            }
+          }
+        }
+      ]
+    },
+    "ProgramSlotOption": {
+      "type": "object",
+      "required": ["exerciseCode", "grade", "priority", "approved", "prescriptionOverride"],
+      "additionalProperties": true,
+      "properties": {
+        "exerciseCode": { "type": "string" },
+        "grade": {
+          "type": "string",
+          "enum": ["PRIMARY", "A1", "A2", "A3"],
+          "description": "X (refused substitution) is a rule code, not an option grade."
+        },
+        "priority": { "type": "integer", "minimum": 1 },
+        "approved": { "type": "boolean" },
+        "prescriptionOverride": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Partial Prescription override for this specific option."
+        }
+      }
+    },
+    "ExerciseBinding": {
+      "type": "object",
+      "required": ["exerciseCode", "sourceId", "sourceRevision", "reviewStatus"],
+      "additionalProperties": true,
+      "properties": {
+        "exerciseCode": { "type": "string" },
+        "sourceId": {
+          "type": "string",
+          "pattern": "^[0-9]{4}$",
+          "description": "4-digit zero-padded Flow catalog identifier, e.g. '0289'."
+        },
+        "sourceRevision": { "type": "string" },
+        "reviewStatus": {
+          "type": "string",
+          "enum": ["NEEDS_REVIEW", "VALIDATED", "REJECTED"]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,744 @@
+{
+  "schemaVersion": "gymbro-program-families/1",
+  "families": [
+    {
+      "familyCode": "P01",
+      "variantCodes": ["P01-L-v1", "P01-M-v1"],
+      "name": "Fondations 2 / muscle, force débutante ou forme",
+      "goalCoverage": ["PRISE_MUSCLE", "FORME_GENERALE", "FORCE"],
+      "entryPhase": "FOUNDATION",
+      "targetLevel": "DEBUTANT",
+      "sessionsPerWeek": 2,
+      "maxSessionMinutes": 50,
+      "weekBlueprints": [
+        ["D-A", "D-B"], ["D-A", "D-B"], ["D-A", "D-B"],
+        ["D-A", "D-B"], ["D-A", "D-B"], ["D-A", "D-B"],
+        ["D-A", "D-B"], ["D-A", "D-B"], ["D-A", "D-B"],
+        ["D-A", "D-B"], ["D-A", "D-B"], ["D-A", "D-B"]
+      ],
+      "prescriptionPolicy": "foundation-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Entrée technique, pas plan de force lourde"
+    },
+    {
+      "familyCode": "P02",
+      "variantCodes": ["P02-L-v1", "P02-M-v1"],
+      "name": "Fondations 3 / muscle, force débutante ou forme",
+      "goalCoverage": ["PRISE_MUSCLE", "FORME_GENERALE", "FORCE"],
+      "entryPhase": "FOUNDATION",
+      "targetLevel": "DEBUTANT",
+      "sessionsPerWeek": 3,
+      "maxSessionMinutes": 50,
+      "weekBlueprints": [
+        ["D-A", "D-B", "D-C"], ["D-A", "D-B", "D-C"], ["D-A", "D-B", "D-C"],
+        ["D-A", "D-B", "D-C"], ["D-A", "D-B", "D-C"], ["D-A", "D-B", "D-C"],
+        ["D-A", "D-B", "D-C"], ["D-A", "D-B", "D-C"], ["D-A", "D-B", "D-C"],
+        ["D-A", "D-B", "D-C"], ["D-A", "D-B", "D-C"], ["D-A", "D-B", "D-C"]
+      ],
+      "prescriptionPolicy": "foundation-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Espacer les full body si possible"
+    },
+    {
+      "familyCode": "P03",
+      "variantCodes": ["P03-L-v1", "P03-M-v1"],
+      "name": "Reprise 2 / reprise d'activité",
+      "goalCoverage": ["PRISE_MUSCLE", "FORME_GENERALE", "FORCE", "PERTE_GRAISSE"],
+      "entryPhase": "RETURN",
+      "targetLevel": "REPRISE",
+      "sessionsPerWeek": 2,
+      "maxSessionMinutes": 45,
+      "weekBlueprints": [
+        ["R-A", "R-B"], ["R-A", "R-B"], ["R-A", "R-B"],
+        ["R-A", "R-B"], ["R-A", "R-B"], ["R-A", "R-B"],
+        ["R-A", "R-B"], ["R-A", "R-B"], ["R-A", "R-B"],
+        ["R-A", "R-B"], ["R-A", "R-B"], ["R-A", "R-B"]
+      ],
+      "prescriptionPolicy": "return-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Objectif principal conservé, phase de retour prioritaire"
+    },
+    {
+      "familyCode": "P04",
+      "variantCodes": ["P04-L-v1", "P04-M-v1"],
+      "name": "Reprise 3 / reprise d'activité",
+      "goalCoverage": ["PRISE_MUSCLE", "FORME_GENERALE", "FORCE", "PERTE_GRAISSE"],
+      "entryPhase": "RETURN",
+      "targetLevel": "REPRISE",
+      "sessionsPerWeek": 3,
+      "maxSessionMinutes": 50,
+      "weekBlueprints": [
+        ["R-A", "R-B", "D-C"], ["R-A", "R-B", "D-C"], ["R-A", "R-B", "D-C"],
+        ["R-A", "R-B", "D-C"], ["R-A", "R-B", "D-C"], ["R-A", "R-B", "D-C"],
+        ["R-A", "R-B", "D-C"], ["R-A", "R-B", "D-C"], ["R-A", "R-B", "D-C"],
+        ["R-A", "R-B", "D-C"], ["R-A", "R-B", "D-C"], ["R-A", "R-B", "D-C"]
+      ],
+      "prescriptionPolicy": "return-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Pas de volume intermédiaire immédiatement"
+    },
+    {
+      "familyCode": "P05",
+      "variantCodes": ["P05-L-v1", "P05-M-v1"],
+      "name": "Muscle full body 3",
+      "goalCoverage": ["PRISE_MUSCLE"],
+      "entryPhase": "HYPERTROPHY",
+      "targetLevel": "INTERMEDIAIRE",
+      "sessionsPerWeek": 3,
+      "maxSessionMinutes": 70,
+      "weekBlueprints": [
+        ["H-A", "H-B", "H-C"], ["H-A", "H-B", "H-C"], ["H-A", "H-B", "H-C"],
+        ["H-A", "H-B", "H-C"], ["H-A", "H-B", "H-C"], ["H-A", "H-B", "H-C"],
+        ["H-A", "H-B", "H-C"], ["H-A", "H-B", "H-C"], ["H-A", "H-B", "H-C"],
+        ["H-A", "H-B", "H-C"], ["H-A", "H-B", "H-C"], ["H-A", "H-B", "H-C"]
+      ],
+      "prescriptionPolicy": "hypertrophy-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Priorités via variantes approuvées"
+    },
+    {
+      "familyCode": "P06",
+      "variantCodes": ["P06-L-v1", "P06-M-v1"],
+      "name": "Muscle haut/bas 4",
+      "goalCoverage": ["PRISE_MUSCLE"],
+      "entryPhase": "HYPERTROPHY",
+      "targetLevel": "INTERMEDIAIRE",
+      "sessionsPerWeek": 4,
+      "maxSessionMinutes": 70,
+      "weekBlueprints": [
+        ["U-A", "L-A", "U-B", "L-B"], ["U-A", "L-A", "U-B", "L-B"], ["U-A", "L-A", "U-B", "L-B"],
+        ["U-A", "L-A", "U-B", "L-B"], ["U-A", "L-A", "U-B", "L-B"], ["U-A", "L-A", "U-B", "L-B"],
+        ["U-A", "L-A", "U-B", "L-B"], ["U-A", "L-A", "U-B", "L-B"], ["U-A", "L-A", "U-B", "L-B"],
+        ["U-A", "L-A", "U-B", "L-B"], ["U-A", "L-A", "U-B", "L-B"], ["U-A", "L-A", "U-B", "L-B"]
+      ],
+      "prescriptionPolicy": "hypertrophy-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Deux expositions haut et bas"
+    },
+    {
+      "familyCode": "P07",
+      "variantCodes": ["P07-L-v1", "P07-M-v1"],
+      "name": "Force générale 3",
+      "goalCoverage": ["FORCE"],
+      "entryPhase": "STRENGTH",
+      "targetLevel": "INTERMEDIAIRE",
+      "sessionsPerWeek": 3,
+      "maxSessionMinutes": 75,
+      "weekBlueprints": [
+        ["F-A", "F-B", "F-C"], ["F-A", "F-B", "F-C"], ["F-A", "F-B", "F-C"],
+        ["F-A", "F-B", "F-C"], ["F-A", "F-B", "F-C"], ["F-A", "F-B", "F-C"],
+        ["F-A", "F-B", "F-C"], ["F-A", "F-B", "F-C"], ["F-A", "F-B", "F-C"],
+        ["F-A", "F-B", "F-C"], ["F-A", "F-B", "F-C"], ["F-A", "F-B", "F-C"]
+      ],
+      "prescriptionPolicy": "strength-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Rack, barre, banc, sécurité obligatoires"
+    },
+    {
+      "familyCode": "P08",
+      "variantCodes": ["P08-L-v1", "P08-M-v1"],
+      "name": "Force haut/bas 4",
+      "goalCoverage": ["FORCE"],
+      "entryPhase": "STRENGTH",
+      "targetLevel": "INTERMEDIAIRE",
+      "sessionsPerWeek": 4,
+      "maxSessionMinutes": 75,
+      "weekBlueprints": [
+        ["FU-A", "FL-A", "FU-B", "FL-B"], ["FU-A", "FL-A", "FU-B", "FL-B"], ["FU-A", "FL-A", "FU-B", "FL-B"],
+        ["FU-A", "FL-A", "FU-B", "FL-B"], ["FU-A", "FL-A", "FU-B", "FL-B"], ["FU-A", "FL-A", "FU-B", "FL-B"],
+        ["FU-A", "FL-A", "FU-B", "FL-B"], ["FU-A", "FL-A", "FU-B", "FL-B"], ["FU-A", "FL-A", "FU-B", "FL-B"],
+        ["FU-A", "FL-A", "FU-B", "FL-B"], ["FU-A", "FL-A", "FU-B", "FL-B"], ["FU-A", "FL-A", "FU-B", "FL-B"]
+      ],
+      "prescriptionPolicy": "strength-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Même exigence de spécificité que P07"
+    },
+    {
+      "familyCode": "P09",
+      "variantCodes": ["P09-L-v1", "P09-M-v1"],
+      "name": "Préserver le muscle 2 / perte de graisse",
+      "goalCoverage": ["PERTE_GRAISSE"],
+      "entryPhase": "FAT_LOSS",
+      "targetLevel": "DEBUTANT",
+      "sessionsPerWeek": 2,
+      "maxSessionMinutes": 50,
+      "weekBlueprints": [
+        ["D-A", "D-B"], ["D-A", "D-B"], ["D-A", "D-B"],
+        ["D-A", "D-B"], ["D-A", "D-B"], ["D-A", "D-B"],
+        ["D-A", "D-B"], ["D-A", "D-B"], ["D-A", "D-B"],
+        ["D-A", "D-B"], ["D-A", "D-B"], ["D-A", "D-B"]
+      ],
+      "prescriptionPolicy": "fat-loss-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Activité aérobie extérieure à ces séances, individualisée"
+    },
+    {
+      "familyCode": "P10",
+      "variantCodes": ["P10-L-v1", "P10-M-v1"],
+      "name": "Préserver le muscle 3 / perte de graisse",
+      "goalCoverage": ["PERTE_GRAISSE"],
+      "entryPhase": "FAT_LOSS",
+      "targetLevel": "INTERMEDIAIRE",
+      "sessionsPerWeek": 3,
+      "maxSessionMinutes": 70,
+      "weekBlueprints": [
+        ["H-A", "H-B", "H-C"], ["H-A", "H-B", "H-C"], ["H-A", "H-B", "H-C"],
+        ["H-A", "H-B", "H-C"], ["H-A", "H-B", "H-C"], ["H-A", "H-B", "H-C"],
+        ["H-A", "H-B", "H-C"], ["H-A", "H-B", "H-C"], ["H-A", "H-B", "H-C"],
+        ["H-A", "H-B", "H-C"], ["H-A", "H-B", "H-C"], ["H-A", "H-B", "H-C"]
+      ],
+      "prescriptionPolicy": "fat-loss-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Pas de cardio obligatoire après chaque séance"
+    },
+    {
+      "familyCode": "P11",
+      "variantCodes": ["P11-L-v1", "P11-M-v1"],
+      "name": "Forme globale 2",
+      "goalCoverage": ["FORME_GENERALE"],
+      "entryPhase": "GENERAL_FITNESS",
+      "targetLevel": "DEBUTANT",
+      "sessionsPerWeek": 2,
+      "maxSessionMinutes": 55,
+      "weekBlueprints": [
+        ["G-A", "G-B"], ["G-A", "G-B"], ["G-A", "G-B"],
+        ["G-A", "G-B"], ["G-A", "G-B"], ["G-A", "G-B"],
+        ["G-A", "G-B"], ["G-A", "G-B"], ["G-A", "G-B"],
+        ["G-A", "G-B"], ["G-A", "G-B"], ["G-A", "G-B"]
+      ],
+      "prescriptionPolicy": "general-fitness-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Cardio progressif selon tolérance et activité existante"
+    },
+    {
+      "familyCode": "P12",
+      "variantCodes": ["P12-L-v1", "P12-M-v1"],
+      "name": "Complément sport 2",
+      "goalCoverage": ["FORME_GENERALE", "PRISE_MUSCLE"],
+      "entryPhase": "SPORT_SUPPORT",
+      "targetLevel": "INTERMEDIAIRE",
+      "sessionsPerWeek": 2,
+      "maxSessionMinutes": 55,
+      "weekBlueprints": [
+        ["S-A", "S-B"], ["S-A", "S-B"], ["S-A", "S-B"],
+        ["S-A", "S-B"], ["S-A", "S-B"], ["S-A", "S-B"],
+        ["S-A", "S-B"], ["S-A", "S-B"], ["S-A", "S-B"],
+        ["S-A", "S-B"], ["S-A", "S-B"], ["S-A", "S-B"]
+      ],
+      "prescriptionPolicy": "sport-support-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Revue coach du calendrier avant publication individuelle"
+    },
+    {
+      "familyCode": "P13",
+      "variantCodes": ["P13-L-v1", "P13-M-v1"],
+      "name": "Express 2 / muscle et forme",
+      "goalCoverage": ["PRISE_MUSCLE", "FORME_GENERALE"],
+      "entryPhase": "COMPACT",
+      "targetLevel": "DEBUTANT",
+      "sessionsPerWeek": 2,
+      "maxSessionMinutes": 30,
+      "weekBlueprints": [
+        ["E30-A", "E30-B"], ["E30-A", "E30-B"], ["E30-A", "E30-B"],
+        ["E30-A", "E30-B"], ["E30-A", "E30-B"], ["E30-A", "E30-B"],
+        ["E30-A", "E30-B"], ["E30-A", "E30-B"], ["E30-A", "E30-B"],
+        ["E30-A", "E30-B"], ["E30-A", "E30-B"], ["E30-A", "E30-B"]
+      ],
+      "prescriptionPolicy": "compact-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Dose minimale, échauffement inclus ; repos 90 s, pas de charge lourde spécifique"
+    },
+    {
+      "familyCode": "P14",
+      "variantCodes": ["P14-L-v1", "P14-M-v1"],
+      "name": "Express 3 / muscle et forme",
+      "goalCoverage": ["PRISE_MUSCLE", "FORME_GENERALE"],
+      "entryPhase": "COMPACT",
+      "targetLevel": "INTERMEDIAIRE",
+      "sessionsPerWeek": 3,
+      "maxSessionMinutes": 35,
+      "weekBlueprints": [
+        ["EX-A", "EX-B", "EX-C"], ["EX-A", "EX-B", "EX-C"], ["EX-A", "EX-B", "EX-C"],
+        ["EX-A", "EX-B", "EX-C"], ["EX-A", "EX-B", "EX-C"], ["EX-A", "EX-B", "EX-C"],
+        ["EX-A", "EX-B", "EX-C"], ["EX-A", "EX-B", "EX-C"], ["EX-A", "EX-B", "EX-C"],
+        ["EX-A", "EX-B", "EX-C"], ["EX-A", "EX-B", "EX-C"], ["EX-A", "EX-B", "EX-C"]
+      ],
+      "prescriptionPolicy": "compact-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Pas substitut de P05 : volume inférieur assumé et communiqué"
+    },
+    {
+      "familyCode": "P15",
+      "variantCodes": ["P15-L-v1", "P15-M-v1"],
+      "name": "Minimal 1 séance / maintien",
+      "goalCoverage": ["FORME_GENERALE", "PRISE_MUSCLE"],
+      "entryPhase": "MINIMAL",
+      "targetLevel": "DEBUTANT",
+      "sessionsPerWeek": 1,
+      "maxSessionMinutes": 65,
+      "weekBlueprints": [
+        ["MIN-A"], ["MIN-A"], ["MIN-A"],
+        ["MIN-A"], ["MIN-A"], ["MIN-A"],
+        ["MIN-A"], ["MIN-A"], ["MIN-A"],
+        ["MIN-A"], ["MIN-A"], ["MIN-A"]
+      ],
+      "prescriptionPolicy": "minimal-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Objectif maintien et santé ; présenter clairement la limite de fréquence"
+    },
+    {
+      "familyCode": "P16",
+      "variantCodes": ["P16-L-v1", "P16-M-v1"],
+      "name": "Push/Pull/Legs 3 / hypertrophie",
+      "goalCoverage": ["PRISE_MUSCLE"],
+      "entryPhase": "HYPERTROPHY",
+      "targetLevel": "INTERMEDIAIRE",
+      "sessionsPerWeek": 3,
+      "maxSessionMinutes": 70,
+      "weekBlueprints": [
+        ["PP-A", "PP-B", "PP-C"], ["PP-A", "PP-B", "PP-C"], ["PP-A", "PP-B", "PP-C"],
+        ["PP-A", "PP-B", "PP-C"], ["PP-A", "PP-B", "PP-C"], ["PP-A", "PP-B", "PP-C"],
+        ["PP-A", "PP-B", "PP-C"], ["PP-A", "PP-B", "PP-C"], ["PP-A", "PP-B", "PP-C"],
+        ["PP-A", "PP-B", "PP-C"], ["PP-A", "PP-B", "PP-C"], ["PP-A", "PP-B", "PP-C"]
+      ],
+      "prescriptionPolicy": "hypertrophy-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Dose modérée, fréquence de chaque groupe explicitée"
+    },
+    {
+      "familyCode": "P17",
+      "variantCodes": ["P17-L-v1", "P17-M-v1"],
+      "name": "Push/Pull/Legs 6 / volume redistribué",
+      "goalCoverage": ["PRISE_MUSCLE"],
+      "entryPhase": "DISTRIBUTED_6",
+      "targetLevel": "AVANCE",
+      "sessionsPerWeek": 6,
+      "maxSessionMinutes": 45,
+      "weekBlueprints": [
+        ["PP6-A", "PP6-B", "PP6-C", "PP6-A", "PP6-B", "PP6-C"],
+        ["PP6-A", "PP6-B", "PP6-C", "PP6-A", "PP6-B", "PP6-C"],
+        ["PP6-A", "PP6-B", "PP6-C", "PP6-A", "PP6-B", "PP6-C"],
+        ["PP6-A", "PP6-B", "PP6-C", "PP6-A", "PP6-B", "PP6-C"],
+        ["PP6-A", "PP6-B", "PP6-C", "PP6-A", "PP6-B", "PP6-C"],
+        ["PP6-A", "PP6-B", "PP6-C", "PP6-A", "PP6-B", "PP6-C"],
+        ["PP6-A", "PP6-B", "PP6-C", "PP6-A", "PP6-B", "PP6-C"],
+        ["PP6-A", "PP6-B", "PP6-C", "PP6-A", "PP6-B", "PP6-C"],
+        ["PP6-A", "PP6-B", "PP6-C", "PP6-A", "PP6-B", "PP6-C"],
+        ["PP6-A", "PP6-B", "PP6-C", "PP6-A", "PP6-B", "PP6-C"],
+        ["PP6-A", "PP6-B", "PP6-C", "PP6-A", "PP6-B", "PP6-C"],
+        ["PP6-A", "PP6-B", "PP6-C", "PP6-A", "PP6-B", "PP6-C"]
+      ],
+      "prescriptionPolicy": "distributed-6-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Petites séances PP6, pas doublement automatique du volume"
+    },
+    {
+      "familyCode": "P18",
+      "variantCodes": ["P18-EL-v1", "P18-DB-v1"],
+      "name": "Domicile 2 équipé",
+      "goalCoverage": ["PRISE_MUSCLE", "FORME_GENERALE"],
+      "entryPhase": "EQUIPPED_HOME_OUTDOOR",
+      "targetLevel": "DEBUTANT",
+      "sessionsPerWeek": 2,
+      "maxSessionMinutes": 45,
+      "weekBlueprints": [
+        ["DOM-A", "DOM-B"], ["DOM-A", "DOM-B"], ["DOM-A", "DOM-B"],
+        ["DOM-A", "DOM-B"], ["DOM-A", "DOM-B"], ["DOM-A", "DOM-B"],
+        ["DOM-A", "DOM-B"], ["DOM-A", "DOM-B"], ["DOM-A", "DOM-B"],
+        ["DOM-A", "DOM-B"], ["DOM-A", "DOM-B"], ["DOM-A", "DOM-B"]
+      ],
+      "prescriptionPolicy": "equipped-home-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Versions EL/DB et leurs ancrages requis ; pas BW sans matériel"
+    },
+    {
+      "familyCode": "P19",
+      "variantCodes": ["P19-EL-v1", "P19-DB-v1"],
+      "name": "Domicile 3 équipé",
+      "goalCoverage": ["PRISE_MUSCLE", "FORME_GENERALE"],
+      "entryPhase": "EQUIPPED_HOME_OUTDOOR",
+      "targetLevel": "DEBUTANT",
+      "sessionsPerWeek": 3,
+      "maxSessionMinutes": 45,
+      "weekBlueprints": [
+        ["DOM-A", "DOM-B", "DOM-C"], ["DOM-A", "DOM-B", "DOM-C"], ["DOM-A", "DOM-B", "DOM-C"],
+        ["DOM-A", "DOM-B", "DOM-C"], ["DOM-A", "DOM-B", "DOM-C"], ["DOM-A", "DOM-B", "DOM-C"],
+        ["DOM-A", "DOM-B", "DOM-C"], ["DOM-A", "DOM-B", "DOM-C"], ["DOM-A", "DOM-B", "DOM-C"],
+        ["DOM-A", "DOM-B", "DOM-C"], ["DOM-A", "DOM-B", "DOM-C"], ["DOM-A", "DOM-B", "DOM-C"]
+      ],
+      "prescriptionPolicy": "equipped-home-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Choix de résistance réel ; pas de promesse de kilos pour un élastique"
+    },
+    {
+      "familyCode": "P20",
+      "variantCodes": ["P20-EL-v1", "P20-DB-v1"],
+      "name": "Plein air / stade 2 équipé",
+      "goalCoverage": ["FORME_GENERALE", "PERTE_GRAISSE"],
+      "entryPhase": "EQUIPPED_HOME_OUTDOOR",
+      "targetLevel": "DEBUTANT",
+      "sessionsPerWeek": 2,
+      "maxSessionMinutes": 50,
+      "weekBlueprints": [
+        ["EXT-A", "EXT-B"], ["EXT-A", "EXT-B"], ["EXT-A", "EXT-B"],
+        ["EXT-A", "EXT-B"], ["EXT-A", "EXT-B"], ["EXT-A", "EXT-B"],
+        ["EXT-A", "EXT-B"], ["EXT-A", "EXT-B"], ["EXT-A", "EXT-B"],
+        ["EXT-A", "EXT-B"], ["EXT-A", "EXT-B"], ["EXT-A", "EXT-B"]
+      ],
+      "prescriptionPolicy": "equipped-home-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Versions EL/DB ; surface, météo, installation et eau à confirmer"
+    },
+    {
+      "familyCode": "P21",
+      "variantCodes": ["P21-L-v1", "P21-M-v1"],
+      "name": "Muscle full body 2",
+      "goalCoverage": ["PRISE_MUSCLE"],
+      "entryPhase": "HYPERTROPHY",
+      "targetLevel": "INTERMEDIAIRE",
+      "sessionsPerWeek": 2,
+      "maxSessionMinutes": 70,
+      "weekBlueprints": [
+        ["H2-A", "H2-B"], ["H2-A", "H2-B"], ["H2-A", "H2-B"],
+        ["H2-A", "H2-B"], ["H2-A", "H2-B"], ["H2-A", "H2-B"],
+        ["H2-A", "H2-B"], ["H2-A", "H2-B"], ["H2-A", "H2-B"],
+        ["H2-A", "H2-B"], ["H2-A", "H2-B"], ["H2-A", "H2-B"]
+      ],
+      "prescriptionPolicy": "hypertrophy-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Volume de départ modéré, possibilité de progresser avec deux séances"
+    },
+    {
+      "familyCode": "P22",
+      "variantCodes": ["P22-L-v1", "P22-M-v1"],
+      "name": "Forme globale 3",
+      "goalCoverage": ["FORME_GENERALE"],
+      "entryPhase": "GENERAL_FITNESS",
+      "targetLevel": "DEBUTANT",
+      "sessionsPerWeek": 3,
+      "maxSessionMinutes": 55,
+      "weekBlueprints": [
+        ["G-A", "G-B", "G-C"], ["G-A", "G-B", "G-C"], ["G-A", "G-B", "G-C"],
+        ["G-A", "G-B", "G-C"], ["G-A", "G-B", "G-C"], ["G-A", "G-B", "G-C"],
+        ["G-A", "G-B", "G-C"], ["G-A", "G-B", "G-C"], ["G-A", "G-B", "G-C"],
+        ["G-A", "G-B", "G-C"], ["G-A", "G-B", "G-C"], ["G-A", "G-B", "G-C"]
+      ],
+      "prescriptionPolicy": "general-fitness-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Cardio court intégré, activité totale déjà pratiquée prise en compte"
+    },
+    {
+      "familyCode": "P23",
+      "variantCodes": ["P23-L-v1", "P23-M-v1"],
+      "name": "Priorité dos/épaules 4",
+      "goalCoverage": ["PRISE_MUSCLE"],
+      "entryPhase": "HYPERTROPHY",
+      "targetLevel": "INTERMEDIAIRE",
+      "sessionsPerWeek": 4,
+      "maxSessionMinutes": 70,
+      "weekBlueprints": [
+        ["UBK-A", "L-A", "UBK-B", "L-B"], ["UBK-A", "L-A", "UBK-B", "L-B"], ["UBK-A", "L-A", "UBK-B", "L-B"],
+        ["UBK-A", "L-A", "UBK-B", "L-B"], ["UBK-A", "L-A", "UBK-B", "L-B"], ["UBK-A", "L-A", "UBK-B", "L-B"],
+        ["UBK-A", "L-A", "UBK-B", "L-B"], ["UBK-A", "L-A", "UBK-B", "L-B"], ["UBK-A", "L-A", "UBK-B", "L-B"],
+        ["UBK-A", "L-A", "UBK-B", "L-B"], ["UBK-A", "L-A", "UBK-B", "L-B"], ["UBK-A", "L-A", "UBK-B", "L-B"]
+      ],
+      "prescriptionPolicy": "hypertrophy-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Réallocation du haut, deux séances bas conservées"
+    },
+    {
+      "familyCode": "P24",
+      "variantCodes": ["P24-L-v1", "P24-M-v1"],
+      "name": "Priorité bas du corps 4",
+      "goalCoverage": ["PRISE_MUSCLE"],
+      "entryPhase": "HYPERTROPHY",
+      "targetLevel": "INTERMEDIAIRE",
+      "sessionsPerWeek": 4,
+      "maxSessionMinutes": 70,
+      "weekBlueprints": [
+        ["UR-A", "LG-A", "UR-B", "LG-B"], ["UR-A", "LG-A", "UR-B", "LG-B"], ["UR-A", "LG-A", "UR-B", "LG-B"],
+        ["UR-A", "LG-A", "UR-B", "LG-B"], ["UR-A", "LG-A", "UR-B", "LG-B"], ["UR-A", "LG-A", "UR-B", "LG-B"],
+        ["UR-A", "LG-A", "UR-B", "LG-B"], ["UR-A", "LG-A", "UR-B", "LG-B"], ["UR-A", "LG-A", "UR-B", "LG-B"],
+        ["UR-A", "LG-A", "UR-B", "LG-B"], ["UR-A", "LG-A", "UR-B", "LG-B"], ["UR-A", "LG-A", "UR-B", "LG-B"]
+      ],
+      "prescriptionPolicy": "hypertrophy-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Deux séances haut conservées ; aucune attribution selon sexe"
+    },
+    {
+      "familyCode": "P25",
+      "variantCodes": ["P25-L-v1", "P25-M-v1"],
+      "name": "Préserver le muscle 4 / perte de graisse",
+      "goalCoverage": ["PERTE_GRAISSE", "PRISE_MUSCLE"],
+      "entryPhase": "FAT_LOSS",
+      "targetLevel": "INTERMEDIAIRE",
+      "sessionsPerWeek": 4,
+      "maxSessionMinutes": 70,
+      "weekBlueprints": [
+        ["U-A", "L-A", "U-B", "L-B"], ["U-A", "L-A", "U-B", "L-B"], ["U-A", "L-A", "U-B", "L-B"],
+        ["U-A", "L-A", "U-B", "L-B"], ["U-A", "L-A", "U-B", "L-B"], ["U-A", "L-A", "U-B", "L-B"],
+        ["U-A", "L-A", "U-B", "L-B"], ["U-A", "L-A", "U-B", "L-B"], ["U-A", "L-A", "U-B", "L-B"],
+        ["U-A", "L-A", "U-B", "L-B"], ["U-A", "L-A", "U-B", "L-B"], ["U-A", "L-A", "U-B", "L-B"]
+      ],
+      "prescriptionPolicy": "fat-loss-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Dose selon récupération ; pas de cardio punitif ni perte localisée"
+    },
+    {
+      "familyCode": "P26",
+      "variantCodes": ["P26-L-v1", "P26-M-v1"],
+      "name": "Muscle full body compact 3",
+      "goalCoverage": ["PRISE_MUSCLE"],
+      "entryPhase": "COMPACT",
+      "targetLevel": "INTERMEDIAIRE",
+      "sessionsPerWeek": 3,
+      "maxSessionMinutes": 45,
+      "weekBlueprints": [
+        ["MC-A", "MC-B", "MC-C"], ["MC-A", "MC-B", "MC-C"], ["MC-A", "MC-B", "MC-C"],
+        ["MC-A", "MC-B", "MC-C"], ["MC-A", "MC-B", "MC-C"], ["MC-A", "MC-B", "MC-C"],
+        ["MC-A", "MC-B", "MC-C"], ["MC-A", "MC-B", "MC-C"], ["MC-A", "MC-B", "MC-C"],
+        ["MC-A", "MC-B", "MC-C"], ["MC-A", "MC-B", "MC-C"], ["MC-A", "MC-B", "MC-C"]
+      ],
+      "prescriptionPolicy": "compact-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Dose inférieure à P05 assumée ; progression suivie"
+    },
+    {
+      "familyCode": "P27",
+      "variantCodes": ["P27-L-v1", "P27-M-v1"],
+      "name": "Fondations courtes 3",
+      "goalCoverage": ["PRISE_MUSCLE", "FORME_GENERALE"],
+      "entryPhase": "COMPACT",
+      "targetLevel": "DEBUTANT",
+      "sessionsPerWeek": 3,
+      "maxSessionMinutes": 30,
+      "weekBlueprints": [
+        ["E30-A", "E30-B", "E30-C"], ["E30-A", "E30-B", "E30-C"], ["E30-A", "E30-B", "E30-C"],
+        ["E30-A", "E30-B", "E30-C"], ["E30-A", "E30-B", "E30-C"], ["E30-A", "E30-B", "E30-C"],
+        ["E30-A", "E30-B", "E30-C"], ["E30-A", "E30-B", "E30-C"], ["E30-A", "E30-B", "E30-C"],
+        ["E30-A", "E30-B", "E30-C"], ["E30-A", "E30-B", "E30-C"], ["E30-A", "E30-B", "E30-C"]
+      ],
+      "prescriptionPolicy": "compact-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Petites séances sans test maximal ; préparation incluse"
+    },
+    {
+      "familyCode": "P28",
+      "variantCodes": ["P28-L-v1", "P28-M-v1"],
+      "name": "Force générale 2",
+      "goalCoverage": ["FORCE"],
+      "entryPhase": "STRENGTH",
+      "targetLevel": "INTERMEDIAIRE",
+      "sessionsPerWeek": 2,
+      "maxSessionMinutes": 75,
+      "weekBlueprints": [
+        ["F2-A", "F2-B"], ["F2-A", "F2-B"], ["F2-A", "F2-B"],
+        ["F2-A", "F2-B"], ["F2-A", "F2-B"], ["F2-A", "F2-B"],
+        ["F2-A", "F2-B"], ["F2-A", "F2-B"], ["F2-A", "F2-B"],
+        ["F2-A", "F2-B"], ["F2-A", "F2-B"], ["F2-A", "F2-B"]
+      ],
+      "prescriptionPolicy": "strength-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Rack, sécurités, barre et banc ; charge propre à chaque mouvement"
+    },
+    {
+      "familyCode": "P29",
+      "variantCodes": ["P29-L-v1", "P29-M-v1"],
+      "name": "Haut/bas + PPL compact 5",
+      "goalCoverage": ["PRISE_MUSCLE"],
+      "entryPhase": "HYPERTROPHY",
+      "targetLevel": "INTERMEDIAIRE",
+      "sessionsPerWeek": 5,
+      "maxSessionMinutes": 65,
+      "weekBlueprints": [
+        ["U-A", "L-A", "T5-P", "T5-R", "T5-L"], ["U-A", "L-A", "T5-P", "T5-R", "T5-L"],
+        ["U-A", "L-A", "T5-P", "T5-R", "T5-L"], ["U-A", "L-A", "T5-P", "T5-R", "T5-L"],
+        ["U-A", "L-A", "T5-P", "T5-R", "T5-L"], ["U-A", "L-A", "T5-P", "T5-R", "T5-L"],
+        ["U-A", "L-A", "T5-P", "T5-R", "T5-L"], ["U-A", "L-A", "T5-P", "T5-R", "T5-L"],
+        ["U-A", "L-A", "T5-P", "T5-R", "T5-L"], ["U-A", "L-A", "T5-P", "T5-R", "T5-L"],
+        ["U-A", "L-A", "T5-P", "T5-R", "T5-L"], ["U-A", "L-A", "T5-P", "T5-R", "T5-L"]
+      ],
+      "prescriptionPolicy": "hypertrophy-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Cinq séances, volume redistribué ; calendrier avec deux jours sans musculation"
+    },
+    {
+      "familyCode": "P30",
+      "variantCodes": ["P30-L-v1", "P30-M-v1"],
+      "name": "Haut/bas roulant 3",
+      "goalCoverage": ["PRISE_MUSCLE"],
+      "entryPhase": "HYPERTROPHY",
+      "targetLevel": "INTERMEDIAIRE",
+      "sessionsPerWeek": 3,
+      "maxSessionMinutes": 70,
+      "weekBlueprints": [
+        ["U-A", "L-A", "U-B"],
+        ["L-B", "U-A", "L-A"],
+        ["U-B", "L-B", "U-A"],
+        ["L-A", "U-B", "L-B"],
+        ["U-A", "L-A", "U-B"],
+        ["L-B", "U-A", "L-A"],
+        ["U-B", "L-B", "U-A"],
+        ["L-A", "U-B", "L-B"],
+        ["U-A", "L-A", "U-B"],
+        ["L-B", "U-A", "L-A"],
+        ["U-B", "L-B", "U-A"],
+        ["L-A", "U-B", "L-B"]
+      ],
+      "prescriptionPolicy": "hypertrophy-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Rotation R4 : S1=U-A/L-A/U-B, S2=L-B/U-A/L-A, S3=U-B/L-B/U-A, S4=L-A/U-B/L-B — répétée 3 fois sur 12 semaines, 36 séances totales"
+    },
+    {
+      "familyCode": "P31",
+      "variantCodes": ["P31-L-v1", "P31-M-v1"],
+      "name": "Continuité compacte 2",
+      "goalCoverage": ["FORME_GENERALE", "PRISE_MUSCLE"],
+      "entryPhase": "COMPACT",
+      "targetLevel": "INTERMEDIAIRE",
+      "sessionsPerWeek": 2,
+      "maxSessionMinutes": 40,
+      "weekBlueprints": [
+        ["MT-A", "MT-B"], ["MT-A", "MT-B"], ["MT-A", "MT-B"],
+        ["MT-A", "MT-B"], ["MT-A", "MT-B"], ["MT-A", "MT-B"],
+        ["MT-A", "MT-B"], ["MT-A", "MT-B"], ["MT-A", "MT-B"],
+        ["MT-A", "MT-B"], ["MT-A", "MT-B"], ["MT-A", "MT-B"]
+      ],
+      "prescriptionPolicy": "compact-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Dose réduite à comparer à son historique ; aucun maintien garanti"
+    },
+    {
+      "familyCode": "P32",
+      "variantCodes": ["P32-L-v1", "P32-M-v1"],
+      "name": "Transition planifiée 4 vers 2",
+      "goalCoverage": ["PRISE_MUSCLE"],
+      "entryPhase": "TRANSITION_4_TO_2",
+      "targetLevel": "INTERMEDIAIRE",
+      "sessionsPerWeek": 4,
+      "maxSessionMinutes": 70,
+      "weekBlueprints": [
+        ["U-A", "L-A", "U-B", "L-B"],
+        ["U-A", "L-A", "U-B", "L-B"],
+        ["U-A", "L-A", "U-B", "L-B"],
+        ["U-A", "L-A", "U-B", "L-B"],
+        ["H2-A", "H2-B"],
+        ["H2-A", "H2-B"],
+        ["H2-A", "H2-B"],
+        ["H2-A", "H2-B"],
+        ["H2-A", "H2-B"],
+        ["H2-A", "H2-B"],
+        ["H2-A", "H2-B"],
+        ["H2-A", "H2-B"]
+      ],
+      "prescriptionPolicy": "transition-4to2-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "S1–S4 : 4 séances/semaine (U-A/L-A/U-B/L-B) ; S5–S12 : 2 séances/semaine (H2-A/H2-B). Transition explicite, recalibration des exercices nouveaux à S5"
+    },
+    {
+      "familyCode": "P33",
+      "variantCodes": ["P33-L-v1", "P33-M-v1"],
+      "name": "Force 5 jours / ULF",
+      "goalCoverage": ["FORCE", "PRISE_MUSCLE"],
+      "entryPhase": "STRENGTH",
+      "targetLevel": "AVANCE",
+      "sessionsPerWeek": 5,
+      "maxSessionMinutes": 80,
+      "weekBlueprints": [
+        ["ULF-A", "ULF-B", "ULF-C", "ULF-A", "ULF-B"],
+        ["ULF-A", "ULF-B", "ULF-C", "ULF-A", "ULF-B"],
+        ["ULF-A", "ULF-B", "ULF-C", "ULF-A", "ULF-B"],
+        ["ULF-A", "ULF-B", "ULF-C", "ULF-A", "ULF-B"],
+        ["ULF-A", "ULF-B", "ULF-C", "ULF-A", "ULF-B"],
+        ["ULF-A", "ULF-B", "ULF-C", "ULF-A", "ULF-B"],
+        ["ULF-A", "ULF-B", "ULF-C", "ULF-A", "ULF-B"],
+        ["ULF-A", "ULF-B", "ULF-C", "ULF-A", "ULF-B"],
+        ["ULF-A", "ULF-B", "ULF-C", "ULF-A", "ULF-B"],
+        ["ULF-A", "ULF-B", "ULF-C", "ULF-A", "ULF-B"],
+        ["ULF-A", "ULF-B", "ULF-C", "ULF-A", "ULF-B"],
+        ["ULF-A", "ULF-B", "ULF-C", "ULF-A", "ULF-B"]
+      ],
+      "prescriptionPolicy": "strength-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Rack, barre, banc et sécurités obligatoires ; repos 180–240 s sur ULF-A/B (FS/FB/FR)"
+    },
+    {
+      "familyCode": "P34",
+      "variantCodes": ["P34-L-v1", "P34-M-v1"],
+      "name": "Priorité haut du corps 3j",
+      "goalCoverage": ["PRISE_MUSCLE"],
+      "entryPhase": "HYPERTROPHY",
+      "targetLevel": "INTERMEDIAIRE",
+      "sessionsPerWeek": 3,
+      "maxSessionMinutes": 75,
+      "weekBlueprints": [
+        ["PH-A", "PH-B", "H-C"], ["PH-A", "PH-B", "H-C"], ["PH-A", "PH-B", "H-C"],
+        ["PH-A", "PH-B", "H-C"], ["PH-A", "PH-B", "H-C"], ["PH-A", "PH-B", "H-C"],
+        ["PH-A", "PH-B", "H-C"], ["PH-A", "PH-B", "H-C"], ["PH-A", "PH-B", "H-C"],
+        ["PH-A", "PH-B", "H-C"], ["PH-A", "PH-B", "H-C"], ["PH-A", "PH-B", "H-C"]
+      ],
+      "prescriptionPolicy": "hypertrophy-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Réallocation de séries H-A/H-B ; pas ajout de volume global ; SQ et HN maintenus"
+    },
+    {
+      "familyCode": "P35",
+      "variantCodes": ["P35-L-v1", "P35-M-v1"],
+      "name": "Priorité bas du corps 3j",
+      "goalCoverage": ["PRISE_MUSCLE"],
+      "entryPhase": "HYPERTROPHY",
+      "targetLevel": "INTERMEDIAIRE",
+      "sessionsPerWeek": 3,
+      "maxSessionMinutes": 75,
+      "weekBlueprints": [
+        ["PB-A", "PB-B", "H-A"], ["PB-A", "PB-B", "H-A"], ["PB-A", "PB-B", "H-A"],
+        ["PB-A", "PB-B", "H-A"], ["PB-A", "PB-B", "H-A"], ["PB-A", "PB-B", "H-A"],
+        ["PB-A", "PB-B", "H-A"], ["PB-A", "PB-B", "H-A"], ["PB-A", "PB-B", "H-A"],
+        ["PB-A", "PB-B", "H-A"], ["PB-A", "PB-B", "H-A"], ["PB-A", "PB-B", "H-A"]
+      ],
+      "prescriptionPolicy": "hypertrophy-12w-v1",
+      "progressionPolicy": "double-progression-v1",
+      "notes": "Réallocation ; aucun stéréotype bas/haut selon genre ; HP et HR maintenus"
+    },
+    {
+      "familyCode": "P36",
+      "variantCodes": ["P36-L-v1", "P36-M-v1"],
+      "name": "Circuit training 2j",
+      "goalCoverage": ["FORME_GENERALE", "PERTE_GRAISSE"],
+      "entryPhase": "CIRCUIT",
+      "targetLevel": "DEBUTANT",
+      "sessionsPerWeek": 2,
+      "maxSessionMinutes": 50,
+      "format": "CIRCUIT",
+      "weekBlueprints": [
+        ["CT-A", "CT-B"], ["CT-A", "CT-B"], ["CT-A", "CT-B"],
+        ["CT-A", "CT-B"], ["CT-A", "CT-B"], ["CT-A", "CT-B"],
+        ["CT-A", "CT-B"], ["CT-A", "CT-B"], ["CT-A", "CT-B"],
+        ["CT-A", "CT-B"], ["CT-A", "CT-B"], ["CT-A", "CT-B"]
+      ],
+      "prescriptionPolicy": "circuit-12w-v1",
+      "progressionPolicy": "circuit-progression-v1",
+      "notes": "Format circuit ; repos 30–45 s inter-exercices, 90–120 s inter-tours ; S1–S2 = 2 tours, référence = 3 tours ; RIR 3–4"
+    },
+    {
+      "familyCode": "P37",
+      "variantCodes": ["P37-L-v1", "P37-M-v1"],
+      "name": "Circuit training 3j",
+      "goalCoverage": ["FORME_GENERALE", "PERTE_GRAISSE"],
+      "entryPhase": "CIRCUIT",
+      "targetLevel": "INTERMEDIAIRE",
+      "sessionsPerWeek": 3,
+      "maxSessionMinutes": 50,
+      "format": "CIRCUIT",
+      "weekBlueprints": [
+        ["CT-A", "CT-B", "CT-A"], ["CT-A", "CT-B", "CT-A"], ["CT-A", "CT-B", "CT-A"],
+        ["CT-A", "CT-B", "CT-A"], ["CT-A", "CT-B", "CT-A"], ["CT-A", "CT-B", "CT-A"],
+        ["CT-A", "CT-B", "CT-A"], ["CT-A", "CT-B", "CT-A"], ["CT-A", "CT-B", "CT-A"],
+        ["CT-A", "CT-B", "CT-A"], ["CT-A", "CT-B", "CT-A"], ["CT-A", "CT-B", "CT-A"]
+      ],
+      "prescriptionPolicy": "circuit-12w-v1",
+      "progressionPolicy": "circuit-progression-v1",
+      "notes": "Même format circuit ; troisième séance = CT-A (séquence fixe CT-A/CT-B/CT-A) ; nouvelle rotation exige une nouvelle version approuvée"
+    }
+  ]
+}
