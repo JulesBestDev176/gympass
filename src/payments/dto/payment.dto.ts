@@ -1,14 +1,15 @@
-import { IsString, IsInt, IsEnum, IsOptional, Min, Matches } from 'class-validator';
+import { IsString, IsInt, IsEnum, IsOptional, IsUUID, Min, Max, Matches } from 'class-validator';
 import { PaymentMode, PaymentType } from '@prisma/client';
 
 export class CreatePaymentDto {
+  @IsOptional() @IsUUID() requestId?: string;
   @IsString() memberId: string;
 
   @IsEnum(PaymentType) type: PaymentType;
 
   // RECHARGE_CARTE uniquement
   @IsOptional() @IsString() sessionCardId?: string;
-  @IsOptional() @IsInt() @Min(1) nbSeances?: number;
+  @IsOptional() @IsInt() @Min(1) @Max(1000) nbSeances?: number;
 
   @IsEnum(PaymentMode) mode: PaymentMode;
 
