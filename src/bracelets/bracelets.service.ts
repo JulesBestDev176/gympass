@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { BraceletEntriesQuery } from './bracelet-entries.dto';
 
 @Injectable()
 export class BraceletsService {
@@ -80,6 +81,40 @@ export class BraceletsService {
       revenuToday: today._sum.montantFcfa ?? 0,
       ventesMois: month._count,
       revenuMois: month._sum.montantFcfa ?? 0,
+    };
+  }
+
+  async findEntries(gymId: string, query: BraceletEntriesQuery) {
+    if (query.month && query.date) throw new BadRequestException('Choisissez un jour ou un mois.');
+    const now = new Date();
+    const month = query.month ?? `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
+    const start = new Date(`${query.date ?? `${month}-01`}T00:00:00.000Z`);
+    if (!Number.isFinite(start.getTime()) || start.getUTCFullYear() < 2000) throw new BadRequestException('Période invalide.');
+    const end = new Date(start);
+    if (query.date) end.setUTCDate(end.getUTCDate() + 1);
+    else end.setUTCMonth(end.getUTCMonth() + 1);
+    const where = { gymId, createdAt: { gte: start, lt: end } };
+    if (query.cursor && !await this.prisma.braceletVente.findFirst({
+      where: { ...where, id: query.cursor }, select: { id: true },
+    })) throw new BadRequestException('Curseur invalide. Actualisez la liste.');
+    const limit = query.limit ?? 20;
+    const [rows, totals] = await this.prisma.$transaction([
+      this.prisma.braceletVente.findMany({
+        where, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], take: limit + 1,
+        ...(query.cursor ? { cursor: { id: query.cursor }, skip: 1 } : {}),
+        select: {
+          id: true, createdAt: true, montantFcfa: true,
+          bracelet: { select: { numero: true } },
+          user: { select: { id: true, nom: true, prenom: true } },
+        },
+      }),
+      this.prisma.braceletVente.aggregate({ where, _count: true, _sum: { montantFcfa: true } }),
+    ]);
+    const hasMore = rows.length > limit;
+    const items = rows.slice(0, limit);
+    return {
+      items, nextCursor: hasMore ? items[items.length - 1].id : null,
+      total: totals._count, montantTotal: totals._sum.montantFcfa ?? 0,
     };
   }
 }

@@ -1,4 +1,3 @@
-import { BraceletsModule } from './bracelets/bracelets.module';
 import { PlatformBillingModule } from './platform-billing/platform-billing.module';
 import { BillingAccessModule } from './platform-billing/access.module';
 import { Module } from '@nestjs/common';
@@ -23,6 +22,8 @@ import { SchedulerModule } from './scheduler/scheduler.module';
 import { HealthController } from './health.controller';
 import { GymbroModule } from './gymbro/gymbro.module';
 import { MonitoringModule } from './monitoring/monitoring.module';
+import { BraceletsModule } from './bracelets/bracelets.module';
+import { FinancesModule } from './finances/finances.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { MonitoringModule } from './monitoring/monitoring.module';
     SchedulerModule,
     GymbroModule,
     BraceletsModule,
+    FinancesModule,
   ],
   controllers: [HealthController],
 })
