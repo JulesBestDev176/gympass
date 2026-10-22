@@ -106,7 +106,7 @@ export class MembersService {
     const now = new Date();
     const dateExpiration = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 23, 59, 59, 999));
     return this.prisma.$transaction(async (tx) => {
-      // Serialize allocation, duplicate checks and idempotent retries for this gym.
+      // Serialize allocation and idempotent retries for this gym.
       await tx.$queryRawUnsafe('SELECT id FROM gyms WHERE id=$1 FOR UPDATE', gymId);
       const gym = await tx.gym.findUnique({ where: { id: gymId } });
       if (!gym) throw new NotFoundException('Gym introuvable');
@@ -131,8 +131,6 @@ export class MembersService {
       const expected = sessionOnly ? sessions * gym.prixSeance : gym.fraisInscription;
       if (dto.montantAttendu !== undefined && dto.montantAttendu !== expected)
         throw new ConflictException('Les tarifs ont changé. Actualisez les tarifs avant de valider.');
-      const duplicate = await tx.member.findFirst({ where: { gymId, telephone: dto.telephone } });
-      if (duplicate) throw new ConflictException(`${dto.telephone} est déjà utilisé par ${duplicate.prenom} ${duplicate.nom} (${duplicate.numeroCarte}).`);
       const numeroCarte = await this.generateNumeroCarte(tx, gymId);
       const member = await tx.member.create({ data: {
         gymId, numeroCarte, registrationRequestId: dto.registrationRequestId, qrCode: `GYMPASS-SN-${gymId}-${numeroCarte}`,
