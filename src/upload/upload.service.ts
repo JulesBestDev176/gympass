@@ -3,6 +3,9 @@ import { ConfigService } from '@nestjs/config';
 import * as Minio from 'minio';
 import { v4 as uuid } from 'uuid';
 import * as path from 'path';
+import axios from 'axios';
+import type sharp from 'sharp';
+const createReceiptImage: typeof sharp = require('sharp');
 
 @Injectable()
 export class UploadService {
@@ -47,6 +50,18 @@ export class UploadService {
       await this.client.setBucketPolicy(this.bucket, policy);
       this.logger.log(`Bucket "${this.bucket}" créé avec politique publique en lecture.`);
     }
+  }
+
+  async readReceiptPhoto(url?: string | null): Promise<Buffer | null> {
+    // Only our immutable photo objects may be fetched when generating a receipt.
+    const prefix = `${this.publicBase}/photos/`;
+    if (!url?.startsWith(prefix) || !/^[a-zA-Z0-9-]+\.(png|jpe?g|webp)$/i.test(url.slice(prefix.length))) return null;
+    try {
+      const r = await axios.get(url, { responseType: 'arraybuffer', timeout: 3000,
+        maxRedirects: 0, maxContentLength: 4 * 1024 * 1024 });
+      return await createReceiptImage(Buffer.from(r.data), { limitInputPixels: 16000000 })
+        .rotate().resize(256, 256, { fit: 'cover' }).png().toBuffer();
+    } catch { return null; }
   }
 
   async uploadPhoto(

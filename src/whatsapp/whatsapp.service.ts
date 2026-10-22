@@ -58,6 +58,14 @@ export class WhatsappService {
   }
 
   async sendImage(to: string, image: Buffer, caption: string): Promise<WhatsappDelivery> {
+    return this.sendMedia(to, image, caption, 'image/png', 'carte-gympass.png');
+  }
+
+  async sendReceipt(to: string, pdf: Buffer, caption: string, filename: string): Promise<WhatsappDelivery> {
+    return this.sendMedia(to, pdf, caption, 'application/pdf', filename);
+  }
+
+  private async sendMedia(to: string, image: Buffer, caption: string, mimeType: string, filename: string): Promise<WhatsappDelivery> {
     if (!this.apiKey) return { status: 'unconfigured' };
     const phone = this.formatPhone(to);
     if (!/^[1-9]\d{6,14}$/.test(phone)) return { status: 'invalid_phone' };
@@ -72,13 +80,13 @@ export class WhatsappService {
       if (String(session.status).toUpperCase() !== 'READY') return { status: 'disconnected' };
       const url = `${this.baseUrl}/sessions/${encodeURIComponent(session.id)}`;
       const form = new FormData();
-      form.append('file', new Blob([new Uint8Array(image)], { type: 'image/png' }), 'carte-gympass.png');
+      form.append('file', new Blob([new Uint8Array(image)], { type: mimeType }), filename);
       const { data: media } = await axios.post(`${url}/media`, form, { ...options, timeout: 10000, maxBodyLength: 5 * 1024 * 1024, maxContentLength: 65536 });
       const mediaId = typeof media?.id === 'string' ? media.id : media?.mediaId;
       if (typeof mediaId !== 'string' || !mediaId) return { status: 'failed' };
       sending = true;
       const { data } = await axios.post(`${url}/messages/media`, {
-        chatId: `${phone}@s.whatsapp.net`, mediaId, mimeType: 'image/png', filename: 'carte-gympass.png', caption: caption.slice(0, 1024),
+        chatId: `${phone}@s.whatsapp.net`, mediaId, mimeType, filename, caption: caption.slice(0, 1024),
       }, options);
       if (['failed', 'error', 'undelivered', 'rejected'].includes(String(data?.status).toLowerCase())) return { status: 'failed' };
       const messageId = typeof data?.id === 'string' ? data.id : data?._id;

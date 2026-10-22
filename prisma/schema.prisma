@@ -239,6 +239,12 @@ model BraceletVente {
 // ─────────────────────────── PAYMENT ──────────────────────────────────────────
 
 model Payment {
+  requestId String?
+  receiptData Json?
+  receiptWhatsappStatus String?
+  receiptWhatsappAttemptedAt DateTime?
+  receiptWhatsappMessageId String?
+  receiptWhatsappRecipient String?
   id            String      @id @default(cuid())
   gymId         String
   memberId      String
@@ -263,6 +269,8 @@ model Payment {
   @@index([userId])
   @@index([createdAt])
   @@unique([memberId, moisCouvert])
+  @@unique([gymId, requestId])
+  @@index([receiptWhatsappStatus, createdAt])
   @@map("payments")
 }
 
