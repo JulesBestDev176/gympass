@@ -22,11 +22,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     // ── Logging détaillé uniquement pour les 500 ──────────────────────────────
     if (status === HttpStatus.INTERNAL_SERVER_ERROR) {
-      const err = exception as any;
+      const sensitive = /\/(?:auth|users)(?:\/|$)/.test(request.url.split('?')[0]);
+      const err = (sensitive ? new Error('Détails sensibles masqués sur ce parcours de compte.') : exception) as any;
 
       // Contexte de la requête
-      const reqInfo = `${request.method} ${request.url}`;
-      const body = request.body && Object.keys(request.body).length
+      const reqInfo = `${request.method} ${request.url.split('?')[0]}`;
+      const body = sensitive ? '[masqué]' : request.body && Object.keys(request.body).length
         ? JSON.stringify(request.body)
         : '(no body)';
 

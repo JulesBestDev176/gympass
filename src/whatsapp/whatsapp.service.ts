@@ -72,8 +72,14 @@ export class WhatsappService {
       `GymBro 💪`);
   }
 
+  async sendGymbroPasswordResetOtp(telephone: string, otp: string, prenom: string): Promise<WhatsappDelivery> {
+    return this.send(telephone,
+      `Bonjour ${prenom},\n\nTon code de récupération GymBro : ${otp}\n\n` +
+      `Il expire dans 10 minutes. Ne le partage pas. Si tu n’as pas demandé ce code, ignore ce message.\n\nGymBro`);
+  }
+
   // Envoi des identifiants à un nouveau gérant
-  async sendCredentials(telephone: string, email: string, password: string, prenom: string): Promise<void> {
+  async sendCredentials(telephone: string, email: string, password: string, prenom: string): Promise<WhatsappDelivery> {
     const message =
       `Bonjour ${prenom} ! 👋\n\n` +
       `Votre compte GymPass SN a été créé.\n\n` +
@@ -81,18 +87,18 @@ export class WhatsappService {
       `🔑 Mot de passe temporaire : ${password}\n\n` +
       `Connectez-vous et changez votre mot de passe dès votre première connexion.\n\n` +
       `GymPass SN`;
-    await this.send(telephone, message);
+    return this.send(telephone, message);
   }
 
   // Envoi d'un OTP pour réinitialisation de mot de passe
-  async sendOtp(telephone: string, otp: string, prenom: string): Promise<void> {
+  async sendOtp(telephone: string, otp: string, prenom: string): Promise<WhatsappDelivery> {
     const message =
       `Bonjour ${prenom},\n\n` +
       `Votre code de réinitialisation GymPass SN :\n\n` +
       `🔐 *${otp}*\n\n` +
       `Ce code expire dans 10 minutes. Ne le partagez pas.\n\n` +
       `GymPass SN`;
-    await this.send(telephone, message);
+    return this.send(telephone, message);
   }
 
   // Envoi du QR code d'un membre (URL de l'image)

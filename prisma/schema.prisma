@@ -105,6 +105,14 @@ model User {
   fcmToken           String?
   otpCode            String?
   otpExpiresAt       DateTime?
+  otpAttempts        Int       @default(0)
+  otpRequestedAt     DateTime?
+  otpWindowStartedAt DateTime?
+  otpRequests        Int       @default(0)
+  passwordResetTokenHash String?
+  passwordResetExpiresAt DateTime?
+  passwordRenewedAt  DateTime?
+  authVersion        Int       @default(0)
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
@@ -113,6 +121,7 @@ model User {
   entries  Entry[]
 
   @@index([gymId])
+  @@unique([gymId, telephone])
   @@map("users")
 }
 

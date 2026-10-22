@@ -4,7 +4,27 @@ const assert = require('node:assert/strict');
 const axios = require('axios').default;
 const { WhatsappService } = require('./whatsapp.service.ts');
 const { GymService } = require('../gym/gym.service.ts');
+const { UsersService } = require('../users/users.service.ts');
 const config = (values = {}) => ({ get: key => ({ RELAYIO_BASE_URL: 'https://relay.example/v1', RELAYIO_API_KEY: 'test-key', RELAYIO_SESSION_ID: 'session-a', ...values })[key] });
+
+test('creating staff sends generated credentials automatically through Relayio', async () => {
+ const get=mock.method(axios,'get',async()=>({data:[{id:'session-a',status:'READY'}]}));
+ const post=mock.method(axios,'post',async(url,body)=>{
+  assert.equal(url,'https://relay.example/v1/sessions/session-a/messages/text');
+  assert.equal(body.chatId,'221771234567@s.whatsapp.net');
+  assert.match(body.body,/awa.diop@fitness-dakar.sn/);
+  assert.match(body.body,/test-only-temporary/);
+  assert.match(body.body,/Awa/);
+  return {data:{id:'message-staff',status:'pending'}};
+ });
+ try {
+  const service=new UsersService({gym:{findUnique:async()=>({nom:'Fitness Dakar'})},user:{findFirst:async()=>null,create:async({data})=>({id:'staff',...data})}},new WhatsappService(config()));
+  const user=await service.create('gym',{prenom:'Awa',nom:'Diop',telephone:'771234567',password:'test-only-temporary'});
+  assert.equal(post.mock.callCount(),1);
+  assert.equal(user.whatsapp.status,'accepted');
+  assert.equal(user.passwordHash,undefined);
+ } finally {get.mock.restore();post.mock.restore();}
+});
 
 test('GymBro credentials use the configured READY session and x-api-key, with one POST', async () => {
   const get = mock.method(axios, 'get', async (url, options) => {

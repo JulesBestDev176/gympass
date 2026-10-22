@@ -1,3 +1,4 @@
+import { publicStaffUser } from '../auth/password-security';
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { IsString, IsInt, IsOptional, Min, IsNotEmpty } from 'class-validator';
 import * as bcrypt from 'bcryptjs';
@@ -96,7 +97,7 @@ export class GymService {
       orderBy: { createdAt: 'desc' },
       include: { gym: { select: { id: true, nom: true, slug: true } } },
     });
-    return users.map(({ passwordHash, ...u }) => u);
+    return users.map((user) => ({ ...publicStaffUser(user), gym: user.gym }));
   }
 
   async findAllGymbroUsers() {
