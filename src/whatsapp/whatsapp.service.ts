@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 
 export interface WhatsappDelivery {
-  status: 'accepted' | 'failed' | 'unconfigured' | 'disconnected' | 'invalid_phone';
+  status: 'accepted' | 'failed' | 'unconfigured' | 'disconnected' | 'invalid_phone' | 'unconfirmed';
   messageId?: string;
 }
 
@@ -54,6 +54,43 @@ export class WhatsappService {
       // Axios errors include request headers and message contents; never log them.
       this.logger.warn('Envoi WhatsApp non confirmé par Relayio.');
       return { status: 'failed' };
+    }
+  }
+
+  async sendImage(to: string, image: Buffer, caption: string): Promise<WhatsappDelivery> {
+    if (!this.apiKey) return { status: 'unconfigured' };
+    const phone = this.formatPhone(to);
+    if (!/^[1-9]\d{6,14}$/.test(phone)) return { status: 'invalid_phone' };
+    if (!image.length || image.length > 4 * 1024 * 1024) return { status: 'failed' };
+    let sending = false;
+    try {
+      const options = { headers: { 'x-api-key': this.apiKey }, timeout: 6000, maxRedirects: 0 };
+      const { data: sessions } = await axios.get(`${this.baseUrl}/sessions`, options);
+      if (!Array.isArray(sessions)) return { status: 'failed' };
+      const session = this.sessionId ? sessions.find(s => s.id === this.sessionId || s._id === this.sessionId) : sessions.length === 1 ? sessions[0] : undefined;
+      if (!session || typeof session.id !== 'string' || !session.id) return { status: 'failed' };
+      if (String(session.status).toUpperCase() !== 'READY') return { status: 'disconnected' };
+      const url = `${this.baseUrl}/sessions/${encodeURIComponent(session.id)}`;
+      const form = new FormData();
+      form.append('file', new Blob([new Uint8Array(image)], { type: 'image/png' }), 'carte-gympass.png');
+      const { data: media } = await axios.post(`${url}/media`, form, { ...options, timeout: 10000, maxBodyLength: 5 * 1024 * 1024, maxContentLength: 65536 });
+      const mediaId = typeof media?.id === 'string' ? media.id : media?.mediaId;
+      if (typeof mediaId !== 'string' || !mediaId) return { status: 'failed' };
+      sending = true;
+      const { data } = await axios.post(`${url}/messages/media`, {
+        chatId: `${phone}@s.whatsapp.net`, mediaId, mimeType: 'image/png', filename: 'carte-gympass.png', caption: caption.slice(0, 1024),
+      }, options);
+      if (['failed', 'error', 'undelivered', 'rejected'].includes(String(data?.status).toLowerCase())) return { status: 'failed' };
+      const messageId = typeof data?.id === 'string' ? data.id : data?._id;
+      if (typeof messageId !== 'string' || !messageId) return { status: 'unconfirmed' };
+      this.logger.log('Carte prise en charge par Relayio ; livraison non confirmée.');
+      return { status: 'accepted', messageId };
+    } catch (error) {
+      // Upload failures cannot have sent a message. Once sending starts, a lost
+      // reply is ambiguous: reserve the attempt to prevent duplicate delivery.
+      const refusal = axios.isAxiosError(error) && error.response && [400, 401, 403, 404, 405, 413, 415, 422, 429].includes(error.response.status);
+      this.logger.warn('Transmission de la carte WhatsApp non confirmée.');
+      return { status: sending && !refusal ? 'unconfirmed' : 'failed' };
     }
   }
 

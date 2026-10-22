@@ -137,6 +137,9 @@ model Member {
   telephone      String
   photoUrl       String?
   carteActive    Boolean  @default(true)
+  cardWhatsappStatus String?
+  cardWhatsappAttemptedAt DateTime?
+  cardWhatsappMessageId String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 

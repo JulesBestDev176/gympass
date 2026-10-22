@@ -19,6 +19,7 @@ fi
 
 # Isolated staff release: do not execute unrelated migrations or seed production.
 node /app/scripts/staff-release-preflight.cjs
+node /app/scripts/member-card-preflight.cjs
 
 echo "Starting application..."
 exec "$@"
