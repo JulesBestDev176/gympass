@@ -26,7 +26,7 @@ export class MembersController {
 
   @Post()
   create(@CurrentUser() user: any, @Body() dto: CreateMemberDto) {
-    return this.membersService.create(user.gymId, dto);
+    return this.membersService.create(user.gymId, user.id, dto);
   }
 
   @Patch(':id')

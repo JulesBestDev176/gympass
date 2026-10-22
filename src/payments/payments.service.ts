@@ -56,58 +56,38 @@ export class PaymentsService {
     switch (dto.type) {
       // ── Abonnement mensuel ──────────────────────────────────────────────────
       case PaymentType.ABONNEMENT: {
-        formule = 'Mensuel';
-        montantFcfa = dto.montantOverride ?? gym.prixMensualite;
-
-        const now = new Date();
-        const dateDebut = now;
-        let dateExpiration: Date;
-
-        // Chercher le dernier abonnement mensuel (actif ou expiré)
-        const dernierSub = await this.prisma.subscription.findFirst({
-          where: { memberId: member.id, formule: 'Mensuel' },
-          orderBy: { dateExpiration: 'desc' },
-        });
-
-        if (dernierSub && now <= new Date(dernierSub.dateExpiration)) {
-          // Renouvellement dans les temps → on repart de la date d'expiration existante
-          dateExpiration = new Date(dernierSub.dateExpiration);
-          dateExpiration.setMonth(dateExpiration.getMonth() + 1);
-        } else {
-          // Première inscription ou renouvellement tardif → aujourd'hui est la référence
-          dateExpiration = new Date(now);
-          dateExpiration.setMonth(dateExpiration.getMonth() + 1);
+        if (!dto.moisCouvert || !/^\d{4}-(0[1-9]|1[0-2])$/.test(dto.moisCouvert))
+          throw new BadRequestException('Choisissez le mois couvert (YYYY-MM).');
+        const [year, month] = dto.moisCouvert.split('-').map(Number);
+        const dateDebut = new Date(Date.UTC(year, month - 1, 1));
+        const dateExpiration = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
+        const amount = dto.montantOverride ?? gym.prixMensualite;
+        let payment;
+        try {
+          payment = await this.prisma.$transaction(async tx => {
+            if (await tx.payment.findFirst({ where: { memberId: member.id, moisCouvert: dto.moisCouvert } }))
+              throw new BadRequestException('Cette mensualité est déjà enregistrée.');
+            // Unique payment first: a competing request cannot create a subscription or notify.
+            const record = await tx.payment.create({ data: {
+              gymId, memberId: member.id, userId, type: 'ABONNEMENT', formule: 'Mensuel',
+              montantFcfa: amount, mode: dto.mode, reference: dto.reference, note: dto.note,
+              moisCouvert: dto.moisCouvert,
+            }, include: { member: true } });
+            await tx.subscription.create({ data: { memberId: member.id, formule: 'Mensuel',
+              dateDebut, dateExpiration, statut: SubscriptionStatus.ACTIF } });
+            return record;
+          });
+        } catch (error) {
+          if ((error as any)?.code === 'P2002') throw new BadRequestException('Cette mensualité est déjà enregistrée.');
+          throw error;
         }
-
-        await this.prisma.subscription.create({
-          data: {
-            memberId: member.id,
-            formule,
-            dateDebut,
-            dateExpiration,
-            statut: SubscriptionStatus.ACTIF,
-          },
-        });
-
-        // Notification in-app + push broadcast — non-bloquant : une erreur de
-        // notification ne doit jamais faire échouer l'enregistrement du paiement.
-        this.notifications.createAndPush(
-          gymId,
-          'Paiement enregistré',
-          `${member.prenom} ${member.nom} — ${montantFcfa.toLocaleString('fr-FR')} FCFA (${formule})`,
-          NotifType.PAIEMENT,
-        ).catch(() => { /* silently ignored */ });
-
-        // WhatsApp confirmation — non-bloquant
-        if (member.telephone) {
-          this.scheduler.sendPaymentConfirmation(
-            member.telephone, member.prenom, member.nom, montantFcfa, formule, dateExpiration,
-          ).catch(() => {});
-        }
-        break;
+        this.notifications.createAndPush(gymId, 'Paiement enregistré',
+          `${member.prenom} ${member.nom} — ${amount.toLocaleString('fr-FR')} FCFA (Mensuel ${dto.moisCouvert})`, NotifType.PAIEMENT).catch(() => {});
+        if (member.telephone) this.scheduler.sendPaymentConfirmation(member.telephone, member.prenom,
+          member.nom, amount, `Mensuel ${dto.moisCouvert}`, dateExpiration).catch(() => {});
+        return payment;
       }
 
-      // ── Séance unique ───────────────────────────────────────────────────────
       case PaymentType.SEANCE_UNIQUE: {
         formule = 'Séance unique';
         montantFcfa = gym.prixSeance;
@@ -123,6 +103,8 @@ export class PaymentsService {
 
       // ── Frais d'inscription ─────────────────────────────────────────────────
       case PaymentType.INSCRIPTION: {
+        if (await this.prisma.payment.findFirst({ where: { memberId: member.id, type: 'INSCRIPTION' } }))
+          throw new BadRequestException("Les frais d'inscription ont déjà été enregistrés.");
         formule = 'Inscription';
         montantFcfa = dto.montantOverride ?? gym.fraisInscription;
         this.notifications.createAndPush(

@@ -9,6 +9,11 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 export class ScannerController {
   constructor(private readonly scannerService: ScannerService) {}
 
+  @Post('lookup')
+  lookup(@CurrentUser() user: any, @Body() dto: ScanDto) {
+    return this.scannerService.lookup(user.gymId, dto.qrCode);
+  }
+
   @Post('scan')
   scan(@CurrentUser() user: any, @Body() dto: ScanDto) {
     return this.scannerService.scan(user.gymId, user.id, dto);

@@ -11,6 +11,19 @@ export class ScannerService {
 
   constructor(private readonly prisma: PrismaService) {}
 
+  // The mobile member selector reads a card without recording attendance.
+  async lookup(gymId: string, qrCode: string) {
+    const include = {
+      subscriptions: { where: { dateDebut: { lte: new Date() } }, orderBy: { dateExpiration: 'desc' as const }, take: 1 },
+      sessionCards: { where: { active: true }, take: 1 },
+    };
+    const member = qrCode.startsWith('GYMPASS-CARTE-')
+      ? (await this.prisma.sessionCard.findFirst({ where: { qrCode, member: { gymId } }, include: { member: { include } } }))?.member
+      : await this.prisma.member.findFirst({ where: { gymId, qrCode }, include });
+    if (!member) throw new NotFoundException('Adhérent introuvable dans cette salle');
+    return { ...member, statut: MembersService.computeStatus(member) };
+  }
+
   async scan(gymId: string, userId: string, dto: ScanDto) {
     const gym = await this.prisma.gym.findUnique({ where: { id: gymId } });
 
@@ -23,7 +36,7 @@ export class ScannerService {
       member = await this.prisma.member.findUnique({
         where: { qrCode: dto.qrCode },
         include: {
-          subscriptions: { orderBy: { dateExpiration: 'desc' }, take: 1 },
+          subscriptions: { where: { dateDebut: { lte: new Date() } }, orderBy: { dateExpiration: 'desc' }, take: 1 },
           sessionCards: { where: { active: true }, take: 1 },
           gym: true,
         },

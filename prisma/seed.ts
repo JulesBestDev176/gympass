@@ -156,7 +156,7 @@ async function main() {
   const members = [];
   for (const m of membersData) {
     const member = await prisma.member.upsert({
-      where: { numeroCarte: m.numeroCarte },
+      where: { gymId_numeroCarte: { gymId: gym.id, numeroCarte: m.numeroCarte } },
       update: {},
       create: {
         gymId: gym.id,

@@ -47,7 +47,7 @@ export class MemberCardDeliveryService {
     let delivery: WhatsappDelivery;
     try {
       delivery = await this.whatsapp.sendImage(member.telephone, image,
-        `Bonjour ${member.prenom}, voici votre carte GymPass SN. Présentez son QR code à l’accueil de votre salle.`);
+        `Bienvenue ${member.prenom} ${member.nom} ! Votre inscription est confirmée. Voici votre carte GymPass SN (${member.numeroCarte}). Présentez son QR code à l’accueil de votre salle. La mensualité sera à régler au renouvellement, en fin de mois.`);
     } catch { delivery = { status: 'unconfirmed' }; }
     await this.prisma.member.updateMany({ where: { id, gymId, cardWhatsappStatus: 'pending' }, data: { cardWhatsappStatus: delivery.status, cardWhatsappMessageId: delivery.messageId || null } });
     return this.result(delivery.status, delivery.messageId);

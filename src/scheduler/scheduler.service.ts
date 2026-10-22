@@ -40,6 +40,13 @@ export class SchedulerService {
     this.logger.log(`${subs.length} abonnement(s) expirent demain.`);
 
     for (const sub of subs) {
+      // A paid, contiguous renewal supersedes this expiration (including the registration grant).
+      const renewed = await this.prisma.subscription.findFirst({ where: {
+        memberId: sub.member.id, formule: { not: 'Séance' },
+        dateDebut: { lte: new Date(new Date(sub.dateExpiration).getTime() + 1) },
+        dateExpiration: { gt: sub.dateExpiration },
+      } });
+      if (renewed) continue;
       const m = sub.member;
       if (!m.telephone || !m.carteActive) continue;
 
@@ -87,6 +94,13 @@ export class SchedulerService {
     this.logger.log(`${subs.length} abonnement(s) expiré(s) hier.`);
 
     for (const sub of subs) {
+      // A paid, contiguous renewal supersedes this expiration (including the registration grant).
+      const renewed = await this.prisma.subscription.findFirst({ where: {
+        memberId: sub.member.id, formule: { not: 'Séance' },
+        dateDebut: { lte: new Date(new Date(sub.dateExpiration).getTime() + 1) },
+        dateExpiration: { gt: sub.dateExpiration },
+      } });
+      if (renewed) continue;
       const m = sub.member;
       if (!m.telephone || !m.carteActive) continue;
 

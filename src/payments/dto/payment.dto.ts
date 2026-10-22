@@ -1,4 +1,4 @@
-import { IsString, IsInt, IsEnum, IsOptional, Min } from 'class-validator';
+import { IsString, IsInt, IsEnum, IsOptional, Min, Matches } from 'class-validator';
 import { PaymentMode, PaymentType } from '@prisma/client';
 
 export class CreatePaymentDto {
@@ -17,4 +17,8 @@ export class CreatePaymentDto {
 
   // ABONNEMENT uniquement — montant peut être custom
   @IsOptional() @IsInt() @Min(0) montantOverride?: number;
+
+  // ABONNEMENT uniquement — mois couvert par la mensualité
+  @IsOptional() @IsString() @Matches(/^\d{4}-(0[1-9]|1[0-2])$/, { message: 'Format attendu : YYYY-MM' })
+  moisCouvert?: string;
 }

@@ -1,3 +1,4 @@
+require('reflect-metadata');
 require('ts-node/register/transpile-only');
 const {test}=require('node:test');const assert=require('node:assert/strict');
 const {plainToInstance}=require('class-transformer');const {validate}=require('class-validator');
@@ -8,7 +9,7 @@ const {UsersService}=require('./users.service.ts');
 for(const phone of ['771234567','77 123 45 67','77-123-45-67','(77) 123 45 67','+221771234567','+221 77 123 45 67','221771234567','00221 77 123 45 67','0771234567']){
  test(`optional prefix is normalized consistently before validation: ${phone}`,async()=>{
   for(const Dto of [CreateUserDto,AdminCreateUserDto,UpdateUserDto,CreateMemberDto,UpdateMemberDto]){
-   const dto=plainToInstance(Dto,{nom:'Diop',prenom:'Awa',gymId:'gym',password:'test-only-password',telephone:phone});
+   const dto=plainToInstance(Dto,{nom:'Diop',prenom:'Awa',gymId:'gym',password:'test-only-password',telephone:phone,...(Dto===CreateMemberDto?{paiement:{mode:'ESPECES'}}:{})});
    assert.deepEqual(await validate(dto),[],Dto.name);assert.equal(dto.telephone,'+221771234567',Dto.name);
   }
  });

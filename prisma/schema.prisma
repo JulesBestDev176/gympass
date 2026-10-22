@@ -63,6 +63,8 @@ model Gym {
   pays  String @default("SN")
   slug  String @unique // ex: "gymdakarplateau"
 
+  memberCounter Int @default(0) // last allocated matricule; never decremented
+
   // Tarification
   fraisInscription  Int @default(5000)
   prixMensualite    Int @default(25000)
@@ -128,9 +130,10 @@ model User {
 // ─────────────────────────── MEMBER (Adhérent) ────────────────────────────────
 
 model Member {
+  registrationRequestId String?
   id             String   @id @default(cuid())
   gymId          String
-  numeroCarte    String   @unique  // ex: "GP-2024-001"
+  numeroCarte    String            // ex: "GP-2024-001"
   qrCode         String   @unique  // "GYMPASS-SN-{id}" — généré à la création
   nom            String
   prenom         String
@@ -150,6 +153,8 @@ model Member {
   entries        Entry[]
 
   @@index([gymId])
+  @@unique([gymId, registrationRequestId])
+  @@unique([gymId, numeroCarte])
   @@index([numeroCarte])
   @@index([qrCode])
   @@map("members")
@@ -196,6 +201,7 @@ model SessionCard {
 // ─────────────────────────── PAYMENT ──────────────────────────────────────────
 
 model Payment {
+  moisCouvert   String?
   id            String      @id @default(cuid())
   gymId         String
   memberId      String
@@ -218,6 +224,7 @@ model Payment {
   @@index([memberId])
   @@index([userId])
   @@index([createdAt])
+  @@unique([memberId, moisCouvert])
   @@map("payments")
 }
 
