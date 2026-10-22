@@ -24,6 +24,11 @@ export class MembersController {
     return this.membersService.findOne(user.gymId, id);
   }
 
+  @Get(':id/paid-months')
+  getPaidMonths(@CurrentUser() user: any, @Param('id') id: string, @Query('annee') annee?: string) {
+    return this.membersService.getPaidMonths(user.gymId, id, annee ? parseInt(annee) : new Date().getFullYear());
+  }
+
   @Post()
   create(@CurrentUser() user: any, @Body() dto: CreateMemberDto) {
     return this.membersService.create(user.gymId, user.id, dto);

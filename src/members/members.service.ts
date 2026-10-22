@@ -155,6 +155,21 @@ export class MembersService {
     });
   }
 
+  async getPaidMonths(gymId: string, memberId: string, annee: number): Promise<string[]> {
+    const member = await this.prisma.member.findFirst({ where: { id: memberId, gymId } });
+    if (!member) throw new NotFoundException('Adhérent introuvable');
+    const payments = await this.prisma.payment.findMany({
+      where: {
+        memberId,
+        type: 'ABONNEMENT',
+        moisCouvert: { startsWith: `${annee}-` },
+      },
+      select: { moisCouvert: true },
+    });
+    return payments.map((p) => p.moisCouvert!).filter(Boolean);
+  }
+
+
   async update(gymId: string, id: string, dto: UpdateMemberDto) {
     await this.findOne(gymId, id);
     return this.prisma.member.update({ where: { id }, data: dto });
