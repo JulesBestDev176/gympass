@@ -1,5 +1,6 @@
-import { IsString, IsOptional, Matches } from 'class-validator';
-import { Transform } from 'class-transformer';
+import { IsString, IsOptional, Matches, IsEnum, ValidateNested } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { PaymentMode } from '@prisma/client';
 
 /** Numéros Sénégal valides : 70 / 75 / 76 / 77 / 78 — 9 chiffres */
 const SN_PHONE_REGEX = /^\+2217[05678]\d{7}$/;
@@ -7,10 +8,10 @@ const SN_PHONE_REGEX = /^\+2217[05678]\d{7}$/;
 /**
  * Normalise un numéro sénégalais vers E.164 (+221XXXXXXXXX).
  * Accepte : 77..., 077..., +22177..., 0022177..., 22177...
- * Supprime tous les espaces avant traitement.
+ * Supprime les espaces et séparateurs visuels avant traitement.
  */
 export function normalizeSenegalPhone(raw: string): string {
-  let n = raw.replace(/\s+/g, '');
+  let n = raw.replace(/[\s().-]/g, '');
   if (n.startsWith('+221')) n = n.slice(4);
   else if (n.startsWith('00221')) n = n.slice(5);
   else if (n.startsWith('221')) n = n.slice(3);
@@ -18,17 +19,27 @@ export function normalizeSenegalPhone(raw: string): string {
   return `+221${n}`;
 }
 
+export class CreateMemberPaiementDto {
+  @IsEnum(PaymentMode) mode: PaymentMode;
+  @IsOptional() @IsString() reference?: string;
+  @IsOptional() @IsString() note?: string;
+}
+
 export class CreateMemberDto {
   @IsString() nom: string;
   @IsString() prenom: string;
 
-  @Transform(({ value }) => normalizeSenegalPhone(value))
+  @Transform(({ value }) => typeof value === 'string' ? normalizeSenegalPhone(value) : value)
   @Matches(SN_PHONE_REGEX, {
     message: 'Numéro invalide. Format attendu : 7X XXX XX XX (opérateurs SN)',
   })
   telephone: string;
 
   @IsOptional() @IsString() photoUrl?: string;
+
+  @ValidateNested()
+  @Type(() => CreateMemberPaiementDto)
+  paiement: CreateMemberPaiementDto;
 }
 
 export class UpdateMemberDto {
@@ -36,7 +47,7 @@ export class UpdateMemberDto {
   @IsOptional() @IsString() prenom?: string;
 
   @IsOptional()
-  @Transform(({ value }) => (value ? normalizeSenegalPhone(value) : value))
+  @Transform(({ value }) => typeof value === 'string' ? normalizeSenegalPhone(value) : value)
   @Matches(SN_PHONE_REGEX, {
     message: 'Numéro invalide. Format attendu : 7X XXX XX XX (opérateurs SN)',
   })

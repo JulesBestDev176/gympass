@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Patch, Param, Body, Query, UseGuards } from '@nestjs/common';
+
 import { MembersService } from './members.service';
 import { CreateMemberDto, UpdateMemberDto } from './dto/member.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -24,9 +25,14 @@ export class MembersController {
     return this.membersService.findOne(user.gymId, id);
   }
 
+  @Get(':id/paid-months')
+  getPaidMonths(@CurrentUser() user: any, @Param('id') id: string, @Query('annee') annee?: string) {
+    return this.membersService.getPaidMonths(user.gymId, id, annee ? parseInt(annee) : new Date().getFullYear());
+  }
+
   @Post()
   create(@CurrentUser() user: any, @Body() dto: CreateMemberDto) {
-    return this.membersService.create(user.gymId, dto);
+    return this.membersService.create(user.gymId, user.id, dto);
   }
 
   @Patch(':id')

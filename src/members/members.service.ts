@@ -1,14 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SchedulerService } from '../scheduler/scheduler.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateMemberDto, UpdateMemberDto } from './dto/member.dto';
-import { SubscriptionStatus } from '@prisma/client';
+import { SubscriptionStatus, NotifType } from '@prisma/client';
 
 @Injectable()
 export class MembersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly scheduler: SchedulerService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   // ── Génération numéro de carte ──────────────────────────────────────────────
@@ -95,24 +97,52 @@ export class MembersService {
     return { ...member, statut: MembersService.computeStatus(member) };
   }
 
-  async create(gymId: string, dto: CreateMemberDto) {
+  async create(gymId: string, userId: string, dto: CreateMemberDto) {
+    const gym = await this.prisma.gym.findUnique({ where: { id: gymId } });
+    if (!gym) throw new NotFoundException('Gym introuvable');
+
     const numeroCarte = await this.generateNumeroCarte(gymId);
-    const member = await this.prisma.member.create({
-      data: {
-        gymId,
-        numeroCarte,
-        qrCode: `GYMPASS-SN-${numeroCarte}`,
-        nom: dto.nom,
-        prenom: dto.prenom,
-        telephone: dto.telephone,
-        photoUrl: dto.photoUrl,
-      },
+    const { paiement } = dto;
+    const montantInscription = gym.fraisInscription;
+
+    const member = await this.prisma.$transaction(async (tx) => {
+      const m = await tx.member.create({
+        data: {
+          gymId,
+          numeroCarte,
+          qrCode: `GYMPASS-SN-${numeroCarte}`,
+          nom: dto.nom,
+          prenom: dto.prenom,
+          telephone: dto.telephone,
+          photoUrl: dto.photoUrl,
+        },
+      });
+
+      // Seuls les frais d'inscription sont perçus à la création — la 1ère mensualité est payée le mois suivant
+      await tx.payment.create({
+        data: {
+          gymId, memberId: m.id, userId,
+          type: 'INSCRIPTION', formule: 'Inscription',
+          montantFcfa: montantInscription,
+          mode: paiement.mode, reference: paiement.reference, note: paiement.note,
+        },
+      });
+
+      return m;
     });
-    // Message de bienvenue WhatsApp — non bloquant
+
+    // Non-bloquant
     if (member.telephone) {
       this.scheduler.sendWelcome(member.telephone, member.prenom, member.nom, numeroCarte).catch(() => {});
     }
-    return member;
+    this.notifications.createAndPush(
+      gymId,
+      'Nouvelle inscription',
+      `${member.prenom} ${member.nom} — ${montantInscription.toLocaleString('fr-FR')} FCFA`,
+      'INSCRIPTION' as any,
+    ).catch(() => {});
+
+    return { ...member, montantInscription };
   }
 
   async update(gymId: string, id: string, dto: UpdateMemberDto) {
@@ -144,6 +174,20 @@ export class MembersService {
         carteActive: true,
       },
     });
+  }
+
+  async getPaidMonths(gymId: string, memberId: string, annee: number): Promise<string[]> {
+    const member = await this.prisma.member.findFirst({ where: { id: memberId, gymId } });
+    if (!member) throw new NotFoundException('Adhérent introuvable');
+    const payments = await this.prisma.payment.findMany({
+      where: {
+        memberId,
+        type: 'ABONNEMENT',
+        moisCouvert: { startsWith: `${annee}-` },
+      },
+      select: { moisCouvert: true },
+    });
+    return payments.map((p) => p.moisCouvert!).filter(Boolean);
   }
 
   // Adhérents dont l'abonnement expire dans les prochains N jours

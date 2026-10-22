@@ -10,8 +10,13 @@ export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
   @Get()
-  findAll(@CurrentUser() user: any, @Query('memberId') memberId?: string) {
-    return this.paymentsService.findAll(user.gymId, user.id, user.role, memberId);
+  findAll(
+    @CurrentUser() user: any,
+    @Query('memberId') memberId?: string,
+    @Query('dateDebut') dateDebut?: string,
+    @Query('dateFin') dateFin?: string,
+  ) {
+    return this.paymentsService.findAll(user.gymId, user.id, user.role, memberId, dateDebut, dateFin);
   }
 
   @Get('stats')

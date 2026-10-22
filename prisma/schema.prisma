@@ -105,6 +105,14 @@ model User {
   fcmToken           String?
   otpCode            String?
   otpExpiresAt       DateTime?
+  otpAttempts        Int       @default(0)
+  otpRequestedAt     DateTime?
+  otpWindowStartedAt DateTime?
+  otpRequests        Int       @default(0)
+  passwordResetTokenHash String?
+  passwordResetExpiresAt DateTime?
+  passwordRenewedAt  DateTime?
+  authVersion        Int       @default(0)
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
@@ -113,6 +121,7 @@ model User {
   entries  Entry[]
 
   @@index([gymId])
+  @@unique([gymId, telephone])
   @@map("users")
 }
 
@@ -171,6 +180,7 @@ model SessionCard {
   seancesRestantes Int      @default(0)
   seancesTotal     Int      @default(0)
   active           Boolean  @default(true)
+  lastScannedAt    DateTime?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -195,6 +205,7 @@ model Payment {
   mode          PaymentMode @default(ESPECES)
   reference     String?     // ref Orange Money, Wave, etc.
   note          String?
+  moisCouvert   String?     // format "YYYY-MM" — null si type != ABONNEMENT
   createdAt     DateTime    @default(now())
 
   gym           Gym         @relation(fields: [gymId], references: [id])
@@ -206,6 +217,7 @@ model Payment {
   @@index([memberId])
   @@index([userId])
   @@index([createdAt])
+  @@unique([memberId, moisCouvert])
   @@map("payments")
 }
 

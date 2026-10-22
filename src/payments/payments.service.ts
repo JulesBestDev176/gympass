@@ -13,14 +13,17 @@ export class PaymentsService {
     private readonly scheduler: SchedulerService,
   ) {}
 
-  async findAll(gymId: string, userId: string, role: UserRole, memberId?: string) {
+  async findAll(
+    gymId: string, userId: string, role: UserRole,
+    memberId?: string, dateDebut?: string, dateFin?: string,
+  ) {
     const where: any = { gymId };
 
     if (role === UserRole.GERANT) {
       // Le gérant voit uniquement ses propres paiements de la semaine courante
       where.userId = userId;
       const now = new Date();
-      const day = now.getDay(); // 0=dimanche, 1=lundi ...
+      const day = now.getDay();
       const monday = new Date(now);
       monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
       monday.setHours(0, 0, 0, 0);
@@ -28,6 +31,17 @@ export class PaymentsService {
       sunday.setDate(monday.getDate() + 6);
       sunday.setHours(23, 59, 59, 999);
       where.createdAt = { gte: monday, lte: sunday };
+    } else {
+      // Admin peut filtrer par plage de dates
+      if (dateDebut || dateFin) {
+        where.createdAt = {};
+        if (dateDebut) where.createdAt.gte = new Date(dateDebut);
+        if (dateFin) {
+          const fin = new Date(dateFin);
+          fin.setHours(23, 59, 59, 999);
+          where.createdAt.lte = fin;
+        }
+      }
     }
 
     if (memberId) where.memberId = memberId;
@@ -56,28 +70,20 @@ export class PaymentsService {
     switch (dto.type) {
       // ── Abonnement mensuel ──────────────────────────────────────────────────
       case PaymentType.ABONNEMENT: {
+        if (!dto.moisCouvert) throw new BadRequestException('moisCouvert requis pour une mensualité (format YYYY-MM)');
+
+        // Un seul paiement par mois/membre
+        const doublon = await this.prisma.payment.findFirst({
+          where: { memberId: member.id, moisCouvert: dto.moisCouvert },
+        });
+        if (doublon) throw new BadRequestException(`Mensualité ${dto.moisCouvert} déjà enregistrée pour cet adhérent.`);
+
         formule = 'Mensuel';
         montantFcfa = dto.montantOverride ?? gym.prixMensualite;
 
-        const now = new Date();
-        const dateDebut = now;
-        let dateExpiration: Date;
-
-        // Chercher le dernier abonnement mensuel (actif ou expiré)
-        const dernierSub = await this.prisma.subscription.findFirst({
-          where: { memberId: member.id, formule: 'Mensuel' },
-          orderBy: { dateExpiration: 'desc' },
-        });
-
-        if (dernierSub && now <= new Date(dernierSub.dateExpiration)) {
-          // Renouvellement dans les temps → on repart de la date d'expiration existante
-          dateExpiration = new Date(dernierSub.dateExpiration);
-          dateExpiration.setMonth(dateExpiration.getMonth() + 1);
-        } else {
-          // Première inscription ou renouvellement tardif → aujourd'hui est la référence
-          dateExpiration = new Date(now);
-          dateExpiration.setMonth(dateExpiration.getMonth() + 1);
-        }
+        const [yr, mo] = dto.moisCouvert.split('-').map(Number);
+        const dateDebut = new Date(yr, mo - 1, 1);
+        const dateExpiration = new Date(yr, mo, 0, 23, 59, 59, 999); // dernier jour du mois
 
         await this.prisma.subscription.create({
           data: {
@@ -89,19 +95,18 @@ export class PaymentsService {
           },
         });
 
-        // Notification in-app + push broadcast — non-bloquant : une erreur de
-        // notification ne doit jamais faire échouer l'enregistrement du paiement.
+        extraData = { moisCouvert: dto.moisCouvert };
+
         this.notifications.createAndPush(
           gymId,
           'Paiement enregistré',
-          `${member.prenom} ${member.nom} — ${montantFcfa.toLocaleString('fr-FR')} FCFA (${formule})`,
+          `${member.prenom} ${member.nom} — ${montantFcfa.toLocaleString('fr-FR')} FCFA (${formule} ${dto.moisCouvert})`,
           NotifType.PAIEMENT,
-        ).catch(() => { /* silently ignored */ });
+        ).catch(() => {});
 
-        // WhatsApp confirmation — non-bloquant
         if (member.telephone) {
           this.scheduler.sendPaymentConfirmation(
-            member.telephone, member.prenom, member.nom, montantFcfa, formule, dateExpiration,
+            member.telephone, member.prenom, member.nom, montantFcfa, `${formule} ${dto.moisCouvert}`, dateExpiration,
           ).catch(() => {});
         }
         break;
