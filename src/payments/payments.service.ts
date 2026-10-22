@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -100,9 +101,20 @@ export class PaymentsService {
           }
           case PaymentType.RECHARGE_CARTE: {
             if (!dto.nbSeances) throw new BadRequestException('nbSeances requis pour une recharge');
-            const card = await tx.sessionCard.upsert({ where: { memberId: member.id },
-              create: { memberId: member.id, seancesRestantes: dto.nbSeances, seancesTotal: dto.nbSeances, active: true },
-              update: { seancesRestantes: { increment: dto.nbSeances }, seancesTotal: { increment: dto.nbSeances } } });
+            // Serialize a member's first card creation on the legacy production schema.
+            await tx.$queryRaw`SELECT id FROM members WHERE id = ${member.id} AND "gymId" = ${gymId} FOR UPDATE`;
+            const candidates = await tx.sessionCard.findMany({ where: { memberId: member.id,
+              ...(dto.sessionCardId ? { id: dto.sessionCardId } : { active: true }) }, take: 2 });
+            if (candidates.length > 1) throw new BadRequestException('Plusieurs cartes de séances actives existent. Faites vérifier la fiche avant de recharger.');
+            if (dto.sessionCardId && candidates.length === 0) throw new NotFoundException('Carte séances introuvable');
+            const existingCard = candidates[0];
+            if (existingCard && !existingCard.active) throw new BadRequestException('Cette carte de séances est désactivée.');
+            const cardId = randomUUID();
+            const card = existingCard
+              ? await tx.sessionCard.update({ where: { id: existingCard.id }, data: {
+                  seancesRestantes: { increment: dto.nbSeances }, seancesTotal: { increment: dto.nbSeances } } })
+              : await tx.sessionCard.create({ data: { id: cardId, memberId: member.id,
+                  qrCode: `GYMPASS-CARTE-${cardId}`, seancesRestantes: dto.nbSeances, seancesTotal: dto.nbSeances, active: true } });
             sessionCardId = card.id;
             details = { quantity: dto.nbSeances, balanceBefore: card.seancesRestantes - dto.nbSeances, balanceAfter: card.seancesRestantes };
             await tx.subscription.updateMany({ where: { memberId: member.id, formule: 'Séance' }, data: { statut: SubscriptionStatus.SEANCE_DISPONIBLE } });
