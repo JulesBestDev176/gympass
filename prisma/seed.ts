@@ -156,7 +156,7 @@ async function main() {
   const members = [];
   for (const m of membersData) {
     const member = await prisma.member.upsert({
-      where: { numeroCarte: m.numeroCarte },
+      where: { gymId_numeroCarte: { gymId: gym.id, numeroCarte: m.numeroCarte } },
       update: {},
       create: {
         gymId: gym.id,
@@ -174,7 +174,7 @@ async function main() {
 
   // ── Guard : données volatiles déjà insérées ? ─────────────────────────────────
   const alreadySeeded = await prisma.sessionCard.findUnique({
-    where: { qrCode: 'GYMPASS-CARTE-SC001' },
+    where: { memberId: members[3].id },
   });
   if (alreadySeeded) {
     console.log('  ℹ️  Données déjà présentes, seed ignoré pour subscriptions/cartes/paiements/notifs.');
@@ -208,22 +208,20 @@ async function main() {
 
   // ── Session Cards ─────────────────────────────────────────────────────────────
   const card1 = await prisma.sessionCard.upsert({
-    where: { qrCode: 'GYMPASS-CARTE-SC001' },
+    where: { memberId: members[3].id },
     update: {},
     create: {
       memberId: members[3].id,
-      qrCode: 'GYMPASS-CARTE-SC001',
       seancesRestantes: 3,
       seancesTotal: 5,
       active: true,
     },
   });
   const card2 = await prisma.sessionCard.upsert({
-    where: { qrCode: 'GYMPASS-CARTE-SC002' },
+    where: { memberId: members[7].id },
     update: {},
     create: {
       memberId: members[7].id,
-      qrCode: 'GYMPASS-CARTE-SC002',
       seancesRestantes: 0,
       seancesTotal: 4,
       active: true,

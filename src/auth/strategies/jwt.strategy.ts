@@ -16,8 +16,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: { sub: string; email: string; tokenType?: string }) {
-    if (payload.tokenType === 'refresh') {
+  async validate(payload: { sub: string; email: string; tokenType?: string; authVersion?: number }) {
+    if (payload.tokenType && payload.tokenType !== 'access') {
       throw new UnauthorizedException('Token invalide');
     }
     const user = await this.prisma.user.findUnique({
@@ -25,6 +25,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       include: { gym: true },
     });
     if (!user || !user.actif) throw new UnauthorizedException('Compte inactif ou introuvable');
+    if ((payload.authVersion ?? 0) !== (user.authVersion ?? 0)) throw new UnauthorizedException('Session révoquée. Reconnectez-vous.');
     return user;
   }
 }

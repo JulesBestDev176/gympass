@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SchedulerService } from '../scheduler/scheduler.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -14,10 +14,12 @@ export class MembersService {
   ) {}
 
   // ── Génération numéro de carte ──────────────────────────────────────────────
-  private async generateNumeroCarte(gymId: string): Promise<string> {
-    const year = new Date().getFullYear();
-    const count = await this.prisma.member.count({ where: { gymId } });
-    return `GP-${year}-${String(count + 1).padStart(3, '0')}`;
+  private async generateNumeroCarte(tx: any, gymId: string): Promise<string> {
+    // Row-level atomic increment: concurrent requests and deletions cannot reuse a number.
+    const gym = await tx.gym.update({ where: { id: gymId }, data: { memberCounter: { increment: 1 } } });
+    const words = gym.nom.normalize('NFD').replace(/[\u0300-\u036f]/g, '').match(/[A-Za-z0-9]+/g) || ['GYM'];
+    const prefix = words.map((word: string) => word[0]).join('').toUpperCase();
+    return `${prefix}-${String(gym.memberCounter).padStart(3, '0')}`;
   }
 
   // ── Statut courant d'un member (basé sur sa subscription active) ─────────────
@@ -25,7 +27,7 @@ export class MembersService {
     if (!member.carteActive) return SubscriptionStatus.CARTE_DESACTIVEE;
 
     // Trouver la subscription active la plus récente
-    const subscriptions: any[] = member.subscriptions ?? [];
+    const subscriptions: any[] = (member.subscriptions ?? []).filter((sub: any) => !sub.dateDebut || new Date(sub.dateDebut) <= new Date());
     if (!subscriptions.length) return SubscriptionStatus.EXPIRE;
 
     // Trier par dateExpiration desc
@@ -58,7 +60,7 @@ export class MembersService {
     const members = await this.prisma.member.findMany({
       where,
       include: {
-        subscriptions: { orderBy: { dateExpiration: 'desc' }, take: 1 },
+        subscriptions: { where: { dateDebut: { lte: new Date() } }, orderBy: { dateExpiration: 'desc' }, take: 1 },
         sessionCards: { where: { active: true }, take: 1 },
       },
       orderBy: { createdAt: 'desc' },
@@ -74,7 +76,7 @@ export class MembersService {
     const member = await this.prisma.member.findFirst({
       where: { id, gymId },
       include: {
-        subscriptions: { orderBy: { dateExpiration: 'desc' } },
+        subscriptions: { where: { dateDebut: { lte: new Date() } }, orderBy: { dateExpiration: 'desc' } },
         sessionCards: true,
         payments: { orderBy: { createdAt: 'desc' }, take: 10 },
         entries: { orderBy: { createdAt: 'desc' }, take: 20 },
@@ -88,7 +90,7 @@ export class MembersService {
     const member = await this.prisma.member.findUnique({
       where: { qrCode },
       include: {
-        subscriptions: { orderBy: { dateExpiration: 'desc' }, take: 1 },
+        subscriptions: { where: { dateDebut: { lte: new Date() } }, orderBy: { dateExpiration: 'desc' }, take: 1 },
         sessionCards: { where: { active: true }, take: 1 },
         gym: true,
       },
@@ -100,49 +102,39 @@ export class MembersService {
   async create(gymId: string, userId: string, dto: CreateMemberDto) {
     const gym = await this.prisma.gym.findUnique({ where: { id: gymId } });
     if (!gym) throw new NotFoundException('Gym introuvable');
-
-    const numeroCarte = await this.generateNumeroCarte(gymId);
-    const { paiement } = dto;
-    const montantInscription = gym.fraisInscription;
-
-    const member = await this.prisma.$transaction(async (tx) => {
-      const m = await tx.member.create({
-        data: {
-          gymId,
-          numeroCarte,
-          qrCode: `GYMPASS-SN-${numeroCarte}`,
-          nom: dto.nom,
-          prenom: dto.prenom,
-          telephone: dto.telephone,
-          photoUrl: dto.photoUrl,
-        },
-      });
-
-      // Seuls les frais d'inscription sont perçus à la création — la 1ère mensualité est payée le mois suivant
-      await tx.payment.create({
-        data: {
-          gymId, memberId: m.id, userId,
-          type: 'INSCRIPTION', formule: 'Inscription',
-          montantFcfa: montantInscription,
-          mode: paiement.mode, reference: paiement.reference, note: paiement.note,
-        },
-      });
-
-      return m;
+    const now = new Date();
+    const dateExpiration = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 23, 59, 59, 999));
+    // A single transaction collects registration only. No monthly-payment event is emitted.
+    return this.prisma.$transaction(async (tx) => {
+      if (dto.registrationRequestId) {
+        // Lock the gym before checking the key, so concurrent retries see the committed registration.
+        await tx.$queryRawUnsafe('SELECT id FROM gyms WHERE id=$1 FOR UPDATE', gymId);
+        const previous = await tx.member.findFirst({ where: { gymId, registrationRequestId: dto.registrationRequestId },
+          include: { payments: { where: { type: 'INSCRIPTION' }, take: 1 }, subscriptions: { orderBy: { dateExpiration: 'asc' }, take: 1 } } });
+        if (previous) {
+          if (previous.nom !== dto.nom || previous.prenom !== dto.prenom || previous.telephone !== dto.telephone || previous.payments[0]?.mode !== dto.paiement.mode)
+            throw new ConflictException('Cette inscription a déjà été enregistrée avec des informations différentes.');
+          return { ...previous, montantInscription: previous.payments[0]?.montantFcfa,
+            dateExpiration: previous.subscriptions[0]?.dateExpiration, statut: MembersService.computeStatus(previous), formule: 'Mensuel' };
+        }
+      }
+      const numeroCarte = await this.generateNumeroCarte(tx, gymId);
+      const member = await tx.member.create({ data: {
+        gymId, numeroCarte, registrationRequestId: dto.registrationRequestId, qrCode: `GYMPASS-SN-${gymId}-${numeroCarte}`,
+        nom: dto.nom, prenom: dto.prenom, telephone: dto.telephone, photoUrl: dto.photoUrl,
+      } });
+      await tx.payment.create({ data: {
+        gymId, memberId: member.id, userId, type: 'INSCRIPTION', formule: 'Inscription',
+        montantFcfa: gym.fraisInscription, mode: dto.paiement.mode,
+        reference: dto.paiement.reference, note: dto.paiement.note,
+      } });
+      // Registration grants access for the current month without a monthly charge.
+      await tx.subscription.create({ data: {
+        memberId: member.id, formule: 'Mensuel', dateDebut: now, dateExpiration, statut: 'ACTIF',
+      } });
+      // Welcome and registration confirmation travel with the card image, once.
+      return { ...member, montantInscription: gym.fraisInscription, dateExpiration, statut: 'ACTIF', formule: 'Mensuel' };
     });
-
-    // Non-bloquant
-    if (member.telephone) {
-      this.scheduler.sendWelcome(member.telephone, member.prenom, member.nom, numeroCarte).catch(() => {});
-    }
-    this.notifications.createAndPush(
-      gymId,
-      'Nouvelle inscription',
-      `${member.prenom} ${member.nom} — ${montantInscription.toLocaleString('fr-FR')} FCFA`,
-      'INSCRIPTION' as any,
-    ).catch(() => {});
-
-    return { ...member, montantInscription };
   }
 
   async update(gymId: string, id: string, dto: UpdateMemberDto) {
@@ -163,16 +155,12 @@ export class MembersService {
     const member = await this.prisma.member.findFirst({ where: { id, gymId } });
     if (!member) throw new NotFoundException('Adhérent introuvable');
 
-    const newNumeroCarte = await this.generateNumeroCarte(gymId);
-    const newQrCode = `GYMPASS-SN-${newNumeroCarte}`;
-
-    return this.prisma.member.update({
-      where: { id },
-      data: {
-        numeroCarte: newNumeroCarte,
-        qrCode: newQrCode,
-        carteActive: true,
-      },
+    return this.prisma.$transaction(async (tx) => {
+      const newNumeroCarte = await this.generateNumeroCarte(tx, gymId);
+      return tx.member.update({ where: { id }, data: {
+        numeroCarte: newNumeroCarte, qrCode: `GYMPASS-SN-${gymId}-${newNumeroCarte}`, carteActive: true,
+        cardWhatsappStatus: null, cardWhatsappAttemptedAt: null, cardWhatsappMessageId: null,
+      } });
     });
   }
 

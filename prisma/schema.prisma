@@ -63,6 +63,8 @@ model Gym {
   pays  String @default("SN")
   slug  String @unique // ex: "gymdakarplateau"
 
+  memberCounter Int @default(0) // last allocated matricule; never decremented
+
   // Tarification
   fraisInscription  Int @default(5000)
   prixMensualite    Int @default(25000)
@@ -83,6 +85,8 @@ model Gym {
   members       Member[]
   notifications Notification[]
   payments      Payment[]
+  bracelets     Bracelet[]
+  braceletVentes BraceletVente[]
 
   @@map("gyms")
 }
@@ -116,9 +120,10 @@ model User {
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
-  gym      Gym       @relation(fields: [gymId], references: [id], onDelete: Cascade)
-  payments Payment[]
-  entries  Entry[]
+  gym            Gym            @relation(fields: [gymId], references: [id], onDelete: Cascade)
+  payments       Payment[]
+  entries        Entry[]
+  braceletVentes BraceletVente[]
 
   @@index([gymId])
   @@unique([gymId, telephone])
@@ -128,15 +133,19 @@ model User {
 // ─────────────────────────── MEMBER (Adhérent) ────────────────────────────────
 
 model Member {
+  registrationRequestId String?
   id             String   @id @default(cuid())
   gymId          String
-  numeroCarte    String   @unique  // ex: "GP-2024-001"
+  numeroCarte    String            // ex: "GP-2024-001"
   qrCode         String   @unique  // "GYMPASS-SN-{id}" — généré à la création
   nom            String
   prenom         String
   telephone      String
   photoUrl       String?
   carteActive    Boolean  @default(true)
+  cardWhatsappStatus String?
+  cardWhatsappAttemptedAt DateTime?
+  cardWhatsappMessageId String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -147,6 +156,8 @@ model Member {
   entries        Entry[]
 
   @@index([gymId])
+  @@unique([gymId, registrationRequestId])
+  @@unique([gymId, numeroCarte])
   @@index([numeroCarte])
   @@index([qrCode])
   @@map("members")
@@ -175,8 +186,7 @@ model Subscription {
 
 model SessionCard {
   id               String   @id @default(cuid())
-  memberId         String
-  qrCode           String   @unique  // "GYMPASS-CARTE-{id}"
+  memberId         String   @unique  // une seule carte par adhérent
   seancesRestantes Int      @default(0)
   seancesTotal     Int      @default(0)
   active           Boolean  @default(true)
@@ -189,6 +199,41 @@ model SessionCard {
 
   @@index([memberId])
   @@map("session_cards")
+}
+
+// ─────────────────────────── BRACELET (Séance unique sans adhérent) ───────────
+
+model Bracelet {
+  id        String   @id @default(cuid())
+  gymId     String
+  numero    String   // "B-001", "B-002", …
+  qrCode    String   @unique  // "GYMPASS-BRACELET-{gymId}-{numero}"
+  actif     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  gym    Gym            @relation(fields: [gymId], references: [id], onDelete: Cascade)
+  ventes BraceletVente[]
+
+  @@index([gymId])
+  @@map("bracelets")
+}
+
+model BraceletVente {
+  id          String   @id @default(cuid())
+  gymId       String
+  braceletId  String
+  userId      String
+  montantFcfa Int
+  createdAt   DateTime @default(now())
+
+  gym      Gym      @relation(fields: [gymId], references: [id])
+  bracelet Bracelet @relation(fields: [braceletId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+
+  @@index([gymId])
+  @@index([braceletId])
+  @@map("bracelet_ventes")
 }
 
 // ─────────────────────────── PAYMENT ──────────────────────────────────────────

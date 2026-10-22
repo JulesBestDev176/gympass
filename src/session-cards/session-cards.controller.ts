@@ -14,8 +14,8 @@ export class SessionCardsController {
   }
 
   @Post('member/:memberId')
-  create(@CurrentUser() user: any, @Param('memberId') memberId: string) {
-    return this.service.create(user.gymId, memberId);
+  getOrCreate(@CurrentUser() user: any, @Param('memberId') memberId: string) {
+    return this.service.getOrCreate(user.gymId, memberId);
   }
 
   @Patch(':id/toggle')

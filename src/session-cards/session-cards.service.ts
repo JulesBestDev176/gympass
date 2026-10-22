@@ -14,15 +14,15 @@ export class SessionCardsService {
     });
   }
 
-  async create(gymId: string, memberId: string) {
+  async getOrCreate(gymId: string, memberId: string) {
     const member = await this.prisma.member.findFirst({ where: { id: memberId, gymId } });
     if (!member) throw new NotFoundException('Adhérent introuvable');
 
-    const count = await this.prisma.sessionCard.count({ where: { memberId } });
-    const qrCode = `GYMPASS-CARTE-${member.numeroCarte}-${count + 1}`;
+    const existing = await this.prisma.sessionCard.findFirst({ where: { memberId } });
+    if (existing) return existing;
 
     return this.prisma.sessionCard.create({
-      data: { memberId, qrCode, seancesRestantes: 0, seancesTotal: 0, active: true },
+      data: { memberId, seancesRestantes: 0, seancesTotal: 0, active: true },
     });
   }
 

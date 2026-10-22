@@ -1,4 +1,4 @@
-import { IsString, IsOptional, Matches, IsEnum, ValidateNested } from 'class-validator';
+import { IsString, IsOptional, Matches, IsEnum, ValidateNested, IsDefined } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { PaymentMode } from '@prisma/client';
 
@@ -26,6 +26,9 @@ export class CreateMemberPaiementDto {
 }
 
 export class CreateMemberDto {
+  @IsOptional() @Matches(/^[a-f0-9]{32}$/)
+  registrationRequestId?: string;
+
   @IsString() nom: string;
   @IsString() prenom: string;
 
@@ -37,6 +40,7 @@ export class CreateMemberDto {
 
   @IsOptional() @IsString() photoUrl?: string;
 
+  @IsDefined()
   @ValidateNested()
   @Type(() => CreateMemberPaiementDto)
   paiement: CreateMemberPaiementDto;

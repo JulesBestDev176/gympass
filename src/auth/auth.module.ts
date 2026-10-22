@@ -6,6 +6,7 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { WhatsappModule } from '../whatsapp/whatsapp.module';
+import { PasswordRecoveryService } from './password-recovery.service';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { WhatsappModule } from '../whatsapp/whatsapp.module';
     WhatsappModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, PasswordRecoveryService],
   exports: [AuthService, JwtModule],
 })
 export class AuthModule {}

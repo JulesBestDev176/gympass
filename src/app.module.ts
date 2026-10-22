@@ -22,6 +22,7 @@ import { SchedulerModule } from './scheduler/scheduler.module';
 import { HealthController } from './health.controller';
 import { GymbroModule } from './gymbro/gymbro.module';
 import { MonitoringModule } from './monitoring/monitoring.module';
+import { BraceletsModule } from './bracelets/bracelets.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { MonitoringModule } from './monitoring/monitoring.module';
     ScheduleModule.forRoot(),
     SchedulerModule,
     GymbroModule,
+    BraceletsModule,
   ],
   controllers: [HealthController],
 })

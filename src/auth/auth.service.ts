@@ -9,10 +9,9 @@ import { PrismaService } from '../prisma/prisma.service';
 import { WhatsappService } from '../whatsapp/whatsapp.service';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcryptjs';
-
-function generateOtp(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
+import { randomUUID, timingSafeEqual } from 'crypto';
+import { PasswordRecoveryService } from './password-recovery.service';
+import { clearRecovery, tokenDigest, validateNewPassword } from './password-security';
 
 @Injectable()
 export class AuthService {
@@ -21,6 +20,7 @@ export class AuthService {
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
     private readonly whatsapp: WhatsappService,
+    private readonly recovery: PasswordRecoveryService,
   ) {}
 
   private publicUser(user: any) {
@@ -49,26 +49,28 @@ export class AuthService {
       email: user.email,
       role: user.role,
       gymId: user.gymId,
+      authVersion: user.authVersion ?? 0,
     };
     const accessToken = await this.jwt.signAsync(
-      { ...payload, tokenType: 'access' },
+      { ...payload, tokenType: 'access', jti: randomUUID() },
       { expiresIn: this.config.get('JWT_EXPIRES_IN', '15m') },
     );
     const refreshToken = await this.jwt.signAsync(
-      { ...payload, tokenType: 'refresh' },
+      { ...payload, tokenType: 'refresh', jti: randomUUID() },
       { expiresIn: this.config.get('JWT_REFRESH_EXPIRES_IN', '30d') },
     );
-    const refreshTokenHash = await bcrypt.hash(refreshToken, 10);
-    await this.prisma.user.update({
-      where: { id: user.id },
+    const refreshTokenHash = `sha256:${tokenDigest(refreshToken)}`;
+    const stored = await this.prisma.user.updateMany({
+      where: { id: user.id, actif: true, authVersion: user.authVersion ?? 0 },
       data: { refreshTokenHash },
     });
+    if (stored.count !== 1) throw new UnauthorizedException('Session revoked');
     return { accessToken, refreshToken };
   }
 
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
+      where: { email: dto.email.trim().toLowerCase() },
       include: { gym: true },
     });
 
@@ -111,7 +113,11 @@ export class AuthService {
       throw new UnauthorizedException('Session expirée');
     }
 
-    const valid = await bcrypt.compare(refreshToken, user.refreshTokenHash);
+    if ((payload.authVersion ?? 0) !== (user.authVersion ?? 0)) throw new UnauthorizedException('Session revoked');
+    const digest = `sha256:${tokenDigest(refreshToken)}`;
+    const valid = user.refreshTokenHash.startsWith('sha256:')
+      ? user.refreshTokenHash.length === digest.length && timingSafeEqual(Buffer.from(user.refreshTokenHash), Buffer.from(digest))
+      : (user.authVersion ?? 0) === 0 && await bcrypt.compare(refreshToken, user.refreshTokenHash);
     if (!valid) throw new UnauthorizedException('Session expirée');
 
     const tokens = await this.issueTokens(user);
@@ -137,12 +143,13 @@ export class AuthService {
   async logout(userId: string) {
     await this.prisma.user.update({
       where: { id: userId },
-      data: { refreshTokenHash: null },
+      data: { refreshTokenHash: null, authVersion: { increment: 1 } },
     });
     return { message: 'Déconnexion réussie' };
   }
 
   async changePassword(userId: string, oldPassword: string, newPassword: string) {
+    validateNewPassword(newPassword);
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new UnauthorizedException();
 
@@ -150,15 +157,17 @@ export class AuthService {
     if (!valid) throw new UnauthorizedException('Ancien mot de passe incorrect');
 
     const passwordHash = await bcrypt.hash(newPassword, 10);
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { passwordHash, mustChangePassword: false },
+    const changed = await this.prisma.user.updateMany({
+      where: { id: userId, actif: true, passwordHash: user.passwordHash, authVersion: user.authVersion },
+      data: { ...clearRecovery, passwordHash, mustChangePassword: false, refreshTokenHash: null, authVersion: { increment: 1 } },
     });
-    return { message: 'Mot de passe mis à jour avec succès' };
+    if (changed.count !== 1) throw new UnauthorizedException('Session revoked');
+    return this.sessionFor(userId, (user.authVersion ?? 0) + 1);
   }
 
   // Appelé à la première connexion (forçage changement mot de passe)
   async forceChangePassword(userId: string, newPassword: string) {
+    validateNewPassword(newPassword);
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new UnauthorizedException();
     if (!user.mustChangePassword) {
@@ -166,52 +175,24 @@ export class AuthService {
     }
 
     const passwordHash = await bcrypt.hash(newPassword, 10);
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { passwordHash, mustChangePassword: false },
+    const changed = await this.prisma.user.updateMany({
+      where: { id: userId, actif: true, passwordHash: user.passwordHash, authVersion: user.authVersion },
+      data: { ...clearRecovery, passwordHash, mustChangePassword: false, refreshTokenHash: null, authVersion: { increment: 1 } },
     });
-    return { message: 'Mot de passe défini avec succès' };
+    if (changed.count !== 1) throw new UnauthorizedException('Session revoked');
+    return this.sessionFor(userId, (user.authVersion ?? 0) + 1);
   }
 
-  async forgotPassword(email: string) {
-    const user = await this.prisma.user.findUnique({ where: { email } });
-    // On ne révèle pas si l'email existe ou non
-    if (!user || !user.telephone) {
-      return { message: 'Si cet email existe, un OTP a été envoyé sur WhatsApp.' };
-    }
-
-    const otp = generateOtp();
-    const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 min
-
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: { otpCode: otp, otpExpiresAt },
-    });
-
-    await this.whatsapp.sendOtp(user.telephone, otp, user.prenom);
-
-    return { message: 'Si cet email existe, un OTP a été envoyé sur WhatsApp.' };
+  private async sessionFor(userId: string, expectedVersion: number) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId }, include: { gym: true } });
+    if (!user?.actif || user.authVersion !== expectedVersion) throw new UnauthorizedException('Session revoked');
+    return { ...await this.issueTokens(user), mustChangePassword: user.mustChangePassword, user: this.publicUser(user) };
   }
 
-  async resetPassword(email: string, otp: string, newPassword: string) {
-    const user = await this.prisma.user.findUnique({ where: { email } });
-    if (!user) throw new BadRequestException('OTP invalide ou expiré');
-
-    if (
-      !user.otpCode ||
-      !user.otpExpiresAt ||
-      user.otpCode !== otp ||
-      new Date() > user.otpExpiresAt
-    ) {
-      throw new BadRequestException('OTP invalide ou expiré');
-    }
-
-    const passwordHash = await bcrypt.hash(newPassword, 10);
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: { passwordHash, otpCode: null, otpExpiresAt: null, mustChangePassword: false },
-    });
-
-    return { message: 'Mot de passe réinitialisé avec succès' };
+  forgotPassword(email: string) { return this.recovery.request(email); }
+  verifyResetOtp(email: string, otp: string) { return this.recovery.verify(email, otp); }
+  async resetPassword(email: string, resetToken: string, newPassword: string, confirmation: string) {
+    const user = await this.recovery.complete(email, resetToken, newPassword, confirmation);
+    return this.sessionFor(user!.id, user!.authVersion);
   }
 }

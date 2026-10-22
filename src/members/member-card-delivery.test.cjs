@@ -1,0 +1,17 @@
+require('reflect-metadata');require('ts-node/register/transpile-only');
+const {test}=require('node:test');const assert=require('node:assert/strict');
+const {MemberCardDeliveryService}=require('./member-card-delivery.service.ts');
+const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a/6sAAAAASUVORK5CYII=','base64');
+const file=()=>({buffer:png,size:png.length,mimetype:'image/png'});
+function fixture(status=null){
+ const row={id:'member',gymId:'gym',prenom:'Awa',nom:'Diop',telephone:'+221771234567',cardWhatsappStatus:status,cardWhatsappMessageId:null};let sends=0;let result={status:'accepted',messageId:'relay-1'};
+ const db={member:{findFirst:async({where})=>where.id===row.id&&where.gymId===row.gymId?{...row}:null,
+ updateMany:async({where,data})=>{if(where.OR&&!where.OR.some(c=>c.cardWhatsappStatus===row.cardWhatsappStatus||c.cardWhatsappStatus?.in?.includes(row.cardWhatsappStatus)))return{count:0};Object.assign(row,data);return{count:1};}}};
+ return{row,db,service:new MemberCardDeliveryService(db,{sendImage:async(to,bytes,caption)=>{sends++;assert.equal(to,row.telephone);assert.deepEqual(bytes,png);assert.match(caption,/Awa/);return result;}}),sends:()=>sends,result:r=>result=r};
+}
+test('card image sends to the persisted member phone only, after reserving the attempt',async()=>{const f=fixture();const r=await f.service.send('gym','member',file());assert.equal(r.status,'accepted');assert.equal(f.row.cardWhatsappStatus,'accepted');assert.equal(f.row.cardWhatsappMessageId,'relay-1');assert.equal(f.sends(),1);});
+test('concurrent requests and later repeats send only one image',async()=>{const f=fixture();const r=await Promise.all([f.service.send('gym','member',file()),f.service.send('gym','member',file())]);assert.equal(f.sends(),1);assert.ok(r.every(x=>['pending','accepted'].includes(x.status)));await f.service.send('gym','member',file());assert.equal(f.sends(),1);});
+test('foreign member and invalid images cannot cause an outbound send',async()=>{const f=fixture();await assert.rejects(f.service.send('other','member',file()),e=>e.getStatus()===404);for(const bad of [undefined,{...file(),mimetype:'image/jpeg'},{...file(),buffer:Buffer.from('not png')},{...file(),size:5*1024*1024}])await assert.rejects(f.service.send('gym','member',bad),e=>e.getStatus()===400);assert.equal(f.sends(),0);assert.equal(f.row.cardWhatsappStatus,null);});
+test('uncertain delivery is never automatically repeated',async()=>{const f=fixture();f.result({status:'unconfirmed'});assert.equal((await f.service.send('gym','member',file())).status,'unconfirmed');await f.service.send('gym','member',file());assert.equal(f.sends(),1);});
+test('a known failure is explicitly retryable without recreating the member',async()=>{const f=fixture();f.result({status:'disconnected'});assert.equal((await f.service.send('gym','member',file())).retryable,true);f.result({status:'accepted',messageId:'relay-2'});await f.service.send('gym','member',file());assert.equal(f.sends(),2);assert.equal(f.row.id,'member');});
+test('unexpected transport failure leaves a durable uncertain attempt',async()=>{const f=fixture();f.service=new MemberCardDeliveryService(f.db,{sendImage:async()=>{throw Error('private upstream error');}});const r=await f.service.send('gym','member',file());assert.equal(r.status,'unconfirmed');assert.equal(r.retryable,false);assert.ok(!JSON.stringify(r).includes('private'));});
