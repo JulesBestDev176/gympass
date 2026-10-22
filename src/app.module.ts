@@ -23,6 +23,7 @@ import { HealthController } from './health.controller';
 import { GymbroModule } from './gymbro/gymbro.module';
 import { MonitoringModule } from './monitoring/monitoring.module';
 import { BraceletsModule } from './bracelets/bracelets.module';
+import { FinancesModule } from './finances/finances.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { BraceletsModule } from './bracelets/bracelets.module';
     SchedulerModule,
     GymbroModule,
     BraceletsModule,
+    FinancesModule,
   ],
   controllers: [HealthController],
 })

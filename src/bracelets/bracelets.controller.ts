@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Patch, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Body, Query, UseGuards } from '@nestjs/common';
 import { BraceletsService } from './bracelets.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { IsInt, Min, Max } from 'class-validator';
+import { BraceletEntriesQuery } from './bracelet-entries.dto';
 
 class GenerateDto {
   @IsInt() @Min(1) @Max(100) count: number;
@@ -31,5 +32,10 @@ export class BraceletsController {
   @Get('stats')
   stats(@CurrentUser() user: any) {
     return this.service.getStats(user.gymId);
+  }
+
+  @Get('entries')
+  entries(@CurrentUser() user: any, @Query() query: BraceletEntriesQuery) {
+    return this.service.findEntries(user.gymId, query);
   }
 }
