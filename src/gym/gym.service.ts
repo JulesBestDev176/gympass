@@ -1,9 +1,11 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { IsString, IsInt, IsOptional, Min, IsNotEmpty } from 'class-validator';
 import * as bcrypt from 'bcryptjs';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateGymDto, UpdatePricingDto, UpdateStatutDto } from './dto/update-gym.dto';
 import { WhatsappService } from '../whatsapp/whatsapp.service';
+import { publicStaffUser } from '../auth/password-security';
 
 export class AdminCreateGymbroUserDto {
   @IsString() @IsNotEmpty() prenom: string;
@@ -26,7 +28,11 @@ export class CreateGymDto {
 
 @Injectable()
 export class GymService {
-  constructor(private readonly prisma: PrismaService, private readonly whatsapp: WhatsappService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly whatsapp: WhatsappService,
+    private readonly config: ConfigService,
+  ) {}
 
   async findAll() {
     const now = new Date();
@@ -92,11 +98,20 @@ export class GymService {
   }
 
   async findAllUsers() {
+    const raw = this.config.get<string>('GYMDASH_BILLING_ADMIN_EMAILS') ?? '';
+    const adminEmails = raw
+      .split(',')
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean);
+
     const users = await this.prisma.user.findMany({
       orderBy: { createdAt: 'desc' },
       include: { gym: { select: { id: true, nom: true, slug: true } } },
+      ...(adminEmails.length > 0
+        ? { where: { email: { notIn: adminEmails, mode: 'insensitive' } } }
+        : {}),
     });
-    return users.map(({ passwordHash, ...u }) => u);
+    return users.map(publicStaffUser);
   }
 
   async findAllGymbroUsers() {
