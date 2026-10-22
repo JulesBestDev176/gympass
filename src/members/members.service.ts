@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SchedulerService } from '../scheduler/scheduler.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -100,40 +100,62 @@ export class MembersService {
   }
 
   async create(gymId: string, userId: string, dto: CreateMemberDto) {
-    const gym = await this.prisma.gym.findUnique({ where: { id: gymId } });
-    if (!gym) throw new NotFoundException('Gym introuvable');
+    const sessionOnly = dto.formule?.type === 'SEANCES';
+    const sessions = sessionOnly ? dto.formule?.nbSeances ?? 0 : 0;
+    if (sessionOnly && sessions < 1) throw new BadRequestException('Choisissez au moins une séance.');
+    if (!sessionOnly && dto.formule?.nbSeances !== undefined)
+      throw new BadRequestException('Choisissez le mensuel ou les séances à l’inscription.');
     const now = new Date();
     const dateExpiration = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 23, 59, 59, 999));
-    // A single transaction collects registration only. No monthly-payment event is emitted.
     return this.prisma.$transaction(async (tx) => {
+      // Serialize allocation, duplicate checks and idempotent retries for this gym.
+      await tx.$queryRawUnsafe('SELECT id FROM gyms WHERE id=$1 FOR UPDATE', gymId);
+      const gym = await tx.gym.findUnique({ where: { id: gymId } });
+      if (!gym) throw new NotFoundException('Gym introuvable');
+      const include = { payments: { orderBy: { createdAt: 'asc' as const } }, sessionCards: true, subscriptions: { orderBy: { dateExpiration: 'desc' as const } } };
+      const result = (member: any) => ({ ...member,
+        montantEncaisse: member.payments[0]?.montantFcfa ?? 0,
+        statut: MembersService.computeStatus(member),
+        formule: member.subscriptions[0]?.formule ?? 'Séance',
+        seancesRestantes: member.sessionCards[0]?.seancesRestantes,
+        dateExpiration: sessionOnly ? null : member.subscriptions[0]?.dateExpiration,
+      });
       if (dto.registrationRequestId) {
-        // Lock the gym before checking the key, so concurrent retries see the committed registration.
-        await tx.$queryRawUnsafe('SELECT id FROM gyms WHERE id=$1 FOR UPDATE', gymId);
-        const previous = await tx.member.findFirst({ where: { gymId, registrationRequestId: dto.registrationRequestId },
-          include: { payments: { where: { type: 'INSCRIPTION' }, take: 1 }, subscriptions: { orderBy: { dateExpiration: 'asc' }, take: 1 } } });
+        const previous = await tx.member.findFirst({ where: { gymId, registrationRequestId: dto.registrationRequestId }, include });
         if (previous) {
-          if (previous.nom !== dto.nom || previous.prenom !== dto.prenom || previous.telephone !== dto.telephone || previous.payments[0]?.mode !== dto.paiement.mode)
+          const initialPayment = previous.payments[0];
+          const wasSessions = initialPayment?.type === 'RECHARGE_CARTE';
+          if (previous.nom !== dto.nom || previous.prenom !== dto.prenom || previous.telephone !== dto.telephone || initialPayment?.mode !== dto.paiement.mode || wasSessions !== sessionOnly || (sessionOnly && initialPayment?.formule !== `Carte de ${sessions} s\u00e9ances`))
             throw new ConflictException('Cette inscription a déjà été enregistrée avec des informations différentes.');
-          return { ...previous, montantInscription: previous.payments[0]?.montantFcfa,
-            dateExpiration: previous.subscriptions[0]?.dateExpiration, statut: MembersService.computeStatus(previous), formule: 'Mensuel' };
+          return result(previous);
         }
       }
+      const expected = sessionOnly ? sessions * gym.prixSeance : gym.fraisInscription;
+      if (dto.montantAttendu !== undefined && dto.montantAttendu !== expected)
+        throw new ConflictException('Les tarifs ont changé. Actualisez les tarifs avant de valider.');
+      const duplicate = await tx.member.findFirst({ where: { gymId, telephone: dto.telephone } });
+      if (duplicate) throw new ConflictException(`${dto.telephone} est déjà utilisé par ${duplicate.prenom} ${duplicate.nom} (${duplicate.numeroCarte}).`);
       const numeroCarte = await this.generateNumeroCarte(tx, gymId);
       const member = await tx.member.create({ data: {
         gymId, numeroCarte, registrationRequestId: dto.registrationRequestId, qrCode: `GYMPASS-SN-${gymId}-${numeroCarte}`,
         nom: dto.nom, prenom: dto.prenom, telephone: dto.telephone, photoUrl: dto.photoUrl,
       } });
-      await tx.payment.create({ data: {
-        gymId, memberId: member.id, userId, type: 'INSCRIPTION', formule: 'Inscription',
-        montantFcfa: gym.fraisInscription, mode: dto.paiement.mode,
-        reference: dto.paiement.reference, note: dto.paiement.note,
-      } });
-      // Registration grants access for the current month without a monthly charge.
-      await tx.subscription.create({ data: {
-        memberId: member.id, formule: 'Mensuel', dateDebut: now, dateExpiration, statut: 'ACTIF',
-      } });
-      // Welcome and registration confirmation travel with the card image, once.
-      return { ...member, montantInscription: gym.fraisInscription, dateExpiration, statut: 'ACTIF', formule: 'Mensuel' };
+      if (sessionOnly) {
+        const card = await tx.sessionCard.create({ data: { memberId: member.id, seancesRestantes: sessions, seancesTotal: sessions, active: true } });
+        await tx.payment.create({ data: { gymId, memberId: member.id, userId,
+          sessionCardId: card.id, type: 'RECHARGE_CARTE', formule: `Carte de ${sessions} s\u00e9ances`,
+          montantFcfa: sessions * gym.prixSeance, mode: dto.paiement.mode,
+          reference: dto.paiement.reference, note: dto.paiement.note,
+        } });
+        await tx.subscription.create({ data: { memberId: member.id, formule: 'Séance', dateDebut: now, dateExpiration, statut: 'SEANCE_DISPONIBLE' } });
+      } else {
+        await tx.payment.create({ data: { gymId, memberId: member.id, userId, type: 'INSCRIPTION', formule: 'Inscription',
+          montantFcfa: gym.fraisInscription, mode: dto.paiement.mode, reference: dto.paiement.reference, note: dto.paiement.note,
+        } });
+        // The initial fee grants access until month-end; monthly renewal is paid later.
+        await tx.subscription.create({ data: { memberId: member.id, formule: 'Mensuel', dateDebut: now, dateExpiration, statut: 'ACTIF' } });
+      }
+      return result(await tx.member.findUniqueOrThrow({ where: { id: member.id }, include }));
     });
   }
 

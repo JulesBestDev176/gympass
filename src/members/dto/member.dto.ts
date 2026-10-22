@@ -1,4 +1,4 @@
-import { IsString, IsOptional, Matches, IsEnum, ValidateNested, IsDefined } from 'class-validator';
+import { IsString, IsOptional, Matches, IsEnum, ValidateNested, IsDefined, IsIn, IsInt, Min, Max } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { PaymentMode } from '@prisma/client';
 
@@ -25,7 +25,17 @@ export class CreateMemberPaiementDto {
   @IsOptional() @IsString() note?: string;
 }
 
+export class RegistrationFormulaDto {
+  @IsIn(['MENSUEL', 'SEANCES']) type: 'MENSUEL' | 'SEANCES';
+  @IsOptional() @IsInt() @Min(1) @Max(1000) nbSeances?: number;
+}
+
 export class CreateMemberDto {
+  @IsOptional() @ValidateNested() @Type(() => RegistrationFormulaDto)
+  formule?: RegistrationFormulaDto;
+
+  @IsOptional() @IsInt() @Min(0) montantAttendu?: number;
+
   @IsOptional() @Matches(/^[a-f0-9]{32}$/)
   registrationRequestId?: string;
 
