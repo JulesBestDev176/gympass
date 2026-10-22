@@ -21,6 +21,7 @@ fi
 node /app/scripts/staff-release-preflight.cjs
 node /app/scripts/member-card-preflight.cjs
 node /app/scripts/registration-preflight.cjs
+node /app/scripts/bracelets-preflight.cjs
 
 echo "Starting application..."
 exec "$@"

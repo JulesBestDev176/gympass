@@ -85,6 +85,8 @@ model Gym {
   members       Member[]
   notifications Notification[]
   payments      Payment[]
+  bracelets Bracelet[]
+  braceletVentes BraceletVente[]
 
   @@map("gyms")
 }
@@ -121,6 +123,7 @@ model User {
   gym      Gym       @relation(fields: [gymId], references: [id], onDelete: Cascade)
   payments Payment[]
   entries  Entry[]
+  braceletVentes BraceletVente[]
 
   @@index([gymId])
   @@unique([gymId, telephone])
@@ -199,6 +202,39 @@ model SessionCard {
 }
 
 // ─────────────────────────── PAYMENT ──────────────────────────────────────────
+
+model Bracelet {
+  id        String   @id @default(cuid())
+  gymId     String
+  numero    String   // "B-001", "B-002", …
+  qrCode    String   @unique  // "GYMPASS-BRACELET-{gymId}-{numero}"
+  actif     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  gym    Gym            @relation(fields: [gymId], references: [id], onDelete: Cascade)
+  ventes BraceletVente[]
+
+  @@index([gymId])
+  @@map("bracelets")
+}
+
+model BraceletVente {
+  id          String   @id @default(cuid())
+  gymId       String
+  braceletId  String
+  userId      String
+  montantFcfa Int
+  createdAt   DateTime @default(now())
+
+  gym      Gym      @relation(fields: [gymId], references: [id])
+  bracelet Bracelet @relation(fields: [braceletId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+
+  @@index([gymId])
+  @@index([braceletId])
+  @@map("bracelet_ventes")
+}
 
 model Payment {
   moisCouvert   String?

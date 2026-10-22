@@ -1,3 +1,4 @@
+import { BraceletsModule } from './bracelets/bracelets.module';
 import { PlatformBillingModule } from './platform-billing/platform-billing.module';
 import { BillingAccessModule } from './platform-billing/access.module';
 import { Module } from '@nestjs/common';
@@ -47,6 +48,7 @@ import { MonitoringModule } from './monitoring/monitoring.module';
     ScheduleModule.forRoot(),
     SchedulerModule,
     GymbroModule,
+    BraceletsModule,
   ],
   controllers: [HealthController],
 })
