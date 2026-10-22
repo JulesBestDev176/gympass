@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { WhatsappService, WhatsappDelivery } from '../whatsapp/whatsapp.service';
 
@@ -29,27 +29,41 @@ export class MemberCardDeliveryService {
     return image;
   }
 
-  async send(gymId: string, id: string, file?: Express.Multer.File): Promise<CardDeliveryResult> {
+  async send(gymId: string, id: string, file?: Express.Multer.File, resendOf?: string, cardNumber?: string): Promise<CardDeliveryResult> {
     const member = await this.prisma.member.findFirst({ where: { id, gymId } });
     if (!member) throw new NotFoundException('Adhérent introuvable.');
-    if (member.cardWhatsappStatus && !retryableStatuses.includes(member.cardWhatsappStatus)) return this.result(member.cardWhatsappStatus, member.cardWhatsappMessageId);
+    if (!member.carteActive || (cardNumber !== undefined && cardNumber !== member.numeroCarte)) {
+      throw new ConflictException('La carte a changé ou a été désactivée. Actualisez la fiche.');
+    }
+    // A deliberate resend names the last accepted message. Replays of that same
+    // request cannot reserve a second send once another attempt has replaced it.
+    const resend = typeof resendOf === 'string' && resendOf.length > 0
+      && member.cardWhatsappStatus === 'accepted' && member.cardWhatsappMessageId === resendOf;
+    if (member.cardWhatsappStatus && !retryableStatuses.includes(member.cardWhatsappStatus) && !resend) return this.result(member.cardWhatsappStatus, member.cardWhatsappMessageId);
     const image = this.validate(file);
+    const attemptedAt = new Date();
     // Persistent compare-and-set also protects against retries from another phone,
     // HTTP timeouts and concurrent requests across multiple API instances.
     const claim = await this.prisma.member.updateMany({
-      where: { id, gymId, OR: [{ cardWhatsappStatus: null }, { cardWhatsappStatus: { in: retryableStatuses } }] },
-      data: { cardWhatsappStatus: 'pending', cardWhatsappAttemptedAt: new Date(), cardWhatsappMessageId: null },
+      where: { id, gymId, carteActive: true, numeroCarte: member.numeroCarte, OR: [
+        { cardWhatsappStatus: null }, { cardWhatsappStatus: { in: retryableStatuses } },
+        ...(resend ? [{ cardWhatsappStatus: 'accepted', cardWhatsappMessageId: resendOf }] : []),
+      ] },
+      data: { cardWhatsappStatus: 'pending', cardWhatsappAttemptedAt: attemptedAt, cardWhatsappMessageId: null },
     });
     if (claim.count !== 1) {
       const latest = await this.prisma.member.findFirst({ where: { id, gymId } });
+      if (!latest || !latest.carteActive || latest.numeroCarte !== member.numeroCarte) {
+        throw new ConflictException('La carte a changé ou a été désactivée. Actualisez la fiche.');
+      }
       return this.result(latest?.cardWhatsappStatus || 'pending', latest?.cardWhatsappMessageId);
     }
     let delivery: WhatsappDelivery;
     try {
       delivery = await this.whatsapp.sendImage(member.telephone, image,
-        `Bienvenue ${member.prenom} ${member.nom} ! Votre inscription est confirmée. Voici votre carte GymPass SN (${member.numeroCarte}). Présentez son QR code à l’accueil de votre salle. La mensualité sera à régler au renouvellement, en fin de mois.`);
+        `Bonjour ${member.prenom} ${member.nom}, voici votre carte GymPass SN (${member.numeroCarte}). Conservez-la et présentez son QR code à l’accueil de votre salle. Vous pouvez également l’imprimer au format badge.`);
     } catch { delivery = { status: 'unconfirmed' }; }
-    await this.prisma.member.updateMany({ where: { id, gymId, cardWhatsappStatus: 'pending' }, data: { cardWhatsappStatus: delivery.status, cardWhatsappMessageId: delivery.messageId || null } });
+    await this.prisma.member.updateMany({ where: { id, gymId, numeroCarte: member.numeroCarte, cardWhatsappStatus: 'pending', cardWhatsappAttemptedAt: attemptedAt }, data: { cardWhatsappStatus: delivery.status, cardWhatsappMessageId: delivery.messageId || null } });
     return this.result(delivery.status, delivery.messageId);
   }
 }
