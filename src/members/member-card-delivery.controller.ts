@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Headers, Param, Post, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
@@ -23,7 +23,8 @@ export class MemberCardDeliveryController {
   @Post(':id/card-whatsapp')
   @Throttle({ default: { limit: 10, ttl: 60000 } })
   @UseInterceptors(FileInterceptor('file', { storage: memoryStorage(), limits: { fileSize: 4 * 1024 * 1024, files: 1, fields: 0 } }))
-  send(@CurrentUser() user: any, @Param('id') id: string, @UploadedFile() file?: Express.Multer.File) {
-    return this.delivery.send(user.gymId, id, file);
+  send(@CurrentUser() user: any, @Param('id') id: string, @UploadedFile() file?: Express.Multer.File,
+    @Headers('x-card-resend-of') resendOf?: string, @Headers('x-card-number') cardNumber?: string) {
+    return this.delivery.send(user.gymId, id, file, resendOf, cardNumber);
   }
 }
