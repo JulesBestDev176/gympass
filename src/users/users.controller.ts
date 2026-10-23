@@ -41,8 +41,7 @@ export class UsersController {
   }
 
   // ── JWT authentifié ──────────────────────────────────────────────────────────
-  @UseGuards(JwtAuthGuard)
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Get()
   findAll(@CurrentUser() user: any) {
