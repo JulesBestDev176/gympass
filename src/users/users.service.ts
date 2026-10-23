@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ConflictException, BadRequestException, 
 import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { WhatsappService } from '../whatsapp/whatsapp.service';
-import { AdminUpdateUserDto, CreateUserDto, UpdateUserDto } from './dto/user.dto';
+import { AdminUpdateUserDto, CreateUserDto, UpdateProfileDto, UpdateUserDto } from './dto/user.dto';
 import * as bcrypt from 'bcryptjs';
 import { UserRole } from '@prisma/client';
 import { staffEmailParts, staffEmailCandidate, isEmailUniqueCollision } from './staff-email';
@@ -54,7 +54,8 @@ export class UsersService {
     const gym = await this.prisma.gym.findUnique({ where: { id: gymId } });
     if (!gym) throw new NotFoundException('Salle introuvable');
     const parts = staffEmailParts(dto.prenom, dto.nom, gym.nom || gym.slug);
-    const passwordHash = await bcrypt.hash(dto.password, 10);
+    const temporaryPassword = dto.password ?? randomBytes(18).toString('base64url');
+    const passwordHash = await bcrypt.hash(temporaryPassword, 12);
     for (let suffix = 0; suffix < 10000; suffix++) {
       const email = staffEmailCandidate(parts, suffix);
       if (await this.prisma.user.findFirst({ where: { email: { equals: email, mode: 'insensitive' } } })) continue;
@@ -67,6 +68,7 @@ export class UsersService {
             prenom: dto.prenom,
             email,
             telephone,
+            photoUrl: dto.photoUrl,
             passwordHash,
             role: dto.role ?? UserRole.GERANT,
             mustChangePassword: true,
@@ -80,15 +82,26 @@ export class UsersService {
       }
 
       // Envoi de l’adresse réellement enregistrée, suffixe compris.
-      const whatsapp = await this.whatsapp.sendCredentials(telephone, user.email, dto.password, user.prenom);
+      const whatsapp = await this.sendCredentials(telephone, user.email, temporaryPassword, user.prenom);
       return { ...this.omitPassword(user), whatsapp };
     }
     throw new ConflictException('Impossible de générer une adresse de connexion disponible');
   }
 
+  async updateProfile(gymId: string, id: string, dto: UpdateProfileDto) {
+    // Keep this allowlist even when called outside the HTTP validation pipeline.
+    return this.update(gymId, id, {
+      nom: dto.nom, prenom: dto.prenom, telephone: dto.telephone, photoUrl: dto.photoUrl,
+    });
+  }
+
   async update(gymId: string, id: string, dto: UpdateUserDto) {
     await this.findOne(gymId, id);
-    const data: any = { ...dto };
+    const data: any = {};
+    if (dto.nom !== undefined) data.nom = dto.nom;
+    if (dto.prenom !== undefined) data.prenom = dto.prenom;
+    if (dto.photoUrl !== undefined) data.photoUrl = dto.photoUrl;
+    if (dto.actif !== undefined) data.actif = dto.actif;
     if (dto.telephone !== undefined) {
       data.telephone = staffPhone(dto.telephone);
       await this.assertPhoneAvailable(gymId, data.telephone, id);
@@ -124,8 +137,17 @@ export class UsersService {
       data: { ...clearRecovery, passwordHash, mustChangePassword: true, refreshTokenHash: null, passwordRenewedAt: new Date(), authVersion: { increment: 1 } },
     });
     if (changed.count !== 1) throw new ConflictException('Compte modifié entre-temps. Rechargez sa fiche.');
-    const whatsapp = await this.whatsapp.sendCredentials(telephone, user.email, temporaryPassword, user.prenom);
-    return { user: publicStaffUser({ ...user, mustChangePassword: true }), whatsapp };
+    const whatsapp = await this.sendCredentials(telephone, user.email, temporaryPassword, user.prenom);
+    return { user: await this.findOne(gymId, id), whatsapp };
+  }
+
+  private async sendCredentials(telephone: string, email: string, password: string, prenom: string) {
+    try {
+      return await this.whatsapp.sendCredentials(telephone, email, password, prenom);
+    } catch {
+      // The account change already committed; a lost provider reply is not a failed account change.
+      return { status: 'unconfirmed' as const };
+    }
   }
 
   async toggle(gymId: string, id: string) {

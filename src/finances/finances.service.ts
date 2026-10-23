@@ -59,8 +59,8 @@ export class FinancesService {
       FROM payments p JOIN members m ON m.id = p."memberId" JOIN users u ON u.id = p."userId"
       WHERE p."gymId" = ${user.gymId}
       UNION ALL
-      SELECT 'BRACELET', b.id, b."createdAt", b."montantFcfa", b."userId", 'BRACELET', 'UNKNOWN',
-        'Entrée à la séance', concat('Bracelet ', br.numero), br.numero, NULL, NULL,
+      SELECT 'BRACELET', b.id, b."createdAt", b."montantFcfa", b."userId", 'BRACELET', coalesce(b.mode::text, 'UNKNOWN'),
+        'Vente de bracelet', concat('Bracelet ', br.numero), br.numero, NULL, NULL,
         concat_ws(' ', u.prenom, u.nom)
       FROM bracelet_ventes b JOIN bracelets br ON br.id = b."braceletId" JOIN users u ON u.id = b."userId"
       WHERE b."gymId" = ${user.gymId}

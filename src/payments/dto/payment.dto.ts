@@ -2,6 +2,7 @@ import { IsString, IsInt, IsEnum, IsOptional, IsUUID, Min, Max, Matches } from '
 import { PaymentMode, PaymentType } from '@prisma/client';
 
 export class CreatePaymentDto {
+  @IsOptional() @IsInt() @Min(0) expectedAmount?: number;
   @IsOptional() @IsUUID() requestId?: string;
   @IsString() memberId: string;
 
