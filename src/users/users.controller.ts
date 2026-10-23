@@ -1,7 +1,6 @@
-import { Controller, Get, Post, Patch, Param, Body, UseGuards, ForbiddenException } from '@nestjs/common';
-import { IsString } from 'class-validator';
+import { Controller, Get, Post, Patch, Param, Body, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { AdminCreateUserDto, AdminStaffActionDto, AdminStaffContactDto, AdminUpdateUserDto, CreateUserDto, UpdateUserDto } from './dto/user.dto';
+import { AdminCreateUserDto, AdminStaffActionDto, AdminStaffContactDto, AdminUpdateUserDto, CreateUserDto, UpdateProfileDto, UpdateUserDto } from './dto/user.dto';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GymDashGuard } from '../auth/guards/gymdash.guard';
@@ -60,7 +59,7 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Get('me')
   me(@CurrentUser() user: any) {
-    return this.usersService.findOne(user.gymId, user.id);
+    return this.usersService.findMe(user.id);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -74,22 +73,29 @@ export class UsersController {
   @Roles(UserRole.ADMIN)
   @Post()
   create(@CurrentUser() user: any, @Body() dto: CreateUserDto) {
-    return this.usersService.create(user.gymId, dto);
+    // App administrators never choose or receive a staff member's temporary secret.
+    return this.usersService.create(user.gymId, { ...dto, password: undefined });
   }
 
   @UseGuards(JwtAuthGuard)
   @Patch('me')
-  updateMe(@CurrentUser() user: any, @Body() dto: UpdateUserDto) {
-    if (dto.telephone !== undefined) throw new ForbiddenException('Le numéro de récupération doit être modifié par l’administration GymDash.');
-    return this.usersService.update(user.gymId, user.id, dto);
+  updateMe(@CurrentUser() user: any, @Body() dto: UpdateProfileDto) {
+    return this.usersService.updateProfile(user.gymId, user.id, dto);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Patch(':id')
   update(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: UpdateUserDto) {
-    if (dto.telephone !== undefined) throw new ForbiddenException('Le numéro de récupération doit être modifié par l’administration GymDash.');
     return this.usersService.update(user.gymId, id, dto);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard, ThrottlerGuard)
+  @Roles(UserRole.ADMIN)
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @Post(':id/reset-password')
+  renewPassword(@CurrentUser() user: any, @Param('id') id: string) {
+    return this.usersService.renewPassword(user.gymId, id);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

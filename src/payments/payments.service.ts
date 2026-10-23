@@ -80,6 +80,10 @@ export class PaymentsService {
     if (!gym) throw new NotFoundException('Gym introuvable');
     const member = await this.prisma.member.findFirst({ where: { id: dto.memberId, gymId } });
     if (!member) throw new NotFoundException('Adhérent introuvable');
+    const expectedPrice = dto.type === 'ABONNEMENT' ? (dto.montantOverride ?? gym.prixMensualite)
+      : dto.type === 'RECHARGE_CARTE' ? (dto.nbSeances ?? 0) * gym.prixSeance
+      : dto.type === 'INSCRIPTION' ? (dto.montantOverride ?? gym.fraisInscription) : gym.prixSeance;
+    if (dto.expectedAmount != null && dto.expectedAmount !== expectedPrice) throw new ConflictException('Le tarif a changé. Actualisez le montant avant de confirmer le paiement.');
     const collector = await this.prisma.user.findFirst({ where: { id: userId, gymId }, select: { prenom: true, nom: true } });
     if (!collector) throw new NotFoundException('Personnel introuvable');
     let payment: any;

@@ -89,6 +89,8 @@ model Gym {
   braceletVentes BraceletVente[]
 
   @@map("gyms")
+  braceletSales BraceletSale[]
+
 }
 
 // ─────────────────────────── USER (Employé) ───────────────────────────────────
@@ -128,6 +130,8 @@ model User {
   @@index([gymId])
   @@unique([gymId, telephone])
   @@map("users")
+  braceletSales BraceletSale[]
+
 }
 
 // ─────────────────────────── MEMBER (Adhérent) ────────────────────────────────
@@ -217,6 +221,8 @@ model Bracelet {
 
   @@index([gymId])
   @@map("bracelets")
+  soldAt DateTime?
+
 }
 
 model BraceletVente {
@@ -234,6 +240,11 @@ model BraceletVente {
   @@index([gymId])
   @@index([braceletId])
   @@map("bracelet_ventes")
+  saleId String?
+  mode PaymentMode?
+  disposableKey String? @unique
+  sale BraceletSale? @relation(fields: [saleId], references: [id], onDelete: Restrict)
+
 }
 
 model Payment {
@@ -855,4 +866,22 @@ model PlatformInvoiceCounter {
   value Int
 
   @@map("platform_invoice_counters")
+}
+
+model BraceletSale {
+  id String @id @default(cuid())
+  gymId String
+  userId String
+  requestId String
+  mode PaymentMode?
+  unitPrice Int
+  totalFcfa Int
+  quantity Int
+  createdAt DateTime @default(now())
+  gym Gym @relation(fields: [gymId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+  items BraceletVente[]
+  @@unique([gymId, requestId])
+  @@index([gymId, createdAt])
+  @@map("bracelet_sales")
 }
