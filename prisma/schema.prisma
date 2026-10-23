@@ -103,6 +103,7 @@ model User {
   email              String    @unique
   telephone          String?
   passwordHash       String
+  sessions           AuthSession[]
   refreshTokenHash   String?
   role               UserRole  @default(GERANT)
   actif              Boolean   @default(true)
@@ -884,4 +885,16 @@ model BraceletSale {
   @@unique([gymId, requestId])
   @@index([gymId, createdAt])
   @@map("bracelet_sales")
+}
+
+model AuthSession {
+  id               String   @id
+  userId           String
+  refreshTokenHash String
+  expiresAt        DateTime
+  createdAt        DateTime @default(now())
+  user             User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+  @@map("auth_sessions")
 }
