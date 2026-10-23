@@ -104,6 +104,7 @@ model User {
   telephone          String?
   passwordHash       String
   refreshTokenHash   String?
+  sessions           AuthSession[]
   role               UserRole  @default(GERANT)
   actif              Boolean   @default(true)
   mustChangePassword Boolean   @default(false)
@@ -135,6 +136,18 @@ model User {
 }
 
 // ─────────────────────────── MEMBER (Adhérent) ────────────────────────────────
+
+model AuthSession {
+  id               String   @id
+  userId           String
+  refreshTokenHash String
+  expiresAt        DateTime
+  createdAt        DateTime @default(now())
+  user             User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+  @@map("auth_sessions")
+}
 
 model Member {
   registrationRequestId String?

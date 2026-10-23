@@ -43,8 +43,10 @@ export class AuthService {
     };
   }
 
-  private async issueTokens(user: any) {
+  private async issueTokens(user: any, rotation?: { id: string; digest: string }, legacyDigest?: string) {
+    const sessionId = rotation?.id ?? randomUUID();
     const payload = {
+      sid: sessionId,
       sub: user.id,
       email: user.email,
       role: user.role,
@@ -60,11 +62,30 @@ export class AuthService {
       { expiresIn: this.config.get('JWT_REFRESH_EXPIRES_IN', '30d') },
     );
     const refreshTokenHash = `sha256:${tokenDigest(refreshToken)}`;
-    const stored = await this.prisma.user.updateMany({
-      where: { id: user.id, actif: true, authVersion: user.authVersion ?? 0 },
-      data: { refreshTokenHash },
+    const expiresAt = new Date((this.jwt.decode(refreshToken) as { exp: number }).exp * 1000);
+    await this.prisma.$transaction(async tx => {
+      const current = await tx.user.findUnique({ where: { id: user.id } });
+      if (!current?.actif || current.authVersion !== (user.authVersion ?? 0)) {
+        throw new UnauthorizedException('Session revoked');
+      }
+      if (rotation) {
+        const changed = await tx.authSession.updateMany({
+          where: { id: rotation.id, userId: user.id, refreshTokenHash: rotation.digest, expiresAt: { gt: new Date() } },
+          data: { refreshTokenHash, expiresAt },
+        });
+        if (changed.count !== 1) throw new UnauthorizedException('Session expirée');
+      } else {
+        if (legacyDigest) {
+          const consumed = await tx.user.updateMany({
+            where: { id: user.id, actif: true, authVersion: user.authVersion ?? 0, refreshTokenHash: legacyDigest },
+            data: { refreshTokenHash: null },
+          });
+          if (consumed.count !== 1) throw new UnauthorizedException('Session expirée');
+        }
+        await tx.authSession.create({ data: { id: sessionId, userId: user.id, refreshTokenHash, expiresAt } });
+        await tx.authSession.deleteMany({ where: { userId: user.id, expiresAt: { lte: new Date() } } });
+      }
     });
-    if (stored.count !== 1) throw new UnauthorizedException('Session revoked');
     return { accessToken, refreshToken };
   }
 
@@ -109,18 +130,23 @@ export class AuthService {
       where: { id: payload.sub },
       include: { gym: true },
     });
-    if (!user || !user.actif || !user.refreshTokenHash) {
+    if (!user || !user.actif) {
       throw new UnauthorizedException('Session expirée');
     }
 
     if ((payload.authVersion ?? 0) !== (user.authVersion ?? 0)) throw new UnauthorizedException('Session revoked');
     const digest = `sha256:${tokenDigest(refreshToken)}`;
+    if (typeof payload.sid === 'string' && payload.sid.length > 0) {
+      const tokens = await this.issueTokens(user, { id: payload.sid, digest });
+      return { ...tokens, mustChangePassword: user.mustChangePassword, user: this.publicUser(user) };
+    }
+    if (!user.refreshTokenHash) throw new UnauthorizedException('Session expirée');
     const valid = user.refreshTokenHash.startsWith('sha256:')
       ? user.refreshTokenHash.length === digest.length && timingSafeEqual(Buffer.from(user.refreshTokenHash), Buffer.from(digest))
       : (user.authVersion ?? 0) === 0 && await bcrypt.compare(refreshToken, user.refreshTokenHash);
     if (!valid) throw new UnauthorizedException('Session expirée');
 
-    const tokens = await this.issueTokens(user);
+    const tokens = await this.issueTokens(user, undefined, user.refreshTokenHash);
     return {
       ...tokens,
       mustChangePassword: user.mustChangePassword,
