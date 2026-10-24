@@ -18,9 +18,13 @@ async function bootstrap() {
   app.enableShutdownHooks();
 
   // ── CORS ──────────────────────────────────────────────────────────────────
+  const allowedOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+    : ['http://localhost:3000', 'http://localhost:3001'];
   app.enableCors({
-    origin: '*',
+    origin: isProduction ? allowedOrigins : true,
     methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+    credentials: true,
   });
 
   // ── Prefix global ─────────────────────────────────────────────────────────
@@ -31,7 +35,7 @@ async function bootstrap() {
     new ValidationPipe({
       whitelist: true,
       transform: true,
-      forbidNonWhitelisted: false,
+      forbidNonWhitelisted: true,
     }),
   );
 
@@ -39,20 +43,22 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalInterceptors(new TransformInterceptor());
 
-  // ── Swagger ───────────────────────────────────────────────────────────────
-  const config = new DocumentBuilder()
-    .setTitle('GymPass API')
-    .setDescription('API de gestion de salle de sport — GymPass Sénégal')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+  // ── Swagger (dev uniquement) ──────────────────────────────────────────────
+  if (!isProduction) {
+    const config = new DocumentBuilder()
+      .setTitle('GymPass API')
+      .setDescription('API de gestion de salle de sport — GymPass Sénégal')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .build();
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api/docs', app, document);
+  }
 
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
   console.log(`\n🚀  GymPass API démarré sur http://localhost:${port}/api/v1`);
-  console.log(`📚  Swagger : http://localhost:${port}/api/docs\n`);
+  if (!isProduction) console.log(`📚  Swagger : http://localhost:${port}/api/docs\n`);
 }
 
 bootstrap();

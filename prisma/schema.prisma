@@ -1339,3 +1339,13 @@ model ShopStockMovement {
   @@index([gymId, productId, createdAt])
   @@map("shop_stock_movements")
 }
+
+model ContactLead {
+  id        String   @id @default(uuid())
+  gym       String
+  city      String
+  phone     String
+  createdAt DateTime @default(now())
+
+  @@map("contact_leads")
+}
