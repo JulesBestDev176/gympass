@@ -127,11 +127,11 @@ export class WhatsappService {
   async sendCredentials(telephone: string, email: string, password: string, prenom: string): Promise<WhatsappDelivery> {
     const message =
       `Bonjour ${prenom} ! 👋\n\n` +
-      `Votre compte GymPass SN a été créé.\n\n` +
+      `Votre compte GymPass a été créé.\n\n` +
       `📧 Email : ${email}\n` +
       `🔑 Mot de passe temporaire : ${password}\n\n` +
       `Connectez-vous et changez votre mot de passe dès votre première connexion.\n\n` +
-      `GymPass SN`;
+      `GymPass`;
     return this.send(telephone, message);
   }
 
@@ -139,10 +139,10 @@ export class WhatsappService {
   async sendOtp(telephone: string, otp: string, prenom: string): Promise<WhatsappDelivery> {
     const message =
       `Bonjour ${prenom},\n\n` +
-      `Votre code de réinitialisation GymPass SN :\n\n` +
+      `Votre code de réinitialisation GymPass :\n\n` +
       `🔐 *${otp}*\n\n` +
       `Ce code expire dans 10 minutes. Ne le partagez pas.\n\n` +
-      `GymPass SN`;
+      `GymPass`;
     return this.send(telephone, message);
   }
 
@@ -151,7 +151,7 @@ export class WhatsappService {
     const message =
       `Voici la carte QR de *${memberNom}* :\n` +
       `${qrImageUrl}\n\n` +
-      `GymPass SN`;
+      `GymPass`;
     await this.send(telephone, message);
   }
 

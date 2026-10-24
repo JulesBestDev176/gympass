@@ -54,7 +54,7 @@ export class SchedulerService {
         `Bonjour *${m.prenom} ${m.nom}* 👋\n\n` +
         `Votre abonnement *GymPass* expire *demain*.\n\n` +
         `Pour continuer à profiter de la salle, pensez à renouveler dès aujourd'hui.\n\n` +
-        `_GymPass SN_`;
+        `_GymPass_`;
 
       await this.whatsapp.sendMessage(m.telephone, message);
 
@@ -109,7 +109,7 @@ export class SchedulerService {
         `Votre abonnement *GymPass* a expiré hier.\n\n` +
         `🔴 Votre accès à la salle est suspendu jusqu'au renouvellement.\n\n` +
         `Contactez la réception pour renouveler votre abonnement.\n\n` +
-        `_GymPass SN_`;
+        `_GymPass_`;
 
       await this.whatsapp.sendMessage(m.telephone, message);
 
@@ -128,10 +128,10 @@ export class SchedulerService {
   async sendWelcome(telephone: string, prenom: string, nom: string, numeroCarte: string) {
     const message =
       `Bienvenue *${prenom} ${nom}* ! 🎉\n\n` +
-      `Votre inscription à *GymPass SN* est confirmée.\n\n` +
+      `Votre inscription à *GymPass* est confirmée.\n\n` +
       `🪪 N° carte : *${numeroCarte}*\n\n` +
       `Présentez votre QR code à chaque entrée en salle.\n\n` +
-      `_GymPass SN_`;
+      `_GymPass_`;
     await this.whatsapp.sendMessage(telephone, message);
   }
 
@@ -152,7 +152,7 @@ export class SchedulerService {
       `Bonjour *${prenom} ${nom}*,\n\n` +
       `✅ Paiement enregistré : *${montant.toLocaleString('fr-FR')} FCFA* — ${formule}${expStr}\n\n` +
       `Merci de votre confiance !\n\n` +
-      `_GymPass SN_`;
+      `_GymPass_`;
     await this.whatsapp.sendMessage(telephone, message);
   }
 }

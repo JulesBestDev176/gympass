@@ -67,7 +67,7 @@ export async function renderPaymentReceipt(r: PaymentReceiptData, photo?: Buffer
     text('TOTAL ENCAISSÉ', 40, 503, 145, 10, '#FFFFFF', true, 18);
     text(money(r.amount), 180, 498, 199, 19, accent, true, 32, 'right');
     text('Paiement enregistré • Conservez ce reçu.', 24, 556, 372, 9, muted, false, 16, 'center');
-    text('GymPass SN', 24, 575, 372, 8, muted, false, 12, 'center');
+    text('GymPass', 24, 575, 372, 8, muted, false, 12, 'center');
     doc.end();
   });
 }
