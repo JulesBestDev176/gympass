@@ -11,9 +11,9 @@ permissions:
   contents: read
 
 # Never cancel a production run after it has started mutating Coolify.
-# A newer pending push replaces an older pending push, not the running release.
+# Serialize each branch independently: a main build must not cancel a queued release.
 concurrency:
-  group: ci-cd-${{ github.event_name == 'pull_request' && github.ref || 'production' }}
+  group: ci-cd-${{ github.ref }}
   cancel-in-progress: false
 
 env:
