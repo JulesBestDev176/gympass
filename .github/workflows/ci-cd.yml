@@ -1,94 +1,92 @@
-# CI/CD GymPass Backend
-# Pipeline : validate -> build image Docker Hub
-# Coolify déploie automatiquement via webhook GitHub sur push main
-
 name: CI/CD
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'release/**']
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
+permissions:
+  contents: read
+
+# Never cancel a production run after it has started mutating Coolify.
+# A newer pending push replaces an older pending push, not the running release.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-cd-${{ github.event_name == 'pull_request' && github.ref || 'production' }}
+  cancel-in-progress: false
 
 env:
-  IMAGE_NAME: gympass-backend
+  NODE_VERSION: "20"
+  IMAGE_REPOSITORY: gympass-backend
 
 jobs:
   validate:
-    name: Validate
+    name: Validate and build
     runs-on: ubuntu-latest
-
+    timeout-minutes: 20
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js 20
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: "20"
-
-      - name: Install dependencies
-        run: npm ci --include=dev
-
-      - name: Build NestJS
-        run: npm run build
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: node --test scripts/coolify-deploy.test.mjs
+      - run: npm ci --include=dev
+      - run: npx prisma generate
+      - run: npx prisma validate
+        env:
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+      - run: npm run build
+      - run: test -f dist/main.js
 
   docker:
-    name: Build & push Docker image
+    name: Publish immutable Docker image
     needs: validate
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
-    permissions:
-      contents: read
-      packages: write
-
+    timeout-minutes: 30
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Docker metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=sha,prefix=sha-
-            type=raw,value=prod
-            type=raw,value=latest
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
+      - uses: actions/checkout@v4
+      - name: Validate registry credentials
+        env:
+          USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          test -n "$USERNAME" || { echo 'Missing DOCKERHUB_USERNAME'; exit 1; }
+          test -n "$TOKEN" || { echo 'Missing DOCKERHUB_TOKEN'; exit 1; }
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build and push image
-        uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./Dockerfile
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_REPOSITORY }}:sha-${{ github.sha }}
+          labels: org.opencontainers.image.revision=${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
   deploy:
-    name: Deploy to Coolify
+    name: Deploy and verify Coolify
     needs: docker
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-
+    timeout-minutes: 40
+    environment: production
     steps:
-      - name: Trigger Coolify deployment
-        run: |
-          curl --fail --request POST "${{ secrets.COOLIFY_WEBHOOK }}" \
-            --header "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" \
-            --header "Content-Type: application/json"
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Deploy exact revision and wait for completion
+        env:
+          COOLIFY_BASE_URL: ${{ vars.COOLIFY_BASE_URL }}
+          COOLIFY_API_TOKEN: ${{ secrets.COOLIFY_API_TOKEN }}
+          COOLIFY_APP_UUID: ${{ vars.COOLIFY_APP_UUID }}
+          COOLIFY_DEPLOY_MODE: source
+          IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_REPOSITORY }}
+          HEALTH_URL: https://api.gympass.minifootapp.com/api/v1/health
+        run: node scripts/coolify-deploy.mjs
