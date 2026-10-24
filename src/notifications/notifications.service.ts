@@ -20,9 +20,9 @@ export class NotificationsService {
     });
   }
 
-  async markRead(gymId: string, id: string) {
+  async markRead(gymId: string, id: string, userId: string) {
     return this.prisma.notification.updateMany({
-      where: { id, gymId },
+      where: { id, gymId, OR: [{ userId: null }, { userId }] },
       data: { lue: true },
     });
   }

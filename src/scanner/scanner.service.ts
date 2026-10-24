@@ -88,8 +88,8 @@ export class ScannerService {
 
     if (dto.qrCode.startsWith('GYMPASS-SN-')) {
       // QR d'un membre
-      member = await this.prisma.member.findUnique({
-        where: { qrCode: dto.qrCode },
+      member = await this.prisma.member.findFirst({
+        where: { qrCode: dto.qrCode, gymId },
         include: {
           subscriptions: { where: { dateDebut: { lte: new Date() } }, orderBy: { dateExpiration: 'desc' }, take: 1 },
           sessionCards: { where: { active: true }, take: 1 },
@@ -99,7 +99,6 @@ export class ScannerService {
     }
 
     if (!member) throw new NotFoundException('QR code invalide ou adhérent introuvable');
-    if (member.gymId !== gymId) throw new BadRequestException('QR code d\'un autre gym');
 
     // Anti-double scan
     const antiSec = gym?.antiDoubleScanSec ?? 5;

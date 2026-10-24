@@ -10,7 +10,7 @@ export function isPlatformManagementRequest(
   const secret = config.get<string>('GYMDASH_SECRET');
   return Boolean(secret) && headers['x-gymdash-secret'] === secret
     && isBillingAdministrator(user, config.get<string>('GYMDASH_BILLING_ADMIN_EMAILS'))
-    && /^\/(?:api\/v1\/)?(?:platform-billing(?:\/|$)|dashboard\/global(?:\/|$)|gym(?:\/|$)|monitoring(?:\/|$)|users\/admin-create$|users\/admin\/[^/]+\/(?:contact|reset-password)$)/.test(path);
+    && /^\/(?:api\/v1\/)?(?:platform-billing(?:\/|$)|app-releases\/admin(?:\/|$)|dashboard\/global(?:\/|$)|gym(?:\/|$)|monitoring(?:\/|$)|users\/admin-create$|users\/admin\/[^/]+\/(?:contact|reset-password)$)/.test(path);
 }
 
 export function isAccountSecurityRequest(rawPath: string): boolean {

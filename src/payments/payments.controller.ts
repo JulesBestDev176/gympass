@@ -23,7 +23,7 @@ export class PaymentsController {
 
   @Get('stats')
   getStats(@CurrentUser() user: any) {
-    return this.paymentsService.getStats(user.gymId);
+    return this.paymentsService.getStats(user.gymId, user.id, user.role);
   }
 
   @Post()

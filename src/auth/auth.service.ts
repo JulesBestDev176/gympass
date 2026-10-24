@@ -169,7 +169,7 @@ export class AuthService {
   async logout(userId: string) {
     await this.prisma.user.update({
       where: { id: userId },
-      data: { refreshTokenHash: null, authVersion: { increment: 1 } },
+      data: { refreshTokenHash: null, authVersion: { increment: 1 }, fcmToken: null },
     });
     return { message: 'Déconnexion réussie' };
   }

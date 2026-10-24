@@ -4,6 +4,7 @@ import { SchedulerService } from '../scheduler/scheduler.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CreateMemberDto, UpdateMemberDto } from './dto/member.dto';
 import { SubscriptionStatus, NotifType } from '@prisma/client';
+import { paymentVisibility } from '../payments/payment-visibility';
 
 @Injectable()
 export class MembersService {
@@ -72,13 +73,13 @@ export class MembersService {
     }));
   }
 
-  async findOne(gymId: string, id: string) {
+  async findOne(gymId: string, id: string, actor?: { id: string; role: string }) {
     const member = await this.prisma.member.findFirst({
       where: { id, gymId },
       include: {
         subscriptions: { where: { dateDebut: { lte: new Date() } }, orderBy: { dateExpiration: 'desc' } },
         sessionCards: true,
-        payments: { orderBy: { createdAt: 'desc' }, take: 10 },
+        payments: { where: paymentVisibility(gymId, actor?.id, actor?.role), orderBy: { createdAt: 'desc' }, take: 10 },
         entries: { orderBy: { createdAt: 'desc' }, take: 20 },
       },
     });
@@ -86,9 +87,9 @@ export class MembersService {
     return { ...member, statut: MembersService.computeStatus(member) };
   }
 
-  async findByQr(qrCode: string) {
-    const member = await this.prisma.member.findUnique({
-      where: { qrCode },
+  async findByQr(gymId: string, qrCode: string) {
+    const member = await this.prisma.member.findFirst({
+      where: { qrCode, gymId },
       include: {
         subscriptions: { where: { dateDebut: { lte: new Date() } }, orderBy: { dateExpiration: 'desc' }, take: 1 },
         sessionCards: { where: { active: true }, take: 1 },

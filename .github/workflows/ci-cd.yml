@@ -25,6 +25,18 @@ jobs:
     name: Validate and build
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: shop
+          POSTGRES_PASSWORD: shop
+          POSTGRES_DB: shop_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U shop -d shop_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 12
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -34,6 +46,15 @@ jobs:
       - run: node --test scripts/coolify-deploy.test.mjs
       - run: npm ci --include=dev
       - run: npx prisma generate
+      - name: Verify shop API and migration preflight
+        run: node --test src/shop/shop.service.test.cjs src/shop/shop.http.test.cjs scripts/shop-preflight.test.cjs
+      - name: Verify shop transactions against PostgreSQL
+        env:
+          DATABASE_URL: postgresql://shop:shop@localhost:5432/shop_ci
+          SHOP_TEST_DATABASE_URL: postgresql://shop:shop@localhost:5432/shop_ci
+        run: |
+          npx prisma db execute --file prisma/migrations/20261024120000_shop/migration.sql
+          node --test src/shop/shop.postgres.test.cjs src/finances/finances.shop.postgres.test.cjs
       - run: npx prisma validate
         env:
           DATABASE_URL: postgresql://ci:ci@localhost:5432/ci

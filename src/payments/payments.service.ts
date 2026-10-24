@@ -5,6 +5,7 @@ import { PaymentReceiptService } from './payment-receipt.service';
 import { PaymentReceiptData, receiptData } from './payment-receipt.data';
 import { CreatePaymentDto } from './dto/payment.dto';
 import { PaymentType, SubscriptionStatus, NotifType, UserRole } from '@prisma/client';
+import { paymentVisibility } from './payment-visibility';
 
 @Injectable()
 export class PaymentsService {
@@ -18,21 +19,9 @@ export class PaymentsService {
     gymId: string, userId: string, role: UserRole,
     memberId?: string, dateDebut?: string, dateFin?: string,
   ) {
-    const where: any = { gymId };
+    const where: any = paymentVisibility(gymId, userId, role);
 
-    if (role === UserRole.GERANT) {
-      // Le gérant voit uniquement ses propres paiements de la semaine courante
-      where.userId = userId;
-      const now = new Date();
-      const day = now.getDay();
-      const monday = new Date(now);
-      monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
-      monday.setHours(0, 0, 0, 0);
-      const sunday = new Date(monday);
-      sunday.setDate(monday.getDate() + 6);
-      sunday.setHours(23, 59, 59, 999);
-      where.createdAt = { gte: monday, lte: sunday };
-    } else {
+    if (role === UserRole.ADMIN) {
       // Admin peut filtrer par plage de dates
       if (dateDebut || dateFin) {
         where.createdAt = {};
@@ -151,24 +140,26 @@ export class PaymentsService {
     return payment;
   }
 
-  async getStats(gymId: string) {
+  async getStats(gymId: string, userId?: string, role = 'ADMIN') {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const visibility = paymentVisibility(gymId, userId, role, now);
+    const since = (date: Date) => ({ ...visibility, createdAt: {
+      ...visibility.createdAt,
+      gte: new Date(Math.max(date.getTime(), visibility.createdAt?.gte.getTime() ?? 0)),
+    } });
 
     const [totalMonth, totalToday, countMonth] = await Promise.all([
       this.prisma.payment.aggregate({
-        where: { gymId, createdAt: { gte: startOfMonth } },
+        where: since(startOfMonth),
         _sum: { montantFcfa: true },
       }),
       this.prisma.payment.aggregate({
-        where: {
-          gymId,
-          createdAt: { gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()) },
-        },
+        where: since(new Date(now.getFullYear(), now.getMonth(), now.getDate())),
         _sum: { montantFcfa: true },
       }),
       this.prisma.payment.count({
-        where: { gymId, createdAt: { gte: startOfMonth } },
+        where: since(startOfMonth),
       }),
     ]);
 

@@ -182,7 +182,16 @@ export class UsersService {
   }
 
   async updateFcmToken(userId: string, fcmToken: string) {
-    await this.prisma.user.update({ where: { id: userId }, data: { fcmToken } });
+    if (typeof fcmToken !== 'string' || !fcmToken.trim() || fcmToken.length > 4096) {
+      throw new BadRequestException('Token de notification invalide');
+    }
+    await this.prisma.$transaction(async tx => {
+      // Serialize claims for this device, including across API replicas. A phone
+      // that switches accounts must stop receiving the previous gym's pushes.
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${fcmToken}, 0))`;
+      await tx.user.updateMany({ where: { fcmToken, id: { not: userId } }, data: { fcmToken: null } });
+      await tx.user.update({ where: { id: userId }, data: { fcmToken } });
+    });
     return { message: 'Token FCM enregistré' };
   }
 

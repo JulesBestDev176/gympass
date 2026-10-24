@@ -22,7 +22,7 @@ export class MembersController {
 
   @Get(':id')
   findOne(@CurrentUser() user: any, @Param('id') id: string) {
-    return this.membersService.findOne(user.gymId, id);
+    return this.membersService.findOne(user.gymId, id, user);
   }
 
   @Get(':id/paid-months')

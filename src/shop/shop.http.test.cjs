@@ -1,0 +1,20 @@
+require('reflect-metadata');require('ts-node/register/transpile-only');
+const {test}=require('node:test');const assert=require('node:assert/strict');const {Test}=require('@nestjs/testing');const {ConfigModule}=require('@nestjs/config');const {PassportModule}=require('@nestjs/passport');const {ValidationPipe}=require('@nestjs/common');const jwt=require('jsonwebtoken');
+const {ShopController}=require('./shop.controller');const {ShopService}=require('./shop.service');const {PrismaService}=require('../prisma/prisma.service');const {JwtStrategy}=require('../auth/strategies/jwt.strategy');const {BillingAccessService}=require('../platform-billing/access.service');
+test('shop HTTP uses verified actor, validates money DTOs and enforces admin+tenant scope',async t=>{
+ const db={user:{findUnique:async({where})=>({id:where.id,gymId:'g1',role:where.id==='admin'?'ADMIN':'GERANT',actif:true,authVersion:0})},shopProduct:{findFirst:async()=>null}};
+ const module=await Test.createTestingModule({imports:[ConfigModule.forRoot({isGlobal:true,ignoreEnvFile:true,load:[()=>({JWT_SECRET:'test-only'})]}),PassportModule],controllers:[ShopController],providers:[ShopService,JwtStrategy,{provide:PrismaService,useValue:db},{provide:BillingAccessService,useValue:{assertAllowed:async()=>{}}}]}).compile();
+ const app=module.createNestApplication();app.useLogger(false);app.useGlobalPipes(new ValidationPipe({transform:true,whitelist:true}));await app.listen(0,'127.0.0.1');t.after(()=>app.close());const origin=await app.getUrl();
+ const request=(path,method='GET',body,user='staff',headers={})=>fetch(origin+'/shop'+path,{method,headers:{Authorization:'Bearer '+jwt.sign({sub:user,gymId:'g2',role:'ADMIN'},'test-only'),'Content-Type':'application/json',...headers},...(body?{body:JSON.stringify(body)}:{})});
+ assert.equal((await fetch(origin+'/shop/products')).status,401);
+ assert.equal((await request('/products?includeInactive=true')).status,403);
+ assert.equal((await request('/products','POST',{name:'Eau',priceFcfa:500,initialStock:10})).status,403);
+ assert.equal((await request('/products/p1/movements')).status,403);
+ assert.equal((await request('/products/p1')).status,404);
+ assert.equal((await request('/products/p1','PATCH',{name:'Eau'})).status,403);
+ assert.equal((await request('/products','POST',{},'admin')).status,400);
+ assert.equal((await request('/products','POST',{name:'Eau',initialStock:0,priceFcfa:null},'admin')).status,400);
+ assert.equal((await request('/products','POST',{name:'Eau',initialStock:0,priceFcfa:-1},'admin')).status,400);
+ assert.equal((await request('/sales','POST',{requestId:'not-uuid',items:[]})).status,400);
+ assert.equal((await request('/products/p1','GET',null,'admin',{'x-gympass-gym-id':'g2'})).status,403);
+});
