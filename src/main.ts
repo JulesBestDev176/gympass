@@ -41,7 +41,7 @@ async function bootstrap() {
 
   // ── Swagger ───────────────────────────────────────────────────────────────
   const config = new DocumentBuilder()
-    .setTitle('GymPass SN API')
+    .setTitle('GymPass API')
     .setDescription('API de gestion de salle de sport — GymPass Sénégal')
     .setVersion('1.0')
     .addBearerAuth()
