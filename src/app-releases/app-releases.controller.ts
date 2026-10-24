@@ -35,7 +35,9 @@ export class AppReleasesController {
   @Header('Cache-Control', 'private, no-store')
   @UseInterceptors(FileInterceptor('apk', {
     storage: diskStorage({ destination: tmpdir(), filename: (_request, _file, callback) => callback(null, `gympass-apk-${randomUUID()}.tmp`) }),
-    limits: { fileSize: APK_MAX_BYTES, files: 1, fields: 1, fieldSize: 40000, parts: 2 },
+    // Busboy emits partsLimit when the count reaches the limit, including the
+    // final part. Keep one sentinel slot; files/fields still allow only APK + notes.
+    limits: { fileSize: APK_MAX_BYTES, files: 1, fields: 1, fieldSize: 40000, parts: 3 },
   }))
   create(@UploadedFile() file: Express.Multer.File, @Body('notes') notes: string, @Req() request: any) { return this.releases.createDraft(file, notes ?? '', request.user.id); }
 

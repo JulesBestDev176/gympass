@@ -34,6 +34,7 @@ jobs:
       - run: node --test scripts/coolify-deploy.test.mjs
       - run: npm ci --include=dev
       - run: npx prisma generate
+      - run: node --test src/app-releases/app-releases-upload.test.cjs
       - run: npx prisma validate
         env:
           DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
