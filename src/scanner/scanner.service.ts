@@ -7,9 +7,6 @@ import { BraceletsService } from '../bracelets/bracelets.service';
 
 @Injectable()
 export class ScannerService {
-  // Anti-double-scan : memberId → dernière entrée timestamp
-  private readonly lastScan = new Map<string, number>();
-
   constructor(
     private readonly prisma: PrismaService,
     private readonly braceletsService: BraceletsService,
@@ -100,10 +97,13 @@ export class ScannerService {
 
     if (!member) throw new NotFoundException('QR code invalide ou adhérent introuvable');
 
-    // Anti-double scan
+    // Anti-double scan — DB-level check (works across replicas and restarts)
     const antiSec = gym?.antiDoubleScanSec ?? 5;
-    const last = this.lastScan.get(member.id);
-    if (last && Date.now() - last < antiSec * 1000) {
+    const cutoff = new Date(Date.now() - antiSec * 1000);
+    const recentEntry = await this.prisma.entry.findFirst({
+      where: { memberId: member.id, createdAt: { gte: cutoff } },
+    });
+    if (recentEntry) {
       return {
         result: 'DOUBLE_SCAN',
         membre: this.formatMember(member),
@@ -148,7 +148,6 @@ export class ScannerService {
     }
 
     if (canEnter) {
-      this.lastScan.set(member.id, Date.now());
       await this.prisma.entry.create({
         data: {
           memberId: member.id,

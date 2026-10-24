@@ -38,6 +38,8 @@ export class UploadController {
   )
   async uploadPhoto(@UploadedFile() file: Express.Multer.File) {
     if (!file) throw new BadRequestException('Fichier manquant (champ: file)');
-    return this.uploadService.uploadPhoto(file.buffer, file.originalname, file.mimetype);
+    // Sanitize filename: strip path separators and keep only safe characters
+    const safeName = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_').replace(/\.{2,}/g, '_');
+    return this.uploadService.uploadPhoto(file.buffer, safeName, file.mimetype);
   }
 }
