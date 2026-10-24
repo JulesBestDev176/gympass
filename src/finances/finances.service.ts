@@ -4,7 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { FinancesQuery } from './finances.dto';
 
 type Actor = { gymId: string; id: string; role: string };
-type Totals = { total: bigint; amount: bigint; payments: bigint; bracelets: bigint };
+type Totals = { total: bigint; amount: bigint; payments: bigint; bracelets: bigint; shop: bigint };
 type Series = { label: string; amount: bigint };
 
 @Injectable()
@@ -64,6 +64,11 @@ export class FinancesService {
         concat_ws(' ', u.prenom, u.nom)
       FROM bracelet_ventes b JOIN bracelets br ON br.id = b."braceletId" JOIN users u ON u.id = b."userId"
       WHERE b."gymId" = ${user.gymId}
+      UNION ALL
+      SELECT 'SHOP', s.id, s."occurredAt", s."totalFcfa", s."userId", 'SHOP', s.mode,
+        'Vente boutique', coalesce((SELECT string_agg(i.name, ', ' ORDER BY i.id) FROM shop_sale_items i WHERE i."saleId"=s.id), 'Boutique'),
+        concat('B-',s.id), NULL, NULL, s."userName"
+      FROM shop_sales s WHERE s."gymId" = ${user.gymId} AND s."createdAt" <= ${scope.snapshot}
     ), filtered AS (SELECT * FROM receipts WHERE ${Prisma.join(filters, ' AND ')})`;
     return { ...scope, cte };
   }
@@ -74,12 +79,13 @@ export class FinancesService {
     const [row] = await this.prisma.$queryRaw<Totals[]>(Prisma.sql`${cte}
       SELECT count(*) AS total, coalesce(sum(amount),0)::bigint AS amount,
         coalesce(sum(amount) FILTER (WHERE source='PAYMENT'),0)::bigint AS payments,
-        coalesce(sum(amount) FILTER (WHERE source='BRACELET'),0)::bigint AS bracelets FROM filtered`);
+        coalesce(sum(amount) FILTER (WHERE source='BRACELET'),0)::bigint AS bracelets,
+        coalesce(sum(amount) FILTER (WHERE source='SHOP'),0)::bigint AS shop FROM filtered`);
     return { ...this.totals(row), ownWeek, start, end };
   }
 
   private totals(row: Totals) {
-    return { total: Number(row.total), amount: Number(row.amount), payments: Number(row.payments), bracelets: Number(row.bracelets) };
+    return { total: Number(row.total), amount: Number(row.amount), payments: Number(row.payments), bracelets: Number(row.bracelets), shop: Number(row.shop??0) };
   }
 
   async find(user: Actor, query: FinancesQuery) {
@@ -97,7 +103,8 @@ export class FinancesService {
       this.prisma.$queryRaw<any[]>(Prisma.sql`${cte} SELECT * FROM filtered ORDER BY ${order} OFFSET ${query.offset} LIMIT ${query.limit}`),
       this.prisma.$queryRaw<Totals[]>(Prisma.sql`${cte} SELECT count(*) AS total, coalesce(sum(amount),0)::bigint AS amount,
         coalesce(sum(amount) FILTER (WHERE source='PAYMENT'),0)::bigint AS payments,
-        coalesce(sum(amount) FILTER (WHERE source='BRACELET'),0)::bigint AS bracelets FROM filtered`),
+        coalesce(sum(amount) FILTER (WHERE source='BRACELET'),0)::bigint AS bracelets,
+        coalesce(sum(amount) FILTER (WHERE source='SHOP'),0)::bigint AS shop FROM filtered`),
       this.prisma.$queryRaw<Series[]>(Prisma.sql`${cte} SELECT ${bucket} AS label, sum(amount)::bigint AS amount FROM filtered GROUP BY label ORDER BY label`),
       this.prisma.$queryRaw<Series[]>(Prisma.sql`${cte} SELECT type AS label, sum(amount)::bigint AS amount FROM filtered GROUP BY type ORDER BY amount DESC`),
     ], { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });

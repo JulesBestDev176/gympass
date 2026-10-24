@@ -1,3 +1,4 @@
+import { ShopModule } from './shop/shop.module';
 import { PlatformBillingModule } from './platform-billing/platform-billing.module';
 import { AppReleasesModule } from './app-releases/app-releases.module';
 import { BillingAccessModule } from './platform-billing/access.module';
@@ -53,6 +54,7 @@ import { FinancesModule } from './finances/finances.module';
     GymbroModule,
     BraceletsModule,
     FinancesModule,
+    ShopModule,
   ],
   controllers: [HealthController],
 })

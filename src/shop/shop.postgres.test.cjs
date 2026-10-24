@@ -1,0 +1,24 @@
+require('reflect-metadata');require('ts-node/register/transpile-only');
+const {test}=require('node:test');const assert=require('node:assert/strict');const {randomUUID}=require('node:crypto');const {PrismaClient}=require('@prisma/client');const {ConfigService}=require('@nestjs/config');const {ShopService}=require('./shop.service');
+const url=process.env.SHOP_TEST_DATABASE_URL;
+test('PostgreSQL shop atomicity, concurrency, signed prices, tenant scope and reconciliation',{skip:!url},async t=>{
+ const db=new PrismaClient({datasources:{db:{url}}});t.after(()=>db.$disconnect());const svc=new ShopService(db,new ConfigService({JWT_SECRET:'integration-test-shop'}));const gymId='shop-test-'+randomUUID();const a={id:'admin',gymId,role:'ADMIN',prenom:'Admin'};const staff={...a,id:'staff',role:'GERANT'};
+ t.after(async()=>{const scope={gymId:{in:[gymId,gymId+'-other']}};await db.shopSaleItem.deleteMany({where:{sale:scope}});await db.shopSale.deleteMany({where:scope});await db.shopStockMovement.deleteMany({where:scope});await db.shopProduct.deleteMany({where:scope});});
+ const p=await svc.create(a,{name:'Eau',priceFcfa:500,initialStock:2});
+ const dto=(product=p,overrides={})=>({requestId:randomUUID(),deviceId:'test-phone',occurredAt:new Date().toISOString(),offline:false,mode:'ESPECES',items:[{productId:product.id,quantity:1,unitPrice:product.priceFcfa,priceToken:product.priceToken}],...overrides});
+ const otherActor={...a,gymId:gymId+'-other'};const otherProduct=await svc.create(otherActor,{name:'Private product',priceFcfa:900,initialStock:2});await assert.rejects(svc.product(a,otherProduct.id));await assert.rejects(svc.edit(a,otherProduct.id,{name:'forged'}));await assert.rejects(svc.sell(a,dto(otherProduct)));const foreignSale=await svc.sell(otherActor,dto(otherProduct));await assert.rejects(svc.sale(a,foreignSale.id));
+ const same=dto();const replay=await Promise.all(Array.from({length:8},()=>svc.sell(staff,same)));assert.equal(new Set(replay.map(s=>s.id)).size,1);assert.equal((await svc.product(a,p.id)).stock,1);assert.equal(await db.shopSale.count({where:{gymId}}),1);
+ const race=await Promise.allSettled([svc.sell(staff,dto()),svc.sell(staff,dto())]);assert.equal(race.filter(x=>x.status==='fulfilled').length,1);assert.equal((await svc.product(a,p.id)).stock,0);
+ await assert.rejects(svc.sell(staff,dto()));const offline=await svc.sell(staff,dto(p,{offline:true}));assert.equal(offline.stockConflict,true);assert.equal((await svc.product(a,p.id)).stock,-1);assert.equal(offline.totalFcfa,500);
+ await assert.rejects(svc.sell({...staff,gymId:'another-gym'},dto(p,{offline:true})));const forged=dto(p,{offline:true});forged.items[0].unitPrice=1;await assert.rejects(svc.sell(staff,forged));await assert.rejects(svc.sell({...staff,id:'other'},same));await assert.rejects(svc.sell(staff,{...same,mode:'WAVE'}));
+ const old=p;const fresh=await svc.edit(a,p.id,{priceFcfa:700});await assert.rejects(svc.sell(staff,dto(old)));const historical=await svc.sell(staff,dto(old,{offline:true}));assert.equal(historical.totalFcfa,500);
+ const stock={requestId:randomUUID(),kind:'RESTOCK',quantity:5,reason:'Livraison'};await Promise.all([svc.stock(a,p.id,stock),svc.stock(a,p.id,stock)]);assert.equal((await svc.product(a,p.id)).stock,3);await assert.rejects(svc.stock(a,p.id,{...stock,quantity:6}));
+ const q=await svc.create(a,{name:'Barre',priceFcfa:100,initialStock:0});const basket=dto(fresh);basket.items.push({productId:q.id,quantity:1,unitPrice:100,priceToken:q.priceToken});const before=(await svc.product(a,p.id)).stock;await assert.rejects(svc.sell(staff,basket));assert.equal((await svc.product(a,p.id)).stock,before);
+ await assert.rejects(svc.stock(staff,p.id,{...stock,requestId:randomUUID()}));await assert.rejects(svc.stock(a,p.id,{requestId:randomUUID(),kind:'ADJUSTMENT',quantity:-999,reason:'Erreur'}));
+ const page=await svc.sales(staff,{offset:0,limit:2,period:'all',start:'2000-01-01',end:'2100-01-01'});assert.equal(page.items.length,2);assert.equal(page.total,4);assert.equal(page.amountFcfa,2000);assert.ok(page.items.every(s=>s.userId===staff.id));assert.equal(page.nextOffset,2);
+ const lows=await svc.products(a,{offset:0,limit:20,includeInactive:'false',stock:'low'});assert.equal(lows.total,2);
+ const ancientAt=new Date(Date.now()-400*86400000);const tokenBody=Buffer.from(JSON.stringify({gym:gymId,id:p.id,price:500,version:1,issued:ancientAt.getTime()-3600000})).toString('base64url');
+ const ancientProduct={...p,priceToken:tokenBody+'.'+svc.sign(tokenBody)};
+ const ancient=await svc.sell(staff,dto(ancientProduct,{offline:true,occurredAt:ancientAt.toISOString()}));assert.equal(ancient.totalFcfa,500);await assert.rejects(svc.sale(staff,ancient.id));assert.equal((await svc.sale(a,ancient.id)).id,ancient.id);
+ assert.equal((await svc.sales(staff,{offset:0,limit:20,period:'all'})).total,4);
+});

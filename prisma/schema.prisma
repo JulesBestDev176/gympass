@@ -922,3 +922,68 @@ model AuthSession {
   @@index([userId, expiresAt])
   @@map("auth_sessions")
 }
+
+model ShopProduct {
+  id String @id @default(uuid())
+  gymId String
+  name String
+  category String?
+  photoUrl String?
+  priceVersion Int @default(1)
+  priceFcfa Int
+  stock Int @default(0)
+  lowStockThreshold Int @default(5)
+  active Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([gymId, active])
+  @@map("shop_products")
+}
+model ShopSale {
+  id String @id @default(uuid())
+  gymId String
+  userId String
+  userName String
+  requestId String
+  fingerprint String
+  deviceId String
+  occurredAt DateTime
+  offline Boolean
+  mode String
+  totalFcfa Int
+  stockConflict Boolean @default(false)
+  createdAt DateTime @default(now())
+  items ShopSaleItem[]
+  @@unique([gymId, requestId])
+  @@index([gymId, occurredAt])
+  @@index([gymId, userId, occurredAt])
+  @@map("shop_sales")
+}
+model ShopSaleItem {
+  id String @id @default(uuid())
+  saleId String
+  productId String
+  name String
+  quantity Int
+  unitPrice Int
+  totalFcfa Int
+  sale ShopSale @relation(fields: [saleId], references: [id], onDelete: Restrict)
+  @@index([saleId])
+  @@map("shop_sale_items")
+}
+model ShopStockMovement {
+  id String @id @default(uuid())
+  gymId String
+  productId String
+  userId String
+  userName String
+  requestId String?
+  fingerprint String?
+  kind String
+  quantity Int
+  reason String
+  createdAt DateTime @default(now())
+  @@unique([gymId, requestId])
+  @@index([gymId, productId, createdAt])
+  @@map("shop_stock_movements")
+}
