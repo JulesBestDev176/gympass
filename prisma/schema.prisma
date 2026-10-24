@@ -9,6 +9,30 @@ datasource db {
 
 // ─────────────────────────── ENUMS ────────────────────────────────────────────
 
+enum AppReleaseStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model AppRelease {
+  id          String @id @default(uuid())
+  packageName String
+  versionName String
+  versionCode Int
+  notes       String
+  sizeBytes   Int
+  sha256      String
+  objectKey   String @unique
+  status      AppReleaseStatus @default(DRAFT)
+  createdById String
+  createdAt   DateTime @default(now())
+  publishedAt DateTime?
+
+  @@index([status, versionCode])
+  @@index([createdAt, id])
+  @@map("app_releases")
+}
+
 enum UserRole {
   ADMIN
   GERANT
