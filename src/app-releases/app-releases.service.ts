@@ -40,7 +40,7 @@ export class AppReleasesService {
     } finally { await unlink(file.path).catch(() => undefined); }
   }
   async publish(id: string) {
-    return this.prisma.$transaction(async tx => {
+    const result = await this.prisma.$transaction(async tx => {
       // One global PostgreSQL transaction lock serializes all publishers across instances.
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(173542, 1)`;
       const row = await tx.appRelease.findUnique({ where: { id } });
@@ -50,6 +50,28 @@ export class AppReleasesService {
       if (latest && row.versionCode <= latest.versionCode) throw new ConflictException('Le versionCode doit dépasser la dernière version publiée.');
       return this.view(await tx.appRelease.update({ where: { id }, data: { status: 'PUBLISHED', publishedAt: new Date() } }), true);
     });
+    // Conserver uniquement les 2 dernières versions publiées ; supprimer les anciennes de MinIO et de la base.
+    await this._pruneOldReleases().catch(() => undefined);
+    return result;
+  }
+
+  private async _pruneOldReleases() {
+    const published = await this.prisma.appRelease.findMany({
+      where: { status: 'PUBLISHED' },
+      orderBy: { versionCode: 'desc' },
+      select: { id: true, objectKey: true },
+    });
+    const drafts = await this.prisma.appRelease.findMany({
+      where: { status: 'DRAFT' },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, objectKey: true },
+    });
+    // Garder les 2 dernières publiées, supprimer toutes les DRAFT.
+    const toDelete = [...published.slice(2), ...drafts];
+    for (const row of toDelete) {
+      await this.storage.remove(row.objectKey).catch(() => undefined);
+      await this.prisma.appRelease.delete({ where: { id: row.id } }).catch(() => undefined);
+    }
   }
   async download(id: string) {
     const row = await this.prisma.appRelease.findUnique({ where: { id } });
