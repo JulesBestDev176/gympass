@@ -1,0 +1,16 @@
+require('reflect-metadata');require('ts-node/register/transpile-only');
+const {test}=require('node:test');const assert=require('node:assert/strict');const {randomUUID}=require('node:crypto');const {PrismaClient}=require('@prisma/client');const {BraceletsService}=require('./bracelets.service');
+const baseUrl=process.env.SHOP_TEST_DATABASE_URL;
+test('PostgreSQL bracelet generation returns exact rows and concurrent batches allocate disjoint numbers',{skip:!baseUrl},async t=>{
+ const schema='bracelet_test_'+randomUUID().replaceAll('-','');const owner=new PrismaClient({datasources:{db:{url:baseUrl}}});await owner.$executeRawUnsafe(`CREATE SCHEMA "${schema}"`);t.after(async()=>{await owner.$executeRawUnsafe(`DROP SCHEMA "${schema}" CASCADE`);await owner.$disconnect();});
+ const url=new URL(baseUrl);url.searchParams.set('schema',schema);const db=new PrismaClient({datasources:{db:{url:url.toString()}}});t.after(()=>db.$disconnect());
+ await db.$executeRawUnsafe(`CREATE TABLE gyms(id text primary key,nom text not null default 'Test',ville text not null default 'Dakar',pays text not null default 'SN',slug text not null default 'test',"memberCounter" integer not null default 0,"fraisInscription" integer not null default 5000,"prixMensualite" integer not null default 25000,"dureeMensualite" integer not null default 30,"prixSeance" integer not null default 2500,"antiDoubleScanSec" integer not null default 5,statut text not null default 'ACTIF',"createdAt" timestamp not null default current_timestamp,"updatedAt" timestamp not null default current_timestamp)`);
+ await db.$executeRawUnsafe('CREATE TABLE bracelets(id text primary key,"gymId" text not null,numero text not null,"qrCode" text unique not null,actif boolean not null default true,"createdAt" timestamp not null default current_timestamp,"updatedAt" timestamp not null,"soldAt" timestamp,unique("gymId",numero))');
+ await db.$executeRaw`INSERT INTO gyms(id) VALUES ('gym-a'),('gym-b')`;
+ await db.bracelet.create({data:{gymId:'gym-a',numero:'B-009',qrCode:'GYMPASS-BRACELET-gym-a-B-009'}});
+ const s=new BraceletsService(db);const batches=await Promise.all([s.generate('gym-a',3),s.generate('gym-a',4),s.generate('gym-a',2),s.generate('gym-b',2)]);
+ for(let i=0;i<batches.length;i++){assert.ok(Array.isArray(batches[i]));assert.equal(batches[i].length,[3,4,2,2][i]);for(const row of batches[i]){assert.ok(row.id);assert.equal(row.qrCode,`GYMPASS-BRACELET-${row.gymId}-${row.numero}`);assert.equal(row.actif,true);assert.ok(row.createdAt instanceof Date);assert.deepEqual(await db.bracelet.findUnique({where:{id:row.id}}),row);}}
+ const sameGym=batches.slice(0,3).flat();assert.equal(new Set(sameGym.map(b=>b.id)).size,9);assert.equal(new Set(sameGym.map(b=>b.numero)).size,9);assert.deepEqual(sameGym.map(b=>Number(b.numero.slice(2))).sort((a,b)=>a-b),[10,11,12,13,14,15,16,17,18]);assert.deepEqual(batches[3].map(b=>b.numero),['B-001','B-002']);
+ for(const bad of [0,101,1.5,NaN,-1])await assert.rejects(s.generate('gym-a',bad));await assert.rejects(s.generate('foreign',1));assert.equal(await db.bracelet.count({where:{gymId:'gym-a'}}),10);
+ const hundred=await s.generate('gym-b',100);assert.equal(hundred.length,100);assert.equal(hundred.at(-1).numero,'B-102');
+});

@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { BraceletEntriesQuery } from './bracelet-entries.dto';
@@ -17,19 +18,32 @@ export class BraceletsService {
   }
 
   async generate(gymId: string, count: number) {
-    const gym = await this.prisma.gym.findUnique({ where: { id: gymId } });
-    if (!gym) throw new NotFoundException('Gym introuvable');
-    if (count < 1 || count > 100) throw new BadRequestException('Entre 1 et 100 bracelets');
-
-    const existing = await this.prisma.bracelet.count({ where: { gymId } });
-    const bracelets = [];
-    for (let i = 1; i <= count; i++) {
-      const n = existing + i;
-      const numero = `B-${String(n).padStart(3, '0')}`;
-      const qrCode = `GYMPASS-BRACELET-${gymId}-${numero}`;
-      bracelets.push({ gymId, numero, qrCode });
+    if (!Number.isInteger(count) || count < 1 || count > 100) {
+      throw new BadRequestException('Entre 1 et 100 bracelets');
     }
-    return this.prisma.bracelet.createMany({ data: bracelets });
+    return this.prisma.$transaction(async tx => {
+      // Shared across all app instances; count-based allocation races and can
+      // reuse an existing number when earlier bracelets have been removed.
+      await tx.$queryRaw(Prisma.sql`SELECT pg_advisory_xact_lock(hashtext(${`bracelet-generation:${gymId}`}))::text`);
+      const gym = await tx.gym.findUnique({ where: { id: gymId }, select: { id: true } });
+      if (!gym) throw new NotFoundException('Gym introuvable');
+      const [row] = await tx.$queryRaw<{ maximum: string }[]>(Prisma.sql`
+        SELECT coalesce(max(substring(numero from 3)::numeric), 0)::text AS maximum
+        FROM bracelets WHERE "gymId" = ${gymId} AND numero ~ '^B-[0-9]+$'
+      `);
+      const highest = Number(row.maximum);
+      if (!Number.isSafeInteger(highest + count)) {
+        throw new BadRequestException('Numérotation des bracelets à vérifier.');
+      }
+      const data = Array.from({ length: count }, (_, index) => {
+        const numero = `B-${String(highest + index + 1).padStart(3, '0')}`;
+        return { id: randomUUID(), gymId, numero, qrCode: `GYMPASS-BRACELET-${gymId}-${numero}` };
+      });
+      await tx.bracelet.createMany({ data });
+      const rows = await tx.bracelet.findMany({ where: { gymId, id: { in: data.map(row => row.id) } } });
+      const byId = new Map(rows.map(row => [row.id, row]));
+      return data.map(row => byId.get(row.id)!);
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted, maxWait: 15000, timeout: 30000 });
   }
 
   async toggle(gymId: string, id: string) {

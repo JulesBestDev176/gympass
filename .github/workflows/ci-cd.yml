@@ -54,7 +54,7 @@ jobs:
           SHOP_TEST_DATABASE_URL: postgresql://shop:shop@localhost:5432/shop_ci
         run: |
           npx prisma db execute --file prisma/migrations/20261024120000_shop/migration.sql
-          node --test src/shop/shop.postgres.test.cjs src/finances/finances.shop.postgres.test.cjs
+          node --test src/shop/shop.postgres.test.cjs src/finances/finances.shop.postgres.test.cjs src/bracelets/bracelets-generation.postgres.test.cjs
       - run: node --test src/app-releases/app-releases-upload.test.cjs
       - run: npx prisma validate
         env:
