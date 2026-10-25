@@ -97,6 +97,8 @@ model Gym {
 
   // Paramètres scanner
   antiDoubleScanSec Int @default(5)
+  logoUrl          String?
+  brandColor       String?
 
   statut    GymStatut @default(ACTIF)
 

@@ -1,4 +1,4 @@
-import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as Minio from 'minio';
 import { v4 as uuid } from 'uuid';
@@ -61,6 +61,34 @@ export class UploadService {
         maxRedirects: 0, maxContentLength: 4 * 1024 * 1024 });
       return await createReceiptImage(Buffer.from(r.data), { limitInputPixels: 16000000 })
         .rotate().resize(256, 256, { fit: 'cover' }).png().toBuffer();
+    } catch { return null; }
+  }
+
+  async uploadGymLogo(gymId: string, buffer: Buffer): Promise<{ url: string }> {
+    if (!/^[a-zA-Z0-9_-]+$/.test(gymId) || buffer.length > 3 * 1024 * 1024) throw new BadRequestException('Logo invalide.');
+    let png: Buffer;
+    try {
+      const image = createReceiptImage(buffer, { limitInputPixels: 16000000 });
+      const meta = await image.metadata();
+      if (!['png', 'jpeg', 'webp'].includes(meta.format) || (meta.pages ?? 1) > 1) throw new Error('format');
+      png = await image.rotate().resize(512, 512, { fit: 'inside', withoutEnlargement: true }).png({ compressionLevel: 9 }).toBuffer();
+      if (png.length > 1024 * 1024) throw new Error('size');
+    } catch { throw new BadRequestException('Image invalide. Utilisez un logo PNG, JPEG ou WebP non animé.'); }
+    try {
+      await this.ensureBucket();
+      const key = `gym-logos/${gymId}/${uuid()}.png`;
+      await this.client.putObject(this.bucket, key, png, png.length, { 'Content-Type': 'image/png' });
+      return { url: `${this.publicBase}/${key}` };
+    } catch { throw new InternalServerErrorException('Stockage du logo indisponible. Réessayez.'); }
+  }
+
+  async readGymLogo(gymId: string, url?: string | null): Promise<Buffer | null> {
+    if (!gymId || !/^[a-zA-Z0-9_-]+$/.test(gymId)) return null;
+    const prefix = `${this.publicBase}/gym-logos/${gymId}/`;
+    if (!url?.startsWith(prefix) || !/^[a-f0-9-]+\.png$/.test(url.slice(prefix.length))) return null;
+    try {
+      const r = await axios.get(url, { responseType: 'arraybuffer', timeout: 3000, maxRedirects: 0, maxContentLength: 1024 * 1024 });
+      return await createReceiptImage(Buffer.from(r.data), { limitInputPixels: 512 * 512 }).png().toBuffer();
     } catch { return null; }
   }
 
