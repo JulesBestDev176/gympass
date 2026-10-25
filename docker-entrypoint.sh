@@ -25,6 +25,7 @@ node /app/scripts/bracelets-preflight.cjs
 
 node /app/scripts/app-releases-preflight.cjs
 node /app/scripts/shop-preflight.cjs
+node /app/scripts/branding-preflight.cjs
 
 echo "Starting application..."
 exec "$@"
