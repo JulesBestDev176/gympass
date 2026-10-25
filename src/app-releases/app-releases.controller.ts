@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Header, Param, Post, Query, Req, Res, StreamableFile, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Header, HttpCode, Param, Post, Query, Req, Res, StreamableFile, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { tmpdir } from 'os';
@@ -45,4 +45,10 @@ export class AppReleasesController {
   @UseGuards(JwtAuthGuard, BillingAdminGuard)
   @Header('Cache-Control', 'private, no-store')
   publish(@Param('id') id: string) { return this.releases.publish(id); }
+
+  @Delete('admin/:id')
+  @UseGuards(JwtAuthGuard, BillingAdminGuard)
+  @Header('Cache-Control', 'private, no-store')
+  @HttpCode(204)
+  remove(@Param('id') id: string) { return this.releases.deleteRelease(id); }
 }
