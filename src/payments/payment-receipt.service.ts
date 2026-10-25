@@ -35,7 +35,8 @@ export class PaymentReceiptService {
   }
 
   private data(row: any): PaymentReceiptData {
-    return row.receiptData || receiptData(row, row.gym, row.member, `${row.user.prenom} ${row.user.nom}`);
+    const data = row.receiptData || receiptData(row, row.gym, row.member, `${row.user.prenom} ${row.user.nom}`);
+    return { ...data, branding: data.branding ?? { logoUrl: row.gym.logoUrl || null, brandColor: row.gym.brandColor || null } };
   }
 
   private result(row: any) {
@@ -59,7 +60,15 @@ export class PaymentReceiptService {
   async pdf(actor: Actor, id: string) {
     const row = await this.payment(id, actor);
     const data = this.data(row);
-    return { data, bytes: await renderPaymentReceipt(data, await this.upload.readReceiptPhoto(data.member.photoUrl)) };
+    return { data, bytes: await this.render(row.gymId, data) };
+  }
+
+  private async render(gymId: string, data: PaymentReceiptData) {
+    const [photo, logo] = await Promise.all([
+      this.upload.readReceiptPhoto(data.member.photoUrl),
+      this.upload.readGymLogo(gymId, data.branding?.logoUrl),
+    ]);
+    return renderPaymentReceipt(data, photo, logo);
   }
 
   async send(actor: Actor, id: string, resendOf?: string) {
@@ -89,7 +98,7 @@ export class PaymentReceiptService {
     let delivery: WhatsappDelivery;
     let pdf: Buffer;
     try {
-      pdf = await renderPaymentReceipt(data, await this.upload.readReceiptPhoto(data.member.photoUrl));
+      pdf = await this.render(row.gymId, data);
     } catch { delivery = { status: 'failed' }; }
     if (pdf) try {
       delivery = await this.whatsapp.sendReceipt(recipient, pdf,
