@@ -73,6 +73,12 @@ export class AppReleasesService {
       await this.prisma.appRelease.delete({ where: { id: row.id } }).catch(() => undefined);
     }
   }
+  async deleteRelease(id: string) {
+    const row = await this.prisma.appRelease.findUnique({ where: { id } });
+    if (!row) throw new NotFoundException('Version introuvable');
+    await this.storage.remove(row.objectKey).catch(() => undefined);
+    await this.prisma.appRelease.delete({ where: { id } });
+  }
   async download(id: string) {
     const row = await this.prisma.appRelease.findUnique({ where: { id } });
     if (!row || row.status !== 'PUBLISHED') throw new NotFoundException('Version introuvable');
